@@ -1,0 +1,7 @@
+[project]
+name = "cup"
+version = "0.1.0"
+
+[build]
+cpp = 20
+target = "exe"
