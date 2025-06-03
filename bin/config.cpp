@@ -7,9 +7,7 @@ int main()
     try
     {
         Config config("./target");
-        std::cout << config.need<int>("build.c", 17) << std::endl;
-        std::cout << config.get<int>("build.cxx") << std::endl;
-        std::cout << config.get<std::string>("name") << std::endl;
+        std::cout << *config.config << std::endl;
     }
     catch (const std::exception &e)
     {
