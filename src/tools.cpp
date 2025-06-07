@@ -57,6 +57,14 @@ int RunCmd::exec()
         this->run_target = this->run_target.parent_path() /
                            (this->config == BuildType::Release ? "Release" : "Debug") /
                            this->run_target.filename();
+    auto dir = this->at.value_or(fs::current_path());
+    if (dir.is_relative())
+        dir = fs::current_path() / dir;
+    auto dll_at = dir / "build" / "lib";
+    for (auto &dll : fs::directory_iterator(dll_at))
+        if (dll.is_regular_file() && dll.path().extension() == ".dll")
+            fs::copy_file(dll.path(), this->run_target.parent_path() / dll.path().filename(),
+                          fs::copy_options::overwrite_existing);
     LOG_INFO("RunCmd: ", this->run_target.string());
     res = std::system((this->run_target.string() + " " + join(this->run_args, " ")).c_str());
     LOG_INFO("RunCmd: ", res);
