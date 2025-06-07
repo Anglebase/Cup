@@ -19,6 +19,7 @@ struct BuildInfo
     fs::path project_dir;
     fs::path build_dir;
     fs::path target_dir;
+    std::optional<fs::path> build_target;
 
     BuildInfo(const fs::path &project_dir, const SysArgs &args);
 };

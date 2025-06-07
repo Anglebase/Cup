@@ -29,6 +29,17 @@ BuildInfo::BuildInfo(const fs::path &project_dir, const SysArgs &args)
                            : this->project_dir / "target";
     this->build_dir = this->build_dir.lexically_normal();
     this->target_dir = this->target_dir.lexically_normal();
+    if (args.getArguments().size() <= 1)
+    {
+        this->build_target = std::nullopt;
+        return;
+    }
+    fs::path target = args.getArguments().at(1);
+    if (target.is_relative())
+        target = this->project_dir / "bin" / target;
+    if (!fs::exists(target))
+        throw std::runtime_error("Invalid target path: " + target.string());
+    this->build_target = target.lexically_normal();
 }
 
 Build::Build(const BuildInfo &info, const ConfigInfo &config)
@@ -184,6 +195,13 @@ int Build::build()
 
     cmake::Execute bud;
     bud.build(this->info.build_dir / cmake_build);
+    if (this->info.build_target.has_value())
+    {
+        auto target = this->info.build_target.value();
+        MD5 hash(target);
+        const auto item = target.filename().replace_extension().string() + "_" + hash.toStr();
+        bud.target(item);
+    }
     LOG_DEBUG("Build command: ", bud.as_command());
     if (this->info.type == BuildType::Release)
         bud.config(cmake::Config::Release);
