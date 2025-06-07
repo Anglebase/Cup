@@ -177,6 +177,21 @@ void Build::generate_build(std::ofstream &ofs)
     generator.project(this->config.name);
     generator.set_execute_output_path(this->info.target_dir);
     generator.set_library_output_path(this->info.build_dir / "lib");
+    if (this->info.type == BuildType::Debug)
+        generator.add_defines({"DEBUG", "_DEBUG"});
+    else
+        generator.add_defines({"NDEBUG", "_NDEBUG"});
+    generator.if_("MSVC");
+    if (this->info.type == BuildType::Debug)
+        generator.add_complie_options({"/W4", "/Zi"});
+    else
+        generator.add_complie_options({"/W3", "/O2"});
+    generator.else_();
+    if (this->info.type == BuildType::Debug)
+        generator.add_complie_options({"-Wall", "-Wextra", "-Werror", "-g"});
+    else
+        generator.add_complie_options({"-Wall", "-Wextra", "-Werror", "-O2"});
+    generator.endif_();
     this->generate_cmake_root(generator);
     generator.write_to(ofs);
 }
