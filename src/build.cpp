@@ -119,7 +119,7 @@ int Build::build()
         return res;
 
     cmake::Execute bud;
-    bud.build(this->info.build_dir);
+    bud.build(this->info.build_dir / "build");
     LOG_DEBUG("Build command: ", bud.as_command());
     if (this->info.type == BuildType::Release)
         bud.config(cmake::Config::Release);
