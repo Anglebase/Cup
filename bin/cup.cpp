@@ -59,5 +59,13 @@ int main(int argc, char **argv)
         LOG_DEBUG("Help| Error: {No Cmd}");
         return 0;
     }
-    return table[cmd]();
+    try
+    {
+        return table[cmd]();
+    }
+    catch (const std::exception &e)
+    {
+        LOG_ERROR("Exception: {}", e.what());
+        return 1;
+    }
 }
