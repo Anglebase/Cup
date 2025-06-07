@@ -25,14 +25,23 @@ BuildCmd::BuildCmd(const SysArgs &args)
 {
     if (args.hasConfig("dir") && !args.getConfigs().at("dir").empty())
         this->at = args.getConfigs().at("dir")[0];
-    if (args.hasConfig("target") && !args.getConfigs().at("target").empty())
-        this->target = args.getConfigs().at("target")[0];
     if (args.hasConfig("config") && !args.getConfigs().at("config").empty())
         this->config = args.getConfigs().at("config")[0];
 }
 
 RunCmd::RunCmd(const SysArgs &args) : BuildCmd(args)
 {
+    if (args.hasConfig("args"))
+        this->run_args = args.getConfigs().at("args");
+    if (args.getArguments().size() <= 1)
+        throw std::runtime_error("No target provided.");
+    auto target = args.getArguments()[1];
+    auto dir = this->at.value_or(fs::current_path());
+    if (dir.is_relative())
+        dir = fs::current_path() / dir;
+    dir = dir / "target" / target;
+    dir.replace_extension();
+    this->run_target = dir.lexically_normal();
 }
 
 int RunCmd::exec()
@@ -40,12 +49,9 @@ int RunCmd::exec()
     auto res = 0;
     if ((res = this->run()) != 0)
         return res;
-    auto dir = this->at.value_or(fs::current_path());
-    Config config(dir);
-    auto exe_name = this->target.value_or(config.config->name);
-    auto exe_path = dir / "target" / (exe_name);
-    res = std::system((exe_path.string()).c_str());
-    LOG_INFO("RunCmd: {}", res);
+    LOG_INFO("RunCmd: ", this->run_target.string());
+    res = std::system((this->run_target.string() + " " + join(this->run_args, " ")).c_str());
+    LOG_INFO("RunCmd: ", res);
     return 0;
 }
 

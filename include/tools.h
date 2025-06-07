@@ -29,7 +29,6 @@ class BuildCmd
 {
 protected:
     std::optional<fs::path> at;
-    std::optional<std::string> target;
     std::optional<std::string> config;
     SysArgs args;
 
@@ -40,6 +39,9 @@ public:
 
 class RunCmd : public BuildCmd
 {
+    std::vector<std::string> run_args;
+    fs::path run_target;
+
 public:
     RunCmd(const SysArgs &args);
     int exec();
