@@ -249,19 +249,6 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
             gen.target_link_libraries(item, cmake::Visual::Public, libs);
         if (!libs_dir.empty())
             gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
-        for (auto &main_file : main_files)
-        {
-            auto main_hash = MD5(main_file);
-            auto raw_path = main_file;
-            const auto raw_name = raw_path.replace_extension().filename().string();
-            const auto demo = raw_name + "_" + main_hash.toStr();
-            gen.add_executable(demo, {main_file});
-            gen.set_target_output_name(demo, raw_name);
-            gen.target_link_libraries(demo, cmake::Visual::Public, {item});
-            gen.set_target_output_directory(demo, std::nullopt, replace_finally_name(main_file.parent_path(), "bin", "target"));
-            gen.set_target_c_standard(demo, config.config->build.stdc);
-            gen.set_target_cxx_standard(demo, config.config->build.stdcxx);
-        }
     }
     else if (config.config->build.target == SHARED)
     {
@@ -290,19 +277,6 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
             gen.target_link_libraries(item, cmake::Visual::Public, libs);
         if (!libs_dir.empty())
             gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
-        for (auto &main_file : main_files)
-        {
-            auto main_hash = MD5(main_file);
-            auto raw_path = main_file;
-            const auto raw_name = raw_path.replace_extension().filename().string();
-            const auto demo = raw_name + "_" + main_hash.toStr();
-            gen.add_executable(demo, {main_file});
-            gen.set_target_output_name(demo, raw_name);
-            gen.target_link_libraries(demo, cmake::Visual::Public, {item});
-            gen.set_target_output_directory(demo, std::nullopt, replace_finally_name(main_file.parent_path(), "bin", "target"));
-            gen.set_target_c_standard(demo, config.config->build.stdc);
-            gen.set_target_cxx_standard(demo, config.config->build.stdcxx);
-        }
     }
     else
         throw std::runtime_error("Unknown target type: '" + config.config->build.target + "'");
