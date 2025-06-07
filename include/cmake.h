@@ -5,6 +5,7 @@
 #include <fstream>
 #include <filesystem>
 #include <thread>
+#include <optional>
 namespace fs = std::filesystem;
 
 namespace cmake
@@ -45,6 +46,7 @@ namespace cmake
         void target_link_directories(const std::string &name, Visual visual, const std::vector<fs::path> &dirs);
         void target_include_directories(const std::string &name, Visual visual, const std::vector<fs::path> &dirs);
         void set_target_output_name(const std::string &name, const std::string &output_name);
+        void set_target_output_directory(const std::string &name, const std::optional<LibaryType> &type, const fs::path &output_dir);
         void if_(const std::string &condition);
         void else_();
         void endif_();

@@ -174,6 +174,15 @@ void cmake::Generator::set_target_output_name(const std::string &name, const std
     this->commands.push_back(oss.str());
 }
 
+void cmake::Generator::set_target_output_directory(const std::string &name, const std::optional<LibaryType> &type, const fs::path &output_dir)
+{
+    std::ostringstream oss;
+    oss << "set_target_properties(" << name << " PROPERTIES ";
+    oss << (!type.has_value() ? "RUNTIME_OUTPUT_DIRECTORY " : "ARCHIVE_OUTPUT_DIRECTORY ") << replace_all(output_dir.string(), "\\", "/");
+    oss << ")";
+    this->commands.push_back(oss.str());
+}
+
 void cmake::Generator::if_(const std::string &condition)
 {
     this->commands.push_back("if(" + condition + ")");
