@@ -166,9 +166,10 @@ void Build::generate_build(std::ofstream &ofs)
 
 int Build::build()
 {
+    const auto cmake_build = "cmake";
     cmake::Execute make;
-    make.source(this->info.project_dir);
-    make.build_dir(this->info.build_dir / "build");
+    make.source(this->info.build_dir);
+    make.build_dir(this->info.build_dir / cmake_build);
     make.generator("MinGW Makefiles");
     LOG_DEBUG("Build command: ", make.as_command());
     int res = 0;
@@ -176,7 +177,7 @@ int Build::build()
         return res;
 
     cmake::Execute bud;
-    bud.build(this->info.build_dir / "build");
+    bud.build(this->info.build_dir / cmake_build);
     LOG_DEBUG("Build command: ", bud.as_command());
     if (this->info.type == BuildType::Release)
         bud.config(cmake::Config::Release);
