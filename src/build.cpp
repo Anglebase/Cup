@@ -56,6 +56,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.add_executable(item, source);
             gen.set_target_output_name(item, raw_name);
             gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
+            gen.set_target_output_directory(item, std::nullopt, replace_finally_name(main_file, "bin", "target"));
             std::vector<std::string> libs;
             for (const auto &[name, cup] : this->config.dependencies)
             {
@@ -92,6 +93,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.add_executable(demo, {main_file});
             gen.set_target_output_name(demo, raw_name);
             gen.target_link_libraries(demo, cmake::Visual::Public, {item});
+            gen.set_target_output_directory(demo, std::nullopt, replace_finally_name(main_file, "bin", "target"));
         }
     }
     else if (this->config.build.target == SHARED)
@@ -119,6 +121,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.add_executable(demo, {main_file});
             gen.set_target_output_name(demo, raw_name);
             gen.target_link_libraries(demo, cmake::Visual::Public, {item});
+            gen.set_target_output_directory(demo, std::nullopt, replace_finally_name(main_file, "bin", "target"));
         }
     }
     else
