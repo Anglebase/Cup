@@ -40,8 +40,6 @@ ConfigInfo::ConfigInfo(const Config &config)
     }
     this->license = config.need<std::string>("license", "", false);
     this->build.target = config.get<std::string>("build.target");
-    this->build.cc = config.need<std::string>("build.cc", "", false);
-    this->build.cxx = config.need<std::string>("build.cxx", "", false);
     this->build.stdc = config.need<int>("build.stdc", 17, false);
     this->build.stdcxx = config.need<int>("build.stdcxx", 20, false);
     if (config.table_.contains("build") && config.table_.at("build").is_table())

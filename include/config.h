@@ -114,8 +114,6 @@ struct ConfigInfo
     struct BuildInfo
     {
         std::string target;
-        std::string cc;
-        std::string cxx;
         int stdc;
         int stdcxx;
         std::vector<std::string> define;
