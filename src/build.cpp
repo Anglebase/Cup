@@ -303,6 +303,8 @@ void Build::generate_build(std::ofstream &ofs)
     else
         generator.add_complie_options({"-Wall", "-Wextra", "-Werror", "-O2"});
     generator.endif_();
+    if(!this->config.build.define.empty())
+        generator.add_defines(this->config.build.define);
     this->generate_cmake_root(generator);
     generator.write_to(ofs);
 }
