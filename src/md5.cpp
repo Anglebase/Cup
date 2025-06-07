@@ -41,7 +41,9 @@ MD5::MD5(const string &message)
 
 namespace fs = std::filesystem;
 MD5::MD5(const std::filesystem::path &file_path)
-    : MD5(file_path.is_absolute() ? file_path.string() : (fs::current_path() / file_path).string())
+    : MD5(file_path.is_absolute()
+              ? file_path.lexically_normal().string()
+              : (fs::current_path() / file_path).lexically_normal().string())
 {
 }
 

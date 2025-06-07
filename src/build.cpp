@@ -80,8 +80,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             }
             for (const auto &[name, cup] : this->config.dependencies)
             {
-                MD5 lhash(cup.path);
-                const auto lib_name = name + lhash.toStr();
+                MD5 lhash(cup.path.is_relative() ? (this->info.project_dir / cup.path).string() : cup.path);
+                const auto lib_name = name + "_" + lhash.toStr();
                 libs.push_back(lib_name);
             }
             if (!libs.empty())
@@ -109,8 +109,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         }
         for (const auto &[name, cup] : this->config.dependencies)
         {
-            MD5 lhash(cup.path);
-            const auto lib_name = name + lhash.toStr();
+            MD5 lhash(cup.path.is_relative() ? (this->info.project_dir / cup.path).string() : cup.path);
+            const auto lib_name = name + "_" + lhash.toStr();
             libs.push_back(lib_name);
         }
         if (!libs.empty())
@@ -136,8 +136,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         MD5 hash(this->info.project_dir);
         auto item = this->config.name + "_" + hash.toStr();
         gen.add_library(item, cmake::LibaryType::Shared, src_files);
-        gen.set_target_output_name(item, this->config.name);
-        gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
+        gen.set_target_output_name(item, this->config.name);        gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
         gen.set_target_c_standard(item, this->config.build.stdc);
         gen.set_target_cxx_standard(item, this->config.build.stdcxx);
         gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
@@ -150,8 +149,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         }
         for (const auto &[name, cup] : this->config.dependencies)
         {
-            MD5 lhash(cup.path);
-            const auto lib_name = name + lhash.toStr();
+            MD5 lhash(cup.path.is_relative() ? (this->info.project_dir / cup.path).string() : cup.path);
+            const auto lib_name = name + "_" + lhash.toStr();
             libs.push_back(lib_name);
         }
         if (!libs.empty())
@@ -181,11 +180,12 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
     const char *BINARY = "binary";
     const char *STATIC = "static";
     const char *SHARED = "shared";
-    Config config(path);
+    auto project_dir = path.is_relative() ? this->info.project_dir / path : path;
+    Config config(project_dir);
     for (const auto &[name, cup] : config.config->dependencies)
         this->generate_cmake_sub(cup.path, gen);
-    auto src_files = find_all_source(this->info.project_dir / "src");
-    auto main_files = find_all_source(this->info.project_dir / "bin");
+    auto src_files = find_all_source(project_dir / "src");
+    auto main_files = find_all_source(project_dir / "bin");
     if (config.config->build.target == BINARY)
     {
         for (const auto &main_file : main_files)
@@ -198,7 +198,7 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
             source.push_back(main_file);
             gen.add_executable(item, source);
             gen.set_target_output_name(item, raw_name);
-            gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
+            gen.target_include_directories(item, cmake::Visual::Public, {(project_dir / "include").lexically_normal()});
             gen.set_target_output_directory(item, std::nullopt, replace_finally_name(main_file.parent_path(), "bin", "target"));
             gen.set_target_c_standard(item, config.config->build.stdc);
             gen.set_target_cxx_standard(item, config.config->build.stdcxx);
@@ -212,8 +212,8 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
             }
             for (const auto &[name, cup] : config.config->dependencies)
             {
-                MD5 lhash(cup.path);
-                const auto lib_name = name + lhash.toStr();
+                MD5 lhash(cup.path.is_relative() ? (project_dir / cup.path).string() : cup.path);
+                const auto lib_name = name + "_" + lhash.toStr();
                 libs.push_back(lib_name);
             }
             if (!libs.empty())
@@ -224,11 +224,11 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
     }
     else if (config.config->build.target == STATIC)
     {
-        MD5 hash(this->info.project_dir);
+        MD5 hash(project_dir);
         auto item = config.config->name + "_" + hash.toStr();
         gen.add_library(item, cmake::LibaryType::Static, src_files);
         gen.set_target_output_name(item, config.config->name);
-        gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
+        gen.target_include_directories(item, cmake::Visual::Public, {(project_dir / "include").lexically_normal()});
         gen.set_target_c_standard(item, config.config->build.stdc);
         gen.set_target_cxx_standard(item, config.config->build.stdcxx);
         gen.target_include_directories(item, cmake::Visual::Public, config.config->build.include);
@@ -241,8 +241,8 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
         }
         for (const auto &[name, cup] : config.config->dependencies)
         {
-            MD5 lhash(cup.path);
-            const auto lib_name = name + lhash.toStr();
+            MD5 lhash(cup.path.is_relative() ? (project_dir / cup.path).string() : cup.path);
+            const auto lib_name = name + "_" + lhash.toStr();
             libs.push_back(lib_name);
         }
         if (!libs.empty())
@@ -265,11 +265,11 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
     }
     else if (config.config->build.target == SHARED)
     {
-        MD5 hash(this->info.project_dir);
+        MD5 hash(project_dir);
         auto item = config.config->name + "_" + hash.toStr();
         gen.add_library(item, cmake::LibaryType::Shared, src_files);
         gen.set_target_output_name(item, config.config->name);
-        gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
+        gen.target_include_directories(item, cmake::Visual::Public, {(project_dir / "include").lexically_normal()});
         gen.set_target_c_standard(item, config.config->build.stdc);
         gen.set_target_cxx_standard(item, config.config->build.stdcxx);
         gen.target_include_directories(item, cmake::Visual::Public, config.config->build.include);
@@ -282,8 +282,8 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
         }
         for (const auto &[name, cup] : config.config->dependencies)
         {
-            MD5 lhash(cup.path);
-            const auto lib_name = name + lhash.toStr();
+            MD5 lhash(cup.path.is_relative() ? (project_dir / cup.path).string() : cup.path);
+            const auto lib_name = name + "_" + lhash.toStr();
             libs.push_back(lib_name);
         }
         if (!libs.empty())
@@ -339,7 +339,7 @@ int Build::build()
     cmake::Execute make;
     make.source(this->info.build_dir);
     make.build_dir(this->info.build_dir / cmake_build);
-    if(!this->config.build.generator.empty())
+    if (!this->config.build.generator.empty())
         make.generator(this->config.build.generator);
     LOG_DEBUG("Build command: ", make.as_command());
     int res = 0;
