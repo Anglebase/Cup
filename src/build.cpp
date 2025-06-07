@@ -45,11 +45,12 @@ void Build::generate_cmake_root(cmake::Generator &gen)
     auto main_files = find_all_source(this->info.project_dir / "bin");
     if (this->config.build.target == BINARY)
     {
-        for (auto &main_file : main_files)
+        for (const auto &main_file : main_files)
         {
             auto source = src_files;
             auto hash = MD5(main_file);
-            const auto raw_name = main_file.replace_extension().filename().string();
+            auto raw_path = main_file;
+            const auto raw_name = raw_path.replace_extension().filename().string();
             const auto item = raw_name + "_" + hash.toStr();
             source.push_back(main_file);
             gen.add_executable(item, source);
@@ -85,7 +86,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         for (auto &main_file : main_files)
         {
             auto main_hash = MD5(main_file);
-            const auto raw_name = main_file.replace_extension().filename().string();
+            auto raw_path = main_file;
+            const auto raw_name = raw_path.replace_extension().filename().string();
             const auto demo = raw_name + "_" + main_hash.toStr();
             gen.add_executable(demo, {main_file});
             gen.set_target_output_name(demo, raw_name);
@@ -111,7 +113,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         for (auto &main_file : main_files)
         {
             auto main_hash = MD5(main_file);
-            const auto raw_name = main_file.replace_extension().filename().string();
+            auto raw_path = main_file;
+            const auto raw_name = raw_path.replace_extension().filename().string();
             const auto demo = raw_name + "_" + main_hash.toStr();
             gen.add_executable(demo, {main_file});
             gen.set_target_output_name(demo, raw_name);
