@@ -117,7 +117,7 @@ struct ConfigInfo
         int stdc;
         int stdcxx;
         std::vector<std::string> define;
-        std::vector<std::string> include;
+        std::vector<fs::path> include;
     } build;
     std::unordered_map<std::string, fs::path> link;
     std::unordered_map<std::string, CupProject> dependencies;

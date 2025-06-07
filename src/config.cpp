@@ -68,8 +68,8 @@ ConfigInfo::ConfigInfo(const Config &config)
             {
                 if (include.is_string())
                 {
-                    auto inc = include.value<std::string>().value();
-                    this->build.include.push_back(inc);
+                    fs::path inc = include.value<std::string>().value();
+                    this->build.include.push_back(inc.is_relative() ? config.path / inc : inc);
                 }
                 else
                 {
@@ -98,8 +98,8 @@ ConfigInfo::ConfigInfo(const Config &config)
             auto key = std::string(name.str());
             if (dir.is_string())
             {
-                auto dir_str = dir.value<std::string>().value();
-                this->link.insert({key, dir_str});
+                fs::path dir_str = dir.value<std::string>().value();
+                this->link.insert({key, dir_str.is_relative() ? config.path / dir_str : dir_str});
             }
             else
             {
