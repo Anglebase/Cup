@@ -54,18 +54,19 @@ int NewCmd::run()
     if (this->at.has_value())
         fs::current_path(this->at.value());
     auto project_path = fs::current_path() / this->name;
-    std::vector<std::string> sub_dir = {"include", "src"};
+    std::vector<std::string> sub_dir = {"include", "src", "bin"};
     for (auto &dir : sub_dir)
         fs::create_directories(project_path / dir);
 
     std::ofstream cup_config(project_path / "cup.toml");
     cup_config << "name = \"" << this->name << "\"" << std::endl;
-    cup_config << "version = \"0.1.0\"" << std::endl;
+    cup_config << "version = \"0.1.0\"" << std::endl
+               << std::endl;
     cup_config << "[build]" << std::endl;
     cup_config << "target = \"" << this->target.value_or("binary") << "\"" << std::endl;
     cup_config.close();
 
-    std::ofstream main_cpp(project_path / "src" / "main.cpp");
+    std::ofstream main_cpp(project_path / "bin" / (this->name + ".cpp"));
     main_cpp << "#include <iostream>" << std::endl;
     main_cpp << "int main() {" << std::endl;
     main_cpp << "    std::cout << \"Hello, world!\" << std::endl;" << std::endl;
