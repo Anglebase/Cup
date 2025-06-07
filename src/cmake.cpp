@@ -47,6 +47,20 @@ void cmake::Generator::set_cxx_standard(int standard)
     this->commands.push_back("set(CMAKE_CXX_STANDARD_REQUIRED ON)");
 }
 
+void cmake::Generator::set_target_c_standard(const std::string &name, int standard)
+{
+    std::ostringstream oss;
+    oss << "set_target_properties(" << name << " PROPERTIES C_STANDARD " << standard << ")";
+    this->commands.push_back(oss.str());
+}
+
+void cmake::Generator::set_target_cxx_standard(const std::string &name, int standard)
+{
+    std::ostringstream oss;
+    oss << "set_target_properties(" << name << " PROPERTIES CXX_STANDARD " << standard << ")";
+    this->commands.push_back(oss.str());
+}
+
 void cmake::Generator::set_execute_output_path(const fs::path &path)
 {
     this->commands.push_back("set(EXECUTABLE_OUTPUT_PATH " + replace_all(path.string(), "\\", "/") + ")");

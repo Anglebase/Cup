@@ -32,6 +32,8 @@ namespace cmake
         void project(const std::string &name);
         void set_c_standard(int standard);
         void set_cxx_standard(int standard);
+        void set_target_c_standard(const std::string &name, int standard);
+        void set_target_cxx_standard(const std::string &name, int standard);
         void set_execute_output_path(const fs::path &path);
         void set_library_output_path(const fs::path &path);
         void add_defines(const std::vector<std::string> &defines);
