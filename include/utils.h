@@ -2,6 +2,8 @@
 
 #include <vector>
 #include <string>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 // 以指定分隔符拆分字符串
 inline std::vector<std::string> split(const std::string &str, const std::string &delimiter)
@@ -46,4 +48,18 @@ inline std::string replace_all(const std::string &str, const std::string &from, 
         start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
     }
     return result;
+}
+
+inline fs::path replace_finally_name(const fs::path &path, const std::string &from, const std::string &to)
+{
+    auto at = -1;
+    for (auto it = path.begin(); it != path.end(); ++it)
+        if (it->string() == from)
+            at = std::distance(path.begin(), it);
+    if (at == -1)
+        return path;
+    auto result = fs::path();
+    for (auto it = path.begin(); it != path.end(); ++it)
+        result /= std::distance(path.begin(), it) == at ? to : *it;
+    return result.lexically_normal();
 }
