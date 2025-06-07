@@ -41,28 +41,85 @@ void Build::generate_cmake_root(cmake::Generator &gen)
     const char *SHARED = "shared";
     for (const auto &[name, cup] : this->config.dependencies)
         this->generate_cmake_sub(cup.path, gen);
-    MD5 hash{this->info.project_dir};
-    const auto item = this->config.name + "_" + hash.toStr();
     auto src_files = find_all_source(this->info.project_dir / "src");
+    auto main_files = find_all_source(this->info.project_dir / "bin");
     if (this->config.build.target == BINARY)
-        gen.add_executable(item, src_files);
+    {
+        for (auto &main_file : main_files)
+        {
+            auto source = src_files;
+            auto hash = MD5(main_file);
+            const auto raw_name = main_file.replace_extension().filename().string();
+            const auto item = raw_name + "_" + hash.toStr();
+            source.push_back(main_file);
+            gen.add_executable(item, source);
+            gen.set_target_output_name(item, raw_name);
+            gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
+            std::vector<std::string> libs;
+            for (const auto &[name, cup] : this->config.dependencies)
+            {
+                MD5 lhash(cup.path);
+                const auto lib_name = name + lhash.toStr();
+                libs.push_back(lib_name);
+            }
+            if (!libs.empty())
+                gen.target_link_libraries(item, cmake::Visual::Public, libs);
+        }
+    }
     else if (this->config.build.target == STATIC)
+    {
+        MD5 hash(this->info.project_dir);
+        auto item = this->config.name + "_" + hash.toStr();
         gen.add_library(item, cmake::LibaryType::Static, src_files);
+        gen.set_target_output_name(item, this->config.name);
+        gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
+        std::vector<std::string> libs;
+        for (const auto &[name, cup] : this->config.dependencies)
+        {
+            MD5 lhash(cup.path);
+            const auto lib_name = name + lhash.toStr();
+            libs.push_back(lib_name);
+        }
+        if (!libs.empty())
+            gen.target_link_libraries(item, cmake::Visual::Public, libs);
+        for (auto &main_file : main_files)
+        {
+            auto main_hash = MD5(main_file);
+            const auto raw_name = main_file.replace_extension().filename().string();
+            const auto demo = raw_name + "_" + main_hash.toStr();
+            gen.add_executable(demo, {main_file});
+            gen.set_target_output_name(demo, raw_name);
+            gen.target_link_libraries(demo, cmake::Visual::Public, {item});
+        }
+    }
     else if (this->config.build.target == SHARED)
+    {
+        MD5 hash(this->info.project_dir);
+        auto item = this->config.name + "_" + hash.toStr();
         gen.add_library(item, cmake::LibaryType::Shared, src_files);
+        gen.set_target_output_name(item, this->config.name);
+        gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
+        std::vector<std::string> libs;
+        for (const auto &[name, cup] : this->config.dependencies)
+        {
+            MD5 lhash(cup.path);
+            const auto lib_name = name + lhash.toStr();
+            libs.push_back(lib_name);
+        }
+        if (!libs.empty())
+            gen.target_link_libraries(item, cmake::Visual::Public, libs);
+        for (auto &main_file : main_files)
+        {
+            auto main_hash = MD5(main_file);
+            const auto raw_name = main_file.replace_extension().filename().string();
+            const auto demo = raw_name + "_" + main_hash.toStr();
+            gen.add_executable(demo, {main_file});
+            gen.set_target_output_name(demo, raw_name);
+            gen.target_link_libraries(demo, cmake::Visual::Public, {item});
+        }
+    }
     else
         throw std::runtime_error("Unknown target type: '" + this->config.build.target + "'");
-    gen.set_target_output_name(item, this->config.name);
-    gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
-    std::vector<std::string> libs;
-    for (const auto &[name, cup] : this->config.dependencies)
-    {
-        MD5 lhash(cup.path);
-        const auto lib_name = name + lhash.toStr();
-        libs.push_back(lib_name);
-    }
-    if (!libs.empty())
-        gen.target_link_libraries(item, cmake::Visual::Public, libs);
 }
 
 void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
