@@ -4,13 +4,13 @@
 
 std::vector<fs::path> find_all_source(const fs::path &root)
 {
-    const std::unordered_set<std::string> ext = {"c", "cxx", "cc", "cpp"};
+    const std::unordered_set<std::string> ext = {".c", ".cxx", ".cc", ".cpp"};
     std::vector<fs::path> result;
     for (const auto &entry : fs::recursive_directory_iterator(root))
     {
         auto file_ext = entry.path().extension().string();
         if (entry.is_regular_file() && ext.find(file_ext) != ext.end())
-            result.push_back(entry.path());
+            result.push_back(entry.path().lexically_normal());
     }
     return result;
 }
@@ -23,10 +23,12 @@ BuildInfo::BuildInfo(const fs::path &project_dir, const SysArgs &args)
                      : BuildType::Debug;
     this->build_dir = args.hasConfig("build") && args.getConfigs().at("build").size() > 0
                           ? args.getConfigs().at("build").at(0)
-                          : fs::current_path() / "build";
+                          : this->project_dir / "build";
     this->target_dir = args.hasConfig("target") && args.getConfigs().at("target").size() > 0
                            ? args.getConfigs().at("target").at(0)
-                           : fs::current_path() / "target";
+                           : this->project_dir / "target";
+    this->build_dir = this->build_dir.lexically_normal();
+    this->target_dir = this->target_dir.lexically_normal();
 }
 
 Build::Build(const BuildInfo &info, const ConfigInfo &config)
@@ -40,7 +42,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
     for (const auto &[name, cup] : this->config.dependencies)
         this->generate_cmake_sub(cup.path, gen);
     MD5 hash{this->info.project_dir};
-    const auto item = this->config.name + hash.toStr();
+    const auto item = this->config.name + "_" + hash.toStr();
     auto src_files = find_all_source(this->info.project_dir / "src");
     if (this->config.build.target == BINARY)
         gen.add_executable(item, src_files);
@@ -51,7 +53,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
     else
         throw std::runtime_error("Unknown target type: '" + this->config.build.target + "'");
     gen.set_target_output_name(item, this->config.name);
-    gen.target_include_directories(item, cmake::Visual::Public, {this->info.project_dir / "include"});
+    gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
     std::vector<std::string> libs;
     for (const auto &[name, cup] : this->config.dependencies)
     {
@@ -59,7 +61,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         const auto lib_name = name + lhash.toStr();
         libs.push_back(lib_name);
     }
-    gen.target_link_libraries(item, cmake::Visual::Public, libs);
+    if (!libs.empty())
+        gen.target_link_libraries(item, cmake::Visual::Public, libs);
 }
 
 void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
@@ -71,7 +74,7 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
     for (const auto &[name, cup] : config.config->dependencies)
         this->generate_cmake_sub(cup.path, gen);
     MD5 hash(path);
-    const auto item = config.config->name + hash.toStr();
+    const auto item = config.config->name + "_" + hash.toStr();
     auto src_files = find_all_source(path / "src");
     if (config.config->build.target == BINARY)
         gen.add_executable(item, src_files);
@@ -90,7 +93,8 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
         const auto lib_name = name + lhash.toStr();
         libs.push_back(lib_name);
     }
-    gen.target_link_libraries(item, cmake::Visual::Public, libs);
+    if (!libs.empty())
+        gen.target_link_libraries(item, cmake::Visual::Public, libs);
 }
 
 void Build::generate_build(std::ofstream &ofs)
@@ -107,19 +111,20 @@ int Build::build()
 {
     cmake::Execute make;
     make.source(this->info.project_dir);
-    make.build(this->info.build_dir);
+    make.build_dir(this->info.build_dir / "build");
     make.generator("MinGW Makefiles");
+    LOG_DEBUG("Build command: ", make.as_command());
     int res = 0;
     if ((res = system(make.as_command().c_str())) != 0)
         return res;
 
     cmake::Execute bud;
-    make.build_dir(this->info.build_dir);
-    make.jobs(std::thread::hardware_concurrency());
+    bud.build(this->info.build_dir);
+    LOG_DEBUG("Build command: ", bud.as_command());
     if (this->info.type == BuildType::Release)
-        make.config(cmake::Config::Release);
+        bud.config(cmake::Config::Release);
     else
-        make.config(cmake::Config::Debug);
+        bud.config(cmake::Config::Debug);
     if ((res = system(bud.as_command().c_str())) != 0)
         return res;
     return 0;
