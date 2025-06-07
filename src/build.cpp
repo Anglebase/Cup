@@ -70,7 +70,14 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.set_target_output_directory(item, std::nullopt, replace_finally_name(main_file.parent_path(), "bin", "target"));
             gen.set_target_c_standard(item, this->config.build.stdc);
             gen.set_target_cxx_standard(item, this->config.build.stdcxx);
+            gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
+            std::vector<fs::path> libs_dir;
             std::vector<std::string> libs;
+            for (const auto &[name, dir] : this->config.link)
+            {
+                libs.push_back(name);
+                libs_dir.push_back(dir);
+            }
             for (const auto &[name, cup] : this->config.dependencies)
             {
                 MD5 lhash(cup.path);
@@ -79,6 +86,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             }
             if (!libs.empty())
                 gen.target_link_libraries(item, cmake::Visual::Public, libs);
+            if (!libs_dir.empty())
+                gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
         }
     }
     else if (this->config.build.target == STATIC)
@@ -90,7 +99,14 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
         gen.set_target_c_standard(item, this->config.build.stdc);
         gen.set_target_cxx_standard(item, this->config.build.stdcxx);
+        gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
+        std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
+        for (const auto &[name, dir] : this->config.link)
+        {
+            libs.push_back(name);
+            libs_dir.push_back(dir);
+        }
         for (const auto &[name, cup] : this->config.dependencies)
         {
             MD5 lhash(cup.path);
@@ -99,6 +115,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         }
         if (!libs.empty())
             gen.target_link_libraries(item, cmake::Visual::Public, libs);
+        if (!libs_dir.empty())
+            gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
         for (auto &main_file : main_files)
         {
             auto main_hash = MD5(main_file);
@@ -122,7 +140,14 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
         gen.set_target_c_standard(item, this->config.build.stdc);
         gen.set_target_cxx_standard(item, this->config.build.stdcxx);
+        gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
+        std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
+        for (const auto &[name, dir] : this->config.link)
+        {
+            libs.push_back(name);
+            libs_dir.push_back(dir);
+        }
         for (const auto &[name, cup] : this->config.dependencies)
         {
             MD5 lhash(cup.path);
@@ -131,6 +156,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         }
         if (!libs.empty())
             gen.target_link_libraries(item, cmake::Visual::Public, libs);
+        if (!libs_dir.empty())
+            gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
         for (auto &main_file : main_files)
         {
             auto main_hash = MD5(main_file);
@@ -175,7 +202,14 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
             gen.set_target_output_directory(item, std::nullopt, replace_finally_name(main_file.parent_path(), "bin", "target"));
             gen.set_target_c_standard(item, config.config->build.stdc);
             gen.set_target_cxx_standard(item, config.config->build.stdcxx);
+            gen.target_include_directories(item, cmake::Visual::Public, config.config->build.include);
+            std::vector<fs::path> libs_dir;
             std::vector<std::string> libs;
+            for (const auto &[name, dir] : config.config->link)
+            {
+                libs.push_back(name);
+                libs_dir.push_back(dir);
+            }
             for (const auto &[name, cup] : config.config->dependencies)
             {
                 MD5 lhash(cup.path);
@@ -184,6 +218,8 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
             }
             if (!libs.empty())
                 gen.target_link_libraries(item, cmake::Visual::Public, libs);
+            if (!libs_dir.empty())
+                gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
         }
     }
     else if (config.config->build.target == STATIC)
@@ -195,7 +231,14 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
         gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
         gen.set_target_c_standard(item, config.config->build.stdc);
         gen.set_target_cxx_standard(item, config.config->build.stdcxx);
+        gen.target_include_directories(item, cmake::Visual::Public, config.config->build.include);
+        std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
+        for (const auto &[name, dir] : config.config->link)
+        {
+            libs.push_back(name);
+            libs_dir.push_back(dir);
+        }
         for (const auto &[name, cup] : config.config->dependencies)
         {
             MD5 lhash(cup.path);
@@ -204,6 +247,8 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
         }
         if (!libs.empty())
             gen.target_link_libraries(item, cmake::Visual::Public, libs);
+        if (!libs_dir.empty())
+            gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
         for (auto &main_file : main_files)
         {
             auto main_hash = MD5(main_file);
@@ -227,7 +272,14 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
         gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
         gen.set_target_c_standard(item, config.config->build.stdc);
         gen.set_target_cxx_standard(item, config.config->build.stdcxx);
+        gen.target_include_directories(item, cmake::Visual::Public, config.config->build.include);
+        std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
+        for (const auto &[name, dir] : config.config->link)
+        {
+            libs.push_back(name);
+            libs_dir.push_back(dir);
+        }
         for (const auto &[name, cup] : config.config->dependencies)
         {
             MD5 lhash(cup.path);
@@ -236,6 +288,8 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
         }
         if (!libs.empty())
             gen.target_link_libraries(item, cmake::Visual::Public, libs);
+        if (!libs_dir.empty())
+            gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
         for (auto &main_file : main_files)
         {
             auto main_hash = MD5(main_file);
