@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cmd.h"
+#include "build.h"
 #include <filesystem>
 #include <optional>
 namespace fs = std::filesystem;
@@ -29,7 +30,7 @@ class BuildCmd
 {
 protected:
     std::optional<fs::path> at;
-    std::optional<std::string> config;
+    BuildType config;
     SysArgs args;
 
 public:

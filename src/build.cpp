@@ -339,7 +339,8 @@ int Build::build()
     cmake::Execute make;
     make.source(this->info.build_dir);
     make.build_dir(this->info.build_dir / cmake_build);
-    make.generator("MinGW Makefiles");
+    if(!this->config.build.generator.empty())
+        make.generator(this->config.build.generator);
     LOG_DEBUG("Build command: ", make.as_command());
     int res = 0;
     if ((res = system(make.as_command().c_str())) != 0)

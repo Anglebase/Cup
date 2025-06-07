@@ -25,8 +25,9 @@ BuildCmd::BuildCmd(const SysArgs &args)
 {
     if (args.hasConfig("dir") && !args.getConfigs().at("dir").empty())
         this->at = args.getConfigs().at("dir")[0];
-    if (args.hasConfig("config") && !args.getConfigs().at("config").empty())
-        this->config = args.getConfigs().at("config")[0];
+    this->config = args.hasFlag("r") || args.hasFlag("release")
+                       ? BuildType::Release
+                       : BuildType::Debug;
 }
 
 RunCmd::RunCmd(const SysArgs &args) : BuildCmd(args)
@@ -49,6 +50,13 @@ int RunCmd::exec()
     auto res = 0;
     if ((res = this->run()) != 0)
         return res;
+#ifdef _WIN32
+    this->run_target.replace_extension(".exe");
+#endif
+    if (!fs::exists(this->run_target))
+        this->run_target = this->run_target.parent_path() /
+                           (this->config == BuildType::Release ? "Release" : "Debug") /
+                           this->run_target.filename();
     LOG_INFO("RunCmd: ", this->run_target.string());
     res = std::system((this->run_target.string() + " " + join(this->run_args, " ")).c_str());
     LOG_INFO("RunCmd: ", res);
