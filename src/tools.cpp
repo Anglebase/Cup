@@ -98,7 +98,9 @@ int BuildCmd::run()
     auto build_info = BuildInfo(dir, this->args);
     auto config_info = ConfigInfo(Config(dir));
     auto build = Build(build_info, config_info);
-    std::ofstream ofs(dir / "CMakeLists.txt");
+    if (!fs::exists(build_info.build_dir))
+        fs::create_directories(build_info.build_dir);
+    std::ofstream ofs(build_info.build_dir / "CMakeLists.txt");
     build.generate_build(ofs);
     ofs.close();
     return build.build();
