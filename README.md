@@ -29,6 +29,8 @@ Cup 的典型项目结构为：
 
 针对于存放源代码的目录，它们可以有任意子目录，需要注意的是，`include`目录并不会将所有的子目录都添加进编译器的include路径中，而是只会添加`include`目录本身，因此编写代码的`#include`预处理指令时需要其更为完整的相对路径，而非文件名，得益于这一特性，在编写链接库项目时，建议在`include`路径下创建一个与项目同名的文件夹，作为项目的公开API接口；对于`src`和`bin`下的源文件Cup会递归地搜索并将其参与构建，`src`下的所有源文件都不应包含主函数，`bin`下的所有源文件，每一个都必须包含主函数
 
+构建时 Cup 允许以`-r`或`-release`命令参数选项指定项目是否以 Release 模式编译，处于Debug模式下，Cup会隐式地添加宏`DEBUG`和`_DEBUG`；Release模式下，Cup会隐式地添加宏`NDEBUG`和`_NDEBUG`,用于条件编译。Debug模式下，将会令程序保留调试信息，以便于调试；Release模式下，将启用编译器的优化。
+
 ### 命令行参数
 
 Cup 的基本命令格式为 `cup <command> [args...]`
@@ -39,7 +41,7 @@ Cup 的基本命令格式为 `cup <command> [args...]`
     + `--dir <path>` 指定项目的存放路径，默认为当前目录
 
 + `cup build [build target] [options...]`
-构建项目，`build target`指定构建的目标，若未指定，则构建所有的目标，`options`可以包含一下选项：
+构建项目，`build target`指定构建的目标，若未指定，则构建所有的目标，该项应指定包含主函数的源文件相对于`bin`目录的路径，`options`可以包含一下选项：
     + `-r` `-release` 指定项目以 Relase 模式构建
     + `--dir <path>` 指定项目所在的路径
     + `--build <path>` 指定构建目录的生成路径
@@ -48,7 +50,8 @@ Cup 的基本命令格式为 `cup <command> [args...]`
 清理项目的构建文件，`project name`指定项目的名称，若未指定，则视为当前路径下的项目
 
 + `cup run <build target> [options...]`
-运行项目的可执行文件，`build target`指定要构建目标的名称，`options`可以包含一下选项：
+运行项目的可执行文件，`build target`指定要构建目标的名称，该项应指定包含主函数的源文件相对于`bin`目录的路径，`options`可以包含一下选项：
+    + `-r` `-release` 指定项目以 Relase 模式构建
     + `--dir <path>` 指定项目所在的路径
     + `--build <path>` 指定构建目录的生成路径
     + `--args <args...>` 指定运行可执行文件时的参数
