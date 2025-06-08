@@ -86,6 +86,52 @@ name = { path = "path/to/dependency" } # 依赖项
 # ...
 ```
 
+## 实例
+
+1. 创建一个名为`hello`的`binary`项目，并将当前路径切换至该项目的根目录
+```
+> cup new hello && cd hello
+
+[Info] Create new project: hello
+[Info] Generator template project...
+[Info] Finised.
+```
+2. 运行默认项目模板(可能的输出)
+```
+hello> cup run hello.cpp
+
+[Info] Generating cmake...
+[Info] Building...
+-- Building for: Visual Studio 17 2022
+-- Selecting Windows SDK version 10.0.22000.0 to target Windows 10.0.26100.
+-- The C compiler identification is MSVC 19.43.34810.0
+-- The CXX compiler identification is MSVC 19.43.34810.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.43.34808/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.43.34808/bin/Hostx64/x64/cl.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done (3.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: E:/Project/cup/target/hello/build/cmake
+适用于 .NET Framework MSBuild 版本 17.13.19+0d9f5a35a
+
+  1>Checking Build System
+  Building Custom Rule E:/Project/cup/target/hello/build/CMakeLists.txt
+  hello.cpp
+  hello_7ce33b1ff0b53bd3d762e4e0cdd093a9.vcxproj -> E:\Project\cup\target\hello\target\Debug\hello.exe
+[Info] Run: E:\Project\cup\target\hello\target\Debug\hello.exe
+
+Hello, world!
+
+[Info] Exit Code: 0 (0x0)
+```
+
 ## 许可证
 
 GNU Affero General Public License v3.0
