@@ -81,6 +81,8 @@ int NewCmd::run()
     if (this->at.has_value())
         fs::current_path(this->at.value());
     auto project_path = fs::current_path() / this->name;
+    if(fs::exists(project_path))
+        throw std::runtime_error("Project already exists: " + project_path.string());
     std::vector<std::string> sub_dir = {"include", "src", "bin"};
     for (auto &dir : sub_dir)
         fs::create_directories(project_path / dir);
