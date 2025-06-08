@@ -3,5 +3,6 @@ version = "0.1.0"
 license = "GPL-2.0"
 
 [build]
-cpp = 20
-target = "exe"
+stdcxx = 20
+target = "binary"
+jobs = 0
