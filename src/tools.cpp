@@ -12,12 +12,14 @@ NewCmd::NewCmd(const SysArgs &args)
         this->at = args.getConfigs().at("dir")[0];
     if (args.hasConfig("target") && !args.getConfigs().at("target").empty())
         this->target = args.getConfigs().at("target")[0];
+    LOG_INFO("Create new project: ", this->name);
 }
 
 CleanCmd::CleanCmd(const SysArgs &args)
 {
     if (args.hasConfig("dir") && !args.getConfigs().at("dir").empty())
         this->at = args.getConfigs().at("dir")[0];
+    LOG_INFO("Begin Clean...");
 }
 
 BuildCmd::BuildCmd(const SysArgs &args)
@@ -70,9 +72,9 @@ int RunCmd::exec()
         if (dll.is_regular_file() && dll.path().extension() == ".dll")
             fs::copy_file(dll.path(), this->run_target.parent_path() / dll.path().filename(),
                           fs::copy_options::overwrite_existing);
-    LOG_INFO("RunCmd: ", this->run_target.string());
+    LOG_INFO("Run: ", this->run_target.string(), "\n");
     res = std::system((this->run_target.string() + " " + join(this->run_args, " ")).c_str());
-    LOG_INFO("RunCmd: ", res);
+    LOG_INFO("\n", "Exit Code: ", res);
     return 0;
 }
 
@@ -81,12 +83,12 @@ int NewCmd::run()
     if (this->at.has_value())
         fs::current_path(this->at.value());
     auto project_path = fs::current_path() / this->name;
-    if(fs::exists(project_path))
+    if (fs::exists(project_path))
         throw std::runtime_error("Project already exists: " + project_path.string());
     std::vector<std::string> sub_dir = {"include", "src", "bin"};
     for (auto &dir : sub_dir)
         fs::create_directories(project_path / dir);
-
+    LOG_INFO("Generator template project...");
     std::ofstream cup_config(project_path / "cup.toml");
     cup_config << "name = \"" << this->name << "\"" << std::endl;
     cup_config << "version = \"0.1.0\"" << std::endl
@@ -174,6 +176,7 @@ int NewCmd::run()
         fs::remove_all(project_path);
         throw std::runtime_error("Invalid target: " + target);
     }
+    LOG_INFO("Finised.");
     return 0;
 }
 
@@ -181,7 +184,22 @@ int CleanCmd::run()
 {
     if (this->at.has_value())
         fs::current_path(this->at.value());
-    fs::remove_all("build");
+    bool finished = false;
+    if (fs::exists("build"))
+    {
+        LOG_INFO("Cleaning build directory...");
+        fs::remove_all("build");
+        finished = true;
+    }
+    if (fs::exists("target"))
+    {
+        LOG_INFO("Cleaning target directory...");
+        fs::remove_all("target");
+        finished = true;
+    }
+    finished
+        ? LOG_INFO("Finised.")
+        : LOG_INFO("Nothing to clean.");
     return 0;
 }
 
@@ -196,8 +214,10 @@ int BuildCmd::run()
     auto build = Build(build_info, config_info);
     if (!fs::exists(build_info.build_dir))
         fs::create_directories(build_info.build_dir);
+    LOG_INFO("Generating cmake...");
     std::ofstream ofs(build_info.build_dir / "CMakeLists.txt");
     build.generate_build(ofs);
     ofs.close();
+    LOG_INFO("Building...");
     return build.build();
 }
