@@ -136,7 +136,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         MD5 hash(this->info.project_dir);
         auto item = this->config.name + "_" + hash.toStr();
         gen.add_library(item, cmake::LibaryType::Shared, src_files);
-        gen.set_target_output_name(item, this->config.name);        gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
+        gen.set_target_output_name(item, this->config.name);
+        gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
         gen.set_target_c_standard(item, this->config.build.stdc);
         gen.set_target_cxx_standard(item, this->config.build.stdcxx);
         gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
@@ -303,7 +304,7 @@ void Build::generate_build(std::ofstream &ofs)
     else
         generator.add_complie_options({"-Wall", "-Wextra", "-Werror", "-O2"});
     generator.endif_();
-    if(!this->config.build.define.empty())
+    if (!this->config.build.define.empty())
         generator.add_defines(this->config.build.define);
     this->generate_cmake_root(generator);
     generator.write_to(ofs);
@@ -331,6 +332,7 @@ int Build::build()
         const auto item = target.filename().replace_extension().string() + "_" + hash.toStr();
         bud.target(item);
     }
+    bud.jobs(this->config.build.jobs == 0 ? std::thread::hardware_concurrency() : this->config.build.jobs);
     LOG_DEBUG("Build command: ", bud.as_command());
     if (this->info.type == BuildType::Release)
         bud.config(cmake::Config::Release);

@@ -119,6 +119,7 @@ struct ConfigInfo
         int stdcxx;
         std::vector<std::string> define;
         std::vector<fs::path> include;
+        unsigned int jobs;
     } build;
     std::unordered_map<std::string, fs::path> link;
     std::unordered_map<std::string, CupProject> dependencies;
@@ -138,8 +139,6 @@ std::ostream &operator<<(std::ostream &os, const ConfigInfo &config)
         os << "  - " << author << std::endl;
     os << "license: " << config.license << std::endl;
     os << "build.target: " << config.build.target << std::endl;
-    os << "build.cc: " << config.build.cc << std::endl;
-    os << "build.cxx: " << config.build.cxx << std::endl;
     os << "build.stdc: " << config.build.stdc << std::endl;
     os << "build.stdcxx: " << config.build.stdcxx << std::endl;
     os << "build.define: " << std::endl;

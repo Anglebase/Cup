@@ -43,6 +43,7 @@ ConfigInfo::ConfigInfo(const Config &config)
     this->build.stdc = config.need<int>("build.stdc", 17, false);
     this->build.stdcxx = config.need<int>("build.stdcxx", 20, false);
     this->build.generator = config.need<std::string>("build.generator", "", false);
+    this->build.jobs = config.need<unsigned int>("build.jobs", 1, false);
     if (config.table_.contains("build") && config.table_.at("build").is_table())
     {
         auto build_table = *config.table_.at("build").as_table();
