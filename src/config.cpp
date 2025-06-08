@@ -71,7 +71,7 @@ ConfigInfo::ConfigInfo(const Config &config)
                 if (include.is_string())
                 {
                     fs::path inc = include.value<std::string>().value();
-                    this->build.include.push_back(inc.is_relative() ? config.path / inc : inc);
+                    this->build.include.push_back(inc.is_relative() ? config.path.parent_path() / inc : inc);
                 }
                 else
                 {
@@ -101,7 +101,8 @@ ConfigInfo::ConfigInfo(const Config &config)
             if (dir.is_string())
             {
                 fs::path dir_str = dir.value<std::string>().value();
-                this->link.insert({key, dir_str.is_relative() ? config.path / dir_str : dir_str});
+                if (!dir_str.empty())
+                    this->link.insert({key, dir_str.is_relative() ? config.path.parent_path() / dir_str : dir_str});
             }
             else
             {
