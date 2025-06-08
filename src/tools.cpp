@@ -65,6 +65,11 @@ int RunCmd::exec()
         if (dll.is_regular_file() && dll.path().extension() == ".dll")
             fs::copy_file(dll.path(), this->run_target.parent_path() / dll.path().filename(),
                           fs::copy_options::overwrite_existing);
+    dll_at = dll_at / (this->config == BuildType::Release ? "Release" : "Debug");
+    for (auto &dll : fs::directory_iterator(dll_at))
+        if (dll.is_regular_file() && dll.path().extension() == ".dll")
+            fs::copy_file(dll.path(), this->run_target.parent_path() / dll.path().filename(),
+                          fs::copy_options::overwrite_existing);
     LOG_INFO("RunCmd: ", this->run_target.string());
     res = std::system((this->run_target.string() + " " + join(this->run_args, " ")).c_str());
     LOG_INFO("RunCmd: ", res);
@@ -88,18 +93,85 @@ int NewCmd::run()
     cup_config << "target = \"" << this->target.value_or("binary") << "\"" << std::endl;
     cup_config.close();
 
-    std::ofstream main_cpp(project_path / "bin" / (this->name + ".cpp"));
-    main_cpp << "#include <iostream>" << std::endl;
-    main_cpp << "int main() {" << std::endl;
-    main_cpp << "    std::cout << \"Hello, world!\" << std::endl;" << std::endl;
-    main_cpp << "    return 0;" << std::endl;
-    main_cpp << "}" << std::endl;
-    main_cpp.close();
-
     std::ofstream gitignore(project_path / ".gitignore");
     gitignore << "/build" << std::endl;
     gitignore << "/target" << std::endl;
     gitignore.close();
+
+    auto target = this->target.value_or("binary");
+    if (target == "binary")
+    {
+        std::ofstream main_cpp(project_path / "bin" / (this->name + ".cpp"));
+        main_cpp << "#include <iostream>" << std::endl;
+        main_cpp << "int main() {" << std::endl;
+        main_cpp << "    std::cout << \"Hello, world!\" << std::endl;" << std::endl;
+        main_cpp << "    return 0;" << std::endl;
+        main_cpp << "}" << std::endl;
+        main_cpp.close();
+    }
+    else if (target == "static")
+    {
+        std::ofstream lib_h(project_path / "include" / (this->name + ".h"));
+        lib_h << "#pragma once" << std::endl
+              << std::endl;
+        lib_h << "void " << this->name << "();" << std::endl;
+        lib_h.close();
+
+        std::ofstream lib_cpp(project_path / "src" / (this->name + ".cpp"));
+        lib_cpp << "#include <iostream>" << std::endl;
+        lib_cpp << "#include \"" << this->name << ".h\"" << std::endl
+                << std::endl;
+        lib_cpp << "void " << this->name << "() {" << std::endl;
+        lib_cpp << "    std::cout << \"" << this->name << "() called!\" << std::endl;" << std::endl;
+        lib_cpp << "}" << std::endl;
+        lib_cpp.close();
+
+        std::ofstream main_cpp(project_path / "bin" / (this->name + ".cpp"));
+        main_cpp << "#include \"" << this->name << ".h\"" << std::endl
+                 << std::endl;
+        main_cpp << "int main() {" << std::endl;
+        main_cpp << "    " << this->name << "();" << std::endl;
+        main_cpp << "    return 0;" << std::endl;
+        main_cpp << "}" << std::endl;
+        main_cpp.close();
+    }
+    else if (target == "shared")
+    {
+        std::ofstream lib_h(project_path / "include" / (this->name + ".h"));
+        lib_h << "#pragma once" << std::endl
+              << std::endl;
+        lib_h << "#ifdef _MSC_VER" << std::endl;
+        lib_h << "    #define " << "DLLEXPORT __declspec(dllexport)" << std::endl;
+        lib_h << "#else" << std::endl;
+        lib_h << "    #define " << "DLLEXPORT" << std::endl;
+        lib_h << "#endif" << std::endl
+              << std::endl;
+        lib_h << "DLLEXPORT void " << this->name << "();" << std::endl;
+        lib_h.close();
+
+        std::ofstream lib_cpp(project_path / "src" / (this->name + ".cpp"));
+        lib_cpp << "#include <iostream>" << std::endl;
+        lib_cpp << "#include \"" << this->name << ".h\"" << std::endl
+                << std::endl;
+        lib_cpp << "DLLEXPORT void " << this->name << "() {" << std::endl;
+        lib_cpp << "    std::cout << \"" << this->name << "() called!\" << std::endl;" << std::endl;
+        lib_cpp << "}" << std::endl;
+        lib_cpp.close();
+
+        std::ofstream main_cpp(project_path / "bin" / (this->name + ".cpp"));
+        main_cpp << "#include \"" << this->name << ".h\"" << std::endl
+                 << std::endl;
+        main_cpp << "int main() {" << std::endl;
+        main_cpp << "    " << this->name << "();" << std::endl;
+        main_cpp << "    return 0;" << std::endl;
+        main_cpp << "}" << std::endl;
+        main_cpp.close();
+    }
+    else
+    {
+        fs::remove_all(project_path);
+        throw std::runtime_error("Invalid target: " + target);
+    }
     return 0;
 }
 
