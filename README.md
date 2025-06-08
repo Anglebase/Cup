@@ -60,10 +60,10 @@ Cup 的基本命令格式为 `cup <command> [args...]`
 *带有`*`号标记的是会解析但尚无任何效果的配置项*
 ```toml
 name = "xxx" # 项目名称
-*version = "0.1.0" # 项目版本
-*description = "xxx project" # 项目描述
-*authors = ["xxx"] # 项目作者
-*license = "MIT" # 项目许可证
+version = "0.1.0" #* 项目版本
+description = "xxx project" #* 项目描述
+authors = ["xxx"] #* 项目作者
+license = "MIT" #* 项目许可证
 
 [build]
 target = "binary" # 项目类型，可选值：binary, static, shared
@@ -76,11 +76,11 @@ jobs = 0 # 指定构建时的并行任务数，默认为1，若为0则表示使�
 
 [link]
 name = "path/to/lib" # 外部链接库
-...
+# ...
 
 [dependencies]
 name = { path = "path/to/dependency" } # 依赖项
-...
+# ...
 ```
 
 ## 许可证
