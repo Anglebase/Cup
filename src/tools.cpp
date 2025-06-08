@@ -74,9 +74,13 @@ int RunCmd::exec()
             if (dll.is_regular_file() && dll.path().extension() == ".dll")
                 fs::copy_file(dll.path(), this->run_target.parent_path() / dll.path().filename(),
                               fs::copy_options::overwrite_existing);
-    LOG_INFO("Run: ", this->run_target.string(), "\n");
+    LOG_INFO("\033[32mRun: ", this->run_target.string(), "\033[0m");
+    std::cout << std::endl;
     res = std::system((this->run_target.string() + " " + join(this->run_args, " ")).c_str());
-    LOG_INFO("\n", "Exit Code: ", res);
+    std::cout << std::endl;
+    std::ostringstream oss;
+    oss << std::hex << res;
+    LOG_INFO(res == 0 ? "\033[32m" : "\033[33m", "Exit Code: ", res, " (0x", oss.str(), ")", "\033[0m");
     return 0;
 }
 
