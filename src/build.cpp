@@ -52,8 +52,12 @@ void Build::generate_cmake_root(cmake::Generator &gen)
     const char *SHARED = "shared";
     for (const auto &[name, cup] : this->config.dependencies)
         this->generate_cmake_sub(cup.path, gen);
-    auto src_files = find_all_source(this->info.project_dir / "src");
-    auto main_files = find_all_source(this->info.project_dir / "bin");
+    auto src_files = fs::exists(this->info.project_dir / "src")
+                         ? find_all_source(this->info.project_dir / "src")
+                         : std::vector<fs::path>{};
+    auto main_files = fs::exists(this->info.project_dir / "bin")
+                          ? find_all_source(this->info.project_dir / "bin")
+                          : std::vector<fs::path>{};
     if (this->config.build.target == BINARY)
     {
         for (const auto &main_file : main_files)
@@ -185,8 +189,12 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
     Config config(project_dir);
     for (const auto &[name, cup] : config.config->dependencies)
         this->generate_cmake_sub(cup.path, gen);
-    auto src_files = find_all_source(project_dir / "src");
-    auto main_files = find_all_source(project_dir / "bin");
+    auto src_files = fs::exists(project_dir / "src")
+                         ? find_all_source(project_dir / "src")
+                         : std::vector<fs::path>{};
+    auto main_files = fs::exists(project_dir / "bin")
+                          ? find_all_source(project_dir / "bin")
+                          : std::vector<fs::path>{};
     if (config.config->build.target == BINARY)
     {
         for (const auto &main_file : main_files)
