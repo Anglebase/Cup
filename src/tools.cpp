@@ -63,15 +63,17 @@ int RunCmd::exec()
     if (dir.is_relative())
         dir = fs::current_path() / dir;
     auto dll_at = dir / "build" / "lib";
-    for (auto &dll : fs::directory_iterator(dll_at))
-        if (dll.is_regular_file() && dll.path().extension() == ".dll")
-            fs::copy_file(dll.path(), this->run_target.parent_path() / dll.path().filename(),
-                          fs::copy_options::overwrite_existing);
+    if (fs::exists(dll_at))
+        for (auto &dll : fs::directory_iterator(dll_at))
+            if (dll.is_regular_file() && dll.path().extension() == ".dll")
+                fs::copy_file(dll.path(), this->run_target.parent_path() / dll.path().filename(),
+                              fs::copy_options::overwrite_existing);
     dll_at = dll_at / (this->config == BuildType::Release ? "Release" : "Debug");
-    for (auto &dll : fs::directory_iterator(dll_at))
-        if (dll.is_regular_file() && dll.path().extension() == ".dll")
-            fs::copy_file(dll.path(), this->run_target.parent_path() / dll.path().filename(),
-                          fs::copy_options::overwrite_existing);
+    if (fs::exists(dll_at))
+        for (auto &dll : fs::directory_iterator(dll_at))
+            if (dll.is_regular_file() && dll.path().extension() == ".dll")
+                fs::copy_file(dll.path(), this->run_target.parent_path() / dll.path().filename(),
+                              fs::copy_options::overwrite_existing);
     LOG_INFO("Run: ", this->run_target.string(), "\n");
     res = std::system((this->run_target.string() + " " + join(this->run_args, " ")).c_str());
     LOG_INFO("\n", "Exit Code: ", res);
