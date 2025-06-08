@@ -85,3 +85,4 @@ name = { path = "path/to/dependency" } # 依赖项
 
 ## 许可证
 
+GNU Affero General Public License v3.0
