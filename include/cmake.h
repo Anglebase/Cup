@@ -47,6 +47,8 @@ namespace cmake
         void target_link_libraries(const std::string &name, Visual visual, const std::vector<std::string> &libs);
         void target_link_directories(const std::string &name, Visual visual, const std::vector<fs::path> &dirs);
         void target_include_directories(const std::string &name, Visual visual, const std::vector<fs::path> &dirs);
+        void target_compile_options(const std::string &name, Visual visual, const std::vector<std::string> &options);
+        void target_link_options(const std::string &name, Visual visual, const std::vector<std::string> &options);
         void set_target_output_name(const std::string &name, const std::string &output_name);
         void set_target_output_directory(const std::string &name, const std::optional<LibaryType> &type, const fs::path &output_dir);
         void if_(const std::string &condition);
@@ -57,7 +59,7 @@ namespace cmake
         std::string generator() const;
         void write_to(std::ofstream &f) const;
     };
-    
+
     enum Config
     {
         Debug,

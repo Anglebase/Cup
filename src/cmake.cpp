@@ -181,6 +181,26 @@ void cmake::Generator::target_include_directories(const std::string &name, Visua
     this->commands.push_back(oss.str());
 }
 
+void cmake::Generator::target_compile_options(const std::string &name, Visual visual, const std::vector<std::string> &options)
+{
+    std::ostringstream oss;
+    oss << "target_compile_options(" << name << " " << visual_to_string(visual) << " ";
+    for (const auto &option : options)
+        oss << option << " ";
+    oss << ")";
+    this->commands.push_back(oss.str());
+}
+
+void cmake::Generator::target_link_options(const std::string &name, Visual visual, const std::vector<std::string> &options)
+{
+    std::ostringstream oss;
+    oss << "target_link_options(" << name << " " << visual_to_string(visual) << " ";
+    for (const auto &option : options)
+        oss << option << " ";
+    oss << ")";
+    this->commands.push_back(oss.str());
+}
+
 void cmake::Generator::set_target_output_name(const std::string &name, const std::string &output_name)
 {
     std::ostringstream oss;
