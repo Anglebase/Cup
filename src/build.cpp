@@ -75,6 +75,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.set_target_c_standard(item, this->config.build.stdc);
             gen.set_target_cxx_standard(item, this->config.build.stdcxx);
             gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
+            gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
+            gen.target_link_options(item, cmake::Visual::Private, this->config.build.options.link);
             std::vector<fs::path> libs_dir;
             std::vector<std::string> libs;
             for (const auto &[name, dir] : this->config.link)
@@ -104,6 +106,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         gen.set_target_c_standard(item, this->config.build.stdc);
         gen.set_target_cxx_standard(item, this->config.build.stdcxx);
         gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
+        gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
+        gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : this->config.link)
@@ -145,6 +149,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         gen.set_target_c_standard(item, this->config.build.stdc);
         gen.set_target_cxx_standard(item, this->config.build.stdcxx);
         gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
+        gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
+        gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : this->config.link)
