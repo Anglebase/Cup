@@ -309,14 +309,14 @@ void Build::generate_build(std::ofstream &ofs)
         generator.add_defines({"NDEBUG", "_NDEBUG"});
     generator.if_("MSVC");
     if (this->info.type == BuildType::Debug)
-        generator.add_complie_options({"/W4", "/Zi"});
+        generator.add_complie_options({"/Zi"});
     else
-        generator.add_complie_options({"/W3", "/O2"});
+        generator.add_complie_options({"/O2"});
     generator.else_();
     if (this->info.type == BuildType::Debug)
-        generator.add_complie_options({"-Wall", "-Wextra", "-Werror", "-g"});
+        generator.add_complie_options({"-g"});
     else
-        generator.add_complie_options({"-Wall", "-Wextra", "-Werror", "-O2"});
+        generator.add_complie_options({"-O2"});
     generator.endif_();
     if (!this->config.build.define.empty())
         generator.add_defines(this->config.build.define);
