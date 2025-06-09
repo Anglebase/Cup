@@ -86,6 +86,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                 gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
             if (!this->config.build.options.link.empty())
                 gen.target_link_options(item, cmake::Visual::Private, this->config.build.options.link);
+            if (!this->config.build.define.empty())
+                gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.define);
             std::vector<fs::path> libs_dir;
             std::vector<std::string> libs;
             for (const auto &[name, dir] : this->config.link)
@@ -120,6 +122,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
         if (!this->config.build.options.link.empty())
             gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
+        if (!this->config.build.define.empty())
+            gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.define);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : this->config.link)
@@ -166,6 +170,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
         if (!this->config.build.options.link.empty())
             gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
+        if (!this->config.build.define.empty())
+            gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.define);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : this->config.link)
@@ -247,6 +253,8 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
                 gen.target_link_options(item, cmake::Visual::Private, config.config->build.options.link);
             if (!root_cup.define.empty())
                 gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.define);
+            if (!config.config->build.define.empty())
+                gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.define);
             std::vector<fs::path> libs_dir;
             std::vector<std::string> libs;
             for (const auto &[name, dir] : config.config->link)
@@ -283,6 +291,8 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
             gen.target_link_options(item, cmake::Visual::Public, config.config->build.options.link);
         if (!root_cup.define.empty())
             gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.define);
+        if (!config.config->build.define.empty())
+            gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.define);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : config.config->link)
@@ -318,6 +328,8 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
             gen.target_link_options(item, cmake::Visual::Public, config.config->build.options.link);
         if (!root_cup.define.empty())
             gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.define);
+        if (!config.config->build.define.empty())
+            gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.define);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : config.config->link)
@@ -365,8 +377,6 @@ void Build::generate_build(std::ofstream &ofs)
     else
         generator.add_complie_options({"-O2"});
     generator.endif_();
-    if (!this->config.build.define.empty())
-        generator.add_defines(this->config.build.define);
     if (this->config.build.toolchain.cc.has_value())
         generator.set_c_compiler(this->config.build.toolchain.cc.value());
     if (this->config.build.toolchain.cxx.has_value())
