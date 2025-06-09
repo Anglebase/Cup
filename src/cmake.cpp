@@ -151,6 +151,16 @@ void cmake::Generator::add_link_options(const std::vector<std::string> &options)
     this->commands.push_back(oss.str());
 }
 
+void cmake::Generator::target_compile_definitions(const std::string &name, Visual visual, const std::vector<std::string> &defines)
+{
+    std::ostringstream oss;
+    oss << "target_compile_definitions(" << name << " " << visual_to_string(visual) << " ";
+    for (const auto &define : defines)
+        oss << "-D" << define << " ";
+    oss << ")";
+    this->commands.push_back(oss.str());
+}
+
 void cmake::Generator::target_link_libraries(const std::string &name, Visual visual, const std::vector<std::string> &libs)
 {
     std::ostringstream oss;

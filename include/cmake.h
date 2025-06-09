@@ -44,6 +44,7 @@ namespace cmake
         void link_libraries(const std::vector<std::string> &libs);
         void add_complie_options(const std::vector<std::string> &options);
         void add_link_options(const std::vector<std::string> &options);
+        void target_compile_definitions(const std::string &name, Visual visual, const std::vector<std::string> &defines);
         void target_link_libraries(const std::string &name, Visual visual, const std::vector<std::string> &libs);
         void target_link_directories(const std::string &name, Visual visual, const std::vector<fs::path> &dirs);
         void target_include_directories(const std::string &name, Visual visual, const std::vector<fs::path> &dirs);
