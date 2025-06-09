@@ -183,8 +183,7 @@ ConfigInfo::ConfigInfo(const Config &config)
             if (dir.is_string())
             {
                 fs::path dir_str = dir.value<std::string>().value();
-                if (!dir_str.empty())
-                    this->link.insert({key, dir_str.is_relative() ? config.path.parent_path() / dir_str : dir_str});
+                this->link.insert({key, dir_str.is_relative() ? config.path.parent_path() / dir_str : dir_str});
             }
             else
             {
