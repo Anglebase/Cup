@@ -126,6 +126,26 @@ ConfigInfo::ConfigInfo(const Config &config)
             if (path.empty())
                 throw std::runtime_error(config.path.string() + ": 'dependencies." + key + "' does not have the 'path'.");
             this->dependencies.insert({key, CupProject{.path = path}});
+            if (table.is_table())
+            {
+                auto sub_table = *table.as_table();
+                if (sub_table.contains("define") && sub_table.at("define").is_array())
+                {
+                    auto defines = *sub_table.at("define").as_array();
+                    for (auto &&define : defines)
+                    {
+                        if (define.is_string())
+                        {
+                            auto def = define.value<std::string>().value();
+                            this->dependencies.at(key).define.push_back(def);
+                        }
+                        else
+                        {
+                            throw std::runtime_error(config.path.string() + ": 'dependencies." + key + ".define' must be an array of strings.");
+                        }
+                    }
+                }
+            }
         }
     }
     if (config.table_.contains("link") && config.table_.at("link").is_table())
