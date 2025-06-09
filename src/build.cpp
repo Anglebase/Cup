@@ -22,10 +22,10 @@ BuildInfo::BuildInfo(const fs::path &project_dir, const SysArgs &args)
                      ? BuildType::Release
                      : BuildType::Debug;
     this->build_dir = args.hasConfig("build") && args.getConfigs().at("build").size() > 0
-                          ? args.getConfigs().at("build").at(0)
+                          ? fs::path(args.getConfigs().at("build").at(0))
                           : this->project_dir / "build";
     this->target_dir = args.hasConfig("target") && args.getConfigs().at("target").size() > 0
-                           ? args.getConfigs().at("target").at(0)
+                           ? fs::path(args.getConfigs().at("target").at(0))
                            : this->project_dir / "target";
     this->build_dir = this->build_dir.lexically_normal();
     this->target_dir = this->target_dir.lexically_normal();
@@ -92,7 +92,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             }
             for (const auto &[name, cup] : this->config.dependencies)
             {
-                MD5 lhash(cup.path.is_relative() ? (this->info.project_dir / cup.path).string() : cup.path);
+                MD5 lhash(cup.path.is_relative() ? this->info.project_dir / cup.path : cup.path);
                 const auto lib_name = name + "_" + lhash.toStr();
                 libs.push_back(lib_name);
             }
@@ -123,7 +123,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         }
         for (const auto &[name, cup] : this->config.dependencies)
         {
-            MD5 lhash(cup.path.is_relative() ? (this->info.project_dir / cup.path).string() : cup.path);
+            MD5 lhash(cup.path.is_relative() ? this->info.project_dir / cup.path : cup.path);
             const auto lib_name = name + "_" + lhash.toStr();
             libs.push_back(lib_name);
         }
@@ -166,7 +166,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         }
         for (const auto &[name, cup] : this->config.dependencies)
         {
-            MD5 lhash(cup.path.is_relative() ? (this->info.project_dir / cup.path).string() : cup.path);
+            MD5 lhash(cup.path.is_relative() ? this->info.project_dir / cup.path : cup.path);
             const auto lib_name = name + "_" + lhash.toStr();
             libs.push_back(lib_name);
         }
@@ -243,7 +243,7 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
             }
             for (const auto &[name, cup] : config.config->dependencies)
             {
-                MD5 lhash(cup.path.is_relative() ? (project_dir / cup.path).string() : cup.path);
+                MD5 lhash(cup.path.is_relative() ? project_dir / cup.path : cup.path);
                 const auto lib_name = name + "_" + lhash.toStr();
                 libs.push_back(lib_name);
             }
@@ -275,7 +275,7 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
         }
         for (const auto &[name, cup] : config.config->dependencies)
         {
-            MD5 lhash(cup.path.is_relative() ? (project_dir / cup.path).string() : cup.path);
+            MD5 lhash(cup.path.is_relative() ? project_dir / cup.path : cup.path);
             const auto lib_name = name + "_" + lhash.toStr();
             libs.push_back(lib_name);
         }
@@ -306,7 +306,7 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
         }
         for (const auto &[name, cup] : config.config->dependencies)
         {
-            MD5 lhash(cup.path.is_relative() ? (project_dir / cup.path).string() : cup.path);
+            MD5 lhash(cup.path.is_relative() ? project_dir / cup.path : cup.path);
             const auto lib_name = name + "_" + lhash.toStr();
             libs.push_back(lib_name);
         }

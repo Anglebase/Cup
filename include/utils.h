@@ -60,6 +60,6 @@ inline fs::path replace_finally_name(const fs::path &path, const std::string &fr
         return path;
     auto result = fs::path();
     for (auto it = path.begin(); it != path.end(); ++it)
-        result /= std::distance(path.begin(), it) == at ? to : *it;
+        result /= std::distance(path.begin(), it) == at ? fs::path(to) : *it;
     return result.lexically_normal();
 }
