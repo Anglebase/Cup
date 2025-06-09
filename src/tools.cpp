@@ -216,6 +216,63 @@ void load_all_includes(std::unordered_set<std::string> &includes, const fs::path
     }
 }
 
+std::string compare(std::string a, std::string b)
+{
+    std::vector<std::string> a_parts = split(a, ".");
+    std::vector<std::string> b_parts = split(b, ".");
+    if (a_parts.size() != 3)
+        throw std::runtime_error("Invalid version number: " + a);
+    if (b_parts.size() != 3)
+        throw std::runtime_error("Invalid version number: " + b);
+    std::vector<int> a_nums;
+    try
+    {
+        a_nums = {std::stoi(a_parts[0]), std::stoi(a_parts[1]), std::stoi(a_parts[2])};
+    }
+    catch (...)
+    {
+        throw std::runtime_error("Invalid version number: " + a);
+    }
+    std::vector<int> b_nums;
+    try
+    {
+        b_nums = {std::stoi(b_parts[0]), std::stoi(b_parts[1]), std::stoi(b_parts[2])};
+    }
+    catch (...)
+    {
+        throw std::runtime_error("Invalid version number: " + b);
+    }
+    if (a_nums[0] != b_nums[0])
+        throw std::runtime_error("Simultaneously having incompatible versions is not allowed!");
+    if (a_nums[1] != b_nums[1])
+        return a_nums[1] < b_nums[1] ? b : a;
+    if (a_nums[2] != b_nums[2])
+        return a_nums[2] < b_nums[2] ? b : a;
+    return a;
+}
+
+void load_all_dependecies(std::unordered_map<std::string, std::string> &dependencies, const fs::path &root)
+{
+    Config config(root);
+    if (dependencies.find(config.config->name) == dependencies.end())
+        dependencies[config.config->name] = config.config->version;
+    else
+    {
+        auto result = compare(dependencies[config.config->name], config.config->version);
+        if (result == config.config->version)
+            return;
+        dependencies[config.config->name] = result;
+    }
+    for (const auto &[name, path] : config.config->dependencies)
+    {
+        auto dir = path.path;
+        if (dir.is_relative())
+            dir = root / dir;
+        dir.lexically_normal();
+        load_all_dependecies(dependencies, dir);
+    }
+}
+
 int ListCmd::run()
 {
     auto project_dir = this->at.value_or(fs::current_path());
@@ -229,6 +286,14 @@ int ListCmd::run()
         load_all_includes(includes, project_dir);
         for (const auto &include : includes)
             std::cout << "    " << include << std::endl;
+    }
+    else if (this->option == "deps")
+    {
+        LOG_INFO("Dependencies:");
+        std::unordered_map<std::string, std::string> dependencies;
+        load_all_dependecies(dependencies, project_dir);
+        for (const auto &[name, version] : dependencies)
+            std::cout << "    " << name << " v" << version << std::endl;
     }
     return 0;
 }
