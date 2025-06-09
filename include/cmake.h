@@ -30,6 +30,10 @@ namespace cmake
     public:
         Generator(const std::string &version = "3.10");
         void project(const std::string &name);
+        void set_c_compiler(const std::string &compiler);
+        void set_cxx_compiler(const std::string &compiler);
+        void set_asm_compiler(const std::string &compiler);
+        void set_linker(const std::string &linker);
         void set_c_standard(int standard);
         void set_cxx_standard(int standard);
         void set_target_c_standard(const std::string &name, int standard);

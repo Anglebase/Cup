@@ -29,6 +29,26 @@ void cmake::Generator::project(const std::string &name)
     this->commands.push_back("project(" + name + ")");
 }
 
+void cmake::Generator::set_c_compiler(const std::string &compiler)
+{
+    this->commands.push_back("set(CMAKE_C_COMPILER " + compiler + ")");
+}
+
+void cmake::Generator::set_cxx_compiler(const std::string &compiler)
+{
+    this->commands.push_back("set(CMAKE_CXX_COMPILER " + compiler + ")");
+}
+
+void cmake::Generator::set_asm_compiler(const std::string &compiler)
+{
+    this->commands.push_back("set(CMAKE_ASM_COMPILER " + compiler + ")");
+}
+
+void cmake::Generator::set_linker(const std::string &linker)
+{
+    this->commands.push_back("set(CMAKE_LINKER " + linker + ")");
+}
+
 void cmake::Generator::set_c_standard(int standard)
 {
     static std::unordered_set<int> valid_standards = {89, 95, 99, 11, 17, 23};
