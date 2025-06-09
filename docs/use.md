@@ -48,3 +48,9 @@ Cup 的基本命令格式为 `cup <command> [args...]`
     + `--dir <path>` 指定项目所在的路径
     + `--build <path>` 指定构建目录的生成路径
     + `--args <args...>` 指定运行可执行文件时的参数
+
++ `cup list <option> [options...]`
+列出指定Cup项目下的下列属性之一：
+    + `include`: 项目所引用到的所有头文件目录(均以绝对路径列出)
+`options`可以包含以下选项：
+    + `--dir <path>` 指定项目所在的路径
