@@ -342,6 +342,14 @@ void Build::generate_build(std::ofstream &ofs)
     generator.endif_();
     if (!this->config.build.define.empty())
         generator.add_defines(this->config.build.define);
+    if (this->config.build.toolchain.cc.has_value())
+        generator.set_c_compiler(this->config.build.toolchain.cc.value());
+    if (this->config.build.toolchain.cxx.has_value())
+        generator.set_cxx_compiler(this->config.build.toolchain.cxx.value());
+    if (this->config.build.toolchain.ld.has_value())
+        generator.set_linker(this->config.build.toolchain.ld.value());
+    if (this->config.build.toolchain.asm_.has_value())
+        generator.set_asm_compiler(this->config.build.toolchain.asm_.value());
     this->generate_cmake_root(generator);
     generator.write_to(ofs);
 }
