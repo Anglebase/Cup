@@ -133,6 +133,11 @@ struct ConfigInfo
             std::optional<std::string> asm_;
             std::optional<std::string> ld;
         } toolchain;
+        struct System
+        {
+            std::optional<std::string> name;
+            std::optional<std::string> processor;
+        } system;
     } build;
     std::unordered_map<std::string, fs::path> link;
     std::unordered_map<std::string, CupProject> dependencies;

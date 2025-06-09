@@ -129,6 +129,15 @@ ConfigInfo::ConfigInfo(const Config &config)
                 }
             }
         }
+        if (build_table.contains("system") && build_table.at("system").is_table())
+        {
+            auto name = config.need<std::string>("build.system.name", "", false);
+            if (!name.empty())
+                this->build.system.name = name;
+            auto processor = config.need<std::string>("build.system.processor", "", false);
+            if (!processor.empty())
+                this->build.system.processor = processor;
+        }
     }
     if (config.table_.contains("dependencies") && config.table_.at("dependencies").is_table())
     {
