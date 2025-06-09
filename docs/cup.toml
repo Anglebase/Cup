@@ -7,14 +7,20 @@ authors = ["xxx"]           #* 项目作者
 license = "MIT"             #* 项目许可证
 
 [build]
-target = "binary"                 #! 项目类型，可选值：binary, static, shared
-generator = "MinGW Makefiles"     # 指定CMake生成器
-stdc = "11"                       # 指定C标准
-stdcxx = "11"                     # 指定C++标准
-define = ["DEBUG"]                # 定义全局宏
-include = ["path/to/include"]     # 指定外部头文件搜索路径
-jobs = 0                          # 指定构建时的并行任务数，默认为1，若为0则表示使用CPU的核心数
+target = "binary"                     #! 项目类型，可选值：binary, static, shared
+generator = "MinGW Makefiles"         # 指定CMake生成器
+stdc = "11"                           # 指定C标准
+stdcxx = "11"                         # 指定C++标准
+define = ["DEBUG"]                    # 定义全局宏
+include = ["path/to/include"]         # 指定外部头文件搜索路径
+jobs = 0                              # 指定构建时的并行任务数，默认为1，若为0则表示使用CPU的核心数
 options = { compile = [], link = [] } # 指定编译选项和链接选项
+
+[build.toolchain]
+cc = ""  # 指定 C 编译器
+cxx = "" # 指定 C++ 编译器
+asm = "" # 指定汇编器
+ld = ""  # 指定链接器
 
 [link]
 name = "path/to/lib" # 外部链接库
