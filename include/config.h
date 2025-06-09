@@ -112,7 +112,7 @@ struct ConfigInfo
     std::string description;
     std::vector<std::string> authors;
     std::string license;
-    struct BuildInfo
+    struct Build
     {
         std::string target;
         std::string generator;
