@@ -378,6 +378,8 @@ void Build::generate_build(std::ofstream &ofs)
         generator.enable_language("ASM");
         generator.set_asm_compiler(this->config.build.toolchain.asm_.value());
     }
+    if (this->config.build.suffix.has_value())
+        generator.set_executable_suffix(this->config.build.suffix.value());
     this->generate_cmake_root(generator);
     generator.write_to(ofs);
 }
