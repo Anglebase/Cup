@@ -29,5 +29,5 @@ name = "path/to/lib" # 外部链接库
 # ...
 
 [dependencies]
-name = { path = "path/to/dependency" } # 依赖项
+name = { path = "path/to/dependency", define = ["UNICODE"] } # 依赖项的所在路径及特性宏
 # ...
