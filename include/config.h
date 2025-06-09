@@ -138,6 +138,7 @@ struct ConfigInfo
             std::optional<std::string> name;
             std::optional<std::string> processor;
         } system;
+        std::optional<std::string> suffix;
     } build;
     std::unordered_map<std::string, fs::path> link;
     std::unordered_map<std::string, CupProject> dependencies;

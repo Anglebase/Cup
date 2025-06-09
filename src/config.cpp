@@ -57,6 +57,9 @@ ConfigInfo::ConfigInfo(const Config &config)
         this->build.toolchain.asm_ = asm_;
     if (!ld.empty())
         this->build.toolchain.ld = ld;
+    auto suffix = config.need<std::string>("build.suffix", "", false);
+    if (!suffix.empty())
+        this->build.suffix = suffix;
 
     if (config.table_.contains("build") && config.table_.at("build").is_table())
     {
