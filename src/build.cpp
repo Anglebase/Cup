@@ -80,9 +80,12 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.set_target_output_directory(item, std::nullopt, replace_finally_name(main_file.parent_path(), "bin", "target"));
             gen.set_target_c_standard(item, this->config.build.stdc);
             gen.set_target_cxx_standard(item, this->config.build.stdcxx);
-            gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
-            gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
-            gen.target_link_options(item, cmake::Visual::Private, this->config.build.options.link);
+            if (!this->config.build.include.empty())
+                gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
+            if (!this->config.build.options.compile.empty())
+                gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
+            if (!this->config.build.options.link.empty())
+                gen.target_link_options(item, cmake::Visual::Private, this->config.build.options.link);
             std::vector<fs::path> libs_dir;
             std::vector<std::string> libs;
             for (const auto &[name, dir] : this->config.link)
@@ -111,9 +114,12 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
         gen.set_target_c_standard(item, this->config.build.stdc);
         gen.set_target_cxx_standard(item, this->config.build.stdcxx);
-        gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
-        gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
-        gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
+        if (!this->config.build.include.empty())
+            gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
+        if (!this->config.build.options.compile.empty())
+            gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
+        if (!this->config.build.options.link.empty())
+            gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : this->config.link)
@@ -154,9 +160,12 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
         gen.set_target_c_standard(item, this->config.build.stdc);
         gen.set_target_cxx_standard(item, this->config.build.stdcxx);
-        gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
-        gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
-        gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
+        if (!this->config.build.include.empty())
+            gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
+        if (!this->config.build.options.compile.empty())
+            gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
+        if (!this->config.build.options.link.empty())
+            gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : this->config.link)
@@ -230,10 +239,14 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
             gen.set_target_output_directory(item, std::nullopt, replace_finally_name(main_file.parent_path(), "bin", "target"));
             gen.set_target_c_standard(item, config.config->build.stdc);
             gen.set_target_cxx_standard(item, config.config->build.stdcxx);
-            gen.target_include_directories(item, cmake::Visual::Public, config.config->build.include);
-            gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
-            gen.target_link_options(item, cmake::Visual::Private, this->config.build.options.link);
-            gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.define);
+            if (!this->config.build.include.empty())
+                gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
+            if (!this->config.build.options.compile.empty())
+                gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
+            if (!this->config.build.options.link.empty())
+                gen.target_link_options(item, cmake::Visual::Private, this->config.build.options.link);
+            if (!root_cup.define.empty())
+                gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.define);
             std::vector<fs::path> libs_dir;
             std::vector<std::string> libs;
             for (const auto &[name, dir] : config.config->link)
@@ -262,10 +275,14 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
         gen.target_include_directories(item, cmake::Visual::Public, {(project_dir / "include").lexically_normal()});
         gen.set_target_c_standard(item, config.config->build.stdc);
         gen.set_target_cxx_standard(item, config.config->build.stdcxx);
-        gen.target_include_directories(item, cmake::Visual::Public, config.config->build.include);
-        gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
-        gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
-        gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.define);
+        if (!this->config.build.include.empty())
+            gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
+        if (!this->config.build.options.compile.empty())
+            gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
+        if (!this->config.build.options.link.empty())
+            gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
+        if (!root_cup.define.empty())
+            gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.define);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : config.config->link)
@@ -293,10 +310,14 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
         gen.target_include_directories(item, cmake::Visual::Public, {(project_dir / "include").lexically_normal()});
         gen.set_target_c_standard(item, config.config->build.stdc);
         gen.set_target_cxx_standard(item, config.config->build.stdcxx);
-        gen.target_include_directories(item, cmake::Visual::Public, config.config->build.include);
-        gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
-        gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
-        gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.define);
+        if (!this->config.build.include.empty())
+            gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
+        if (!this->config.build.options.compile.empty())
+            gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
+        if (!this->config.build.options.link.empty())
+            gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
+        if (!root_cup.define.empty())
+            gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.define);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : config.config->link)
