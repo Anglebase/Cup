@@ -30,6 +30,7 @@ namespace cmake
     public:
         Generator(const std::string &version = "3.10");
         void project(const std::string &name);
+        void enable_language(const std::string &language);
         void set_system_name(const std::string &name);
         void set_system_processor(const std::string &processor);
         void set_c_compiler(const std::string &compiler);

@@ -29,6 +29,11 @@ void cmake::Generator::project(const std::string &name)
     this->commands.push_back("project(" + name + ")");
 }
 
+void cmake::Generator::enable_language(const std::string &language)
+{
+    this->commands.push_back("enable_language(" + language + ")");
+}
+
 void cmake::Generator::set_system_name(const std::string &name)
 {
     this->commands.push_back("set(CMAKE_SYSTEM_NAME " + name + ")");
