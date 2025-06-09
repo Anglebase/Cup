@@ -54,6 +54,13 @@ void cmake::Generator::set_cxx_compiler(const std::string &compiler)
     this->commands.push_back("set(CMAKE_CXX_COMPILER " + compiler + ")");
 }
 
+void cmake::Generator::set_executable_suffix(const std::string &suffix)
+{
+    this->commands.push_back("set(CMAKE_EXECUTABLE_SUFFIX_ASM " + suffix + ")");
+    this->commands.push_back("set(CMAKE_EXECUTABLE_SUFFIX_C " + suffix + ")");
+    this->commands.push_back("set(CMAKE_EXECUTABLE_SUFFIX_CXX " + suffix + ")");
+}
+
 void cmake::Generator::set_asm_compiler(const std::string &compiler)
 {
     this->commands.push_back("set(CMAKE_ASM_COMPILER " + compiler + ")");

@@ -35,6 +35,7 @@ namespace cmake
         void set_system_processor(const std::string &processor);
         void set_c_compiler(const std::string &compiler);
         void set_cxx_compiler(const std::string &compiler);
+        void set_executable_suffix(const std::string &suffix);
         void set_asm_compiler(const std::string &compiler);
         void set_linker(const std::string &linker);
         void set_c_standard(int standard);
