@@ -52,5 +52,6 @@ Cup 的基本命令格式为 `cup <command> [args...]`
 + `cup list <option> [options...]`
 列出指定Cup项目下的下列属性之一：
     + `include`: 项目所引用到的所有头文件目录(均以绝对路径列出)
+    + `deps`: 项目所依赖的其它项目列表
 `options`可以包含以下选项：
     + `--dir <path>` 指定项目所在的路径
