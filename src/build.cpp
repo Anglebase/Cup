@@ -322,6 +322,10 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
 void Build::generate_build(std::ofstream &ofs)
 {
     cmake::Generator generator;
+    if (this->config.build.system.name.has_value())
+        generator.set_system_name(this->config.build.system.name.value());
+    if (this->config.build.system.processor.has_value())
+        generator.set_system_processor(this->config.build.system.processor.value());
     generator.project(this->config.name);
     generator.set_execute_output_path(this->info.target_dir);
     generator.set_library_output_path(this->info.build_dir / "lib");
