@@ -120,6 +120,11 @@ struct ConfigInfo
         std::vector<std::string> define;
         std::vector<fs::path> include;
         unsigned int jobs;
+        struct Options
+        {
+            std::vector<std::string> compile;
+            std::vector<std::string> link;
+        } options;
     } build;
     std::unordered_map<std::string, fs::path> link;
     std::unordered_map<std::string, CupProject> dependencies;

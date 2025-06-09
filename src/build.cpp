@@ -81,6 +81,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.set_target_c_standard(item, this->config.build.stdc);
             gen.set_target_cxx_standard(item, this->config.build.stdcxx);
             gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
+            gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
+            gen.target_link_options(item, cmake::Visual::Private, this->config.build.options.link);
             std::vector<fs::path> libs_dir;
             std::vector<std::string> libs;
             for (const auto &[name, dir] : this->config.link)
@@ -110,6 +112,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         gen.set_target_c_standard(item, this->config.build.stdc);
         gen.set_target_cxx_standard(item, this->config.build.stdcxx);
         gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
+        gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
+        gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : this->config.link)
@@ -151,6 +155,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         gen.set_target_c_standard(item, this->config.build.stdc);
         gen.set_target_cxx_standard(item, this->config.build.stdcxx);
         gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
+        gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
+        gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : this->config.link)
@@ -224,6 +230,8 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
             gen.set_target_c_standard(item, config.config->build.stdc);
             gen.set_target_cxx_standard(item, config.config->build.stdcxx);
             gen.target_include_directories(item, cmake::Visual::Public, config.config->build.include);
+            gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
+            gen.target_link_options(item, cmake::Visual::Private, this->config.build.options.link);
             std::vector<fs::path> libs_dir;
             std::vector<std::string> libs;
             for (const auto &[name, dir] : config.config->link)
@@ -253,6 +261,8 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
         gen.set_target_c_standard(item, config.config->build.stdc);
         gen.set_target_cxx_standard(item, config.config->build.stdcxx);
         gen.target_include_directories(item, cmake::Visual::Public, config.config->build.include);
+        gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
+        gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : config.config->link)
@@ -281,6 +291,8 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
         gen.set_target_c_standard(item, config.config->build.stdc);
         gen.set_target_cxx_standard(item, config.config->build.stdcxx);
         gen.target_include_directories(item, cmake::Visual::Public, config.config->build.include);
+        gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
+        gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : config.config->link)
@@ -315,14 +327,14 @@ void Build::generate_build(std::ofstream &ofs)
         generator.add_defines({"NDEBUG", "_NDEBUG"});
     generator.if_("MSVC");
     if (this->info.type == BuildType::Debug)
-        generator.add_complie_options({"/W4", "/Zi"});
+        generator.add_complie_options({"/Zi"});
     else
-        generator.add_complie_options({"/W3", "/O2"});
+        generator.add_complie_options({"/O2"});
     generator.else_();
     if (this->info.type == BuildType::Debug)
-        generator.add_complie_options({"-Wall", "-Wextra", "-Werror", "-g"});
+        generator.add_complie_options({"-g"});
     else
-        generator.add_complie_options({"-Wall", "-Wextra", "-Werror", "-O2"});
+        generator.add_complie_options({"-O2"});
     generator.endif_();
     if (!this->config.build.define.empty())
         generator.add_defines(this->config.build.define);

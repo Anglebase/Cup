@@ -186,6 +186,53 @@ int NewCmd::run()
     return 0;
 }
 
+ListCmd::ListCmd(const SysArgs &args)
+{
+    if (args.hasConfig("dir") && !args.getConfigs().at("dir").empty())
+        this->at = args.getConfigs().at("dir")[0];
+    if (args.getArguments().size() <= 1)
+        throw std::runtime_error("No option provided.");
+    this->option = args.getArguments()[1];
+}
+
+void load_all_includes(std::unordered_set<std::string> &includes, const fs::path &root)
+{
+    includes.insert(root.lexically_normal().string());
+    Config config(root);
+    for (const auto &include : config.config->build.include)
+    {
+        if (include.is_relative())
+            includes.insert((root / include).lexically_normal().string());
+        else
+            includes.insert(include.lexically_normal().string());
+    }
+    for (const auto &[name, path] : config.config->dependencies)
+    {
+        auto dir = path.path;
+        if (dir.is_relative())
+            dir = root / dir;
+        dir.lexically_normal();
+        load_all_includes(includes, dir);
+    }
+}
+
+int ListCmd::run()
+{
+    auto project_dir = this->at.value_or(fs::current_path());
+    if (project_dir.is_relative())
+        project_dir = fs::current_path() / project_dir;
+    project_dir = project_dir.lexically_normal();
+    if (this->option == "include")
+    {
+        LOG_INFO("Include directories:");
+        std::unordered_set<std::string> includes;
+        load_all_includes(includes, project_dir);
+        for (const auto &include : includes)
+            std::cout << "    " << include << std::endl;
+    }
+    return 0;
+}
+
 int CleanCmd::run()
 {
     if (this->at.has_value())
