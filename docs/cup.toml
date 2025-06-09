@@ -1,33 +1,164 @@
 # 带有 '*' 号的是Cup会解析但尚无作用的参数
 # 带有 '!' 号的是Cup配置文件必须具有的参数
-name = "xxx"                #! 项目名称
-version = "0.1.0"           #! 项目版本
+name = "xxx" #! 项目名称
+# 此配置项必须存在
+# 此配置项只作为项目构建时的唯一标识符，同一个项目及其所有依赖项中都不应重复出现相同名称
+version = "0.1.0" #! 项目版本
+# 此配置项必须存在
+# 版本号格式为 X.Y.Z，X、Y、Z 为整数
+# 此项目前仅作为版本标记使用，Cup不会处理版本号的任何约束
 description = "xxx project" #* 项目描述
-authors = ["xxx"]           #* 项目作者
-license = "MIT"             #* 项目许可证
+# 此配置项是可选的
+# 此处可填写项目的简要描述，并无其他效果
+authors = ["xxx"] #* 项目作者
+# 此配置项是可选的
+# 此处可填写项目的作者列表，并无其他效果
+license = "MIT" #* 项目许可证
+# 此配置项是可选的
+# 项目使用的许可证，并无其他效果
 
 [build]
-target = "binary"                                      #! 项目类型，可选值：binary, static, shared
-generator = "MinGW Makefiles"                          # 指定CMake生成器
-stdc = "11"                                            # 指定C标准
-stdcxx = "11"                                          # 指定C++标准
-define = ["DEBUG"]                                     # 定义全局宏
-include = ["path/to/include"]                          # 指定外部头文件搜索路径
-jobs = 0                                               # 指定构建时的并行任务数，默认为1，若为0则表示使用CPU的核心数
+target = "binary" #! 项目类型
+# 此配置项必须存在
+# 该配置项的可选值为：binary, static, shared
+# binary：生成可执行文件
+# static：生成静态库
+# shared：生成动态库
+generator = "MinGW Makefiles" # 指定CMake生成器
+# 此配置项是可选的
+# 若未指定，则由CMake自动确认；否则使用指定的CMake生成器
+# 可选值：
+#   Visual Studio 17 2022        = Generates Visual Studio 2022 project files.
+#                                  Use -A option to specify architecture.
+#   Visual Studio 16 2019        = Generates Visual Studio 2019 project files.
+#                                  Use -A option to specify architecture.
+#   Visual Studio 15 2017 [arch] = Generates Visual Studio 2017 project files.
+#                                  Optional [arch] can be "Win64" or "ARM".
+#   Visual Studio 14 2015 [arch] = Generates Visual Studio 2015 project files.
+#                                  Optional [arch] can be "Win64" or "ARM".
+#   Borland Makefiles            = Generates Borland makefiles.
+#   NMake Makefiles              = Generates NMake makefiles.
+#   NMake Makefiles JOM          = Generates JOM makefiles.
+#   MSYS Makefiles               = Generates MSYS makefiles.
+#   MinGW Makefiles              = Generates a make file for use with
+#                                  mingw32-make.
+#   Green Hills MULTI            = Generates Green Hills MULTI files
+#                                  (experimental, work-in-progress).
+#   Unix Makefiles               = Generates standard UNIX makefiles.
+#   Ninja                        = Generates build.ninja files.
+#   Ninja Multi-Config           = Generates build-<Config>.ninja files.
+#   Watcom WMake                 = Generates Watcom WMake makefiles.
+#   CodeBlocks - MinGW Makefiles = Generates CodeBlocks project files
+#                                  (deprecated).
+#   CodeBlocks - NMake Makefiles = Generates CodeBlocks project files
+#                                  (deprecated).
+#   CodeBlocks - NMake Makefiles JOM
+#                                = Generates CodeBlocks project files
+#                                  (deprecated).
+#   CodeBlocks - Ninja           = Generates CodeBlocks project files
+#                                  (deprecated).
+#   CodeBlocks - Unix Makefiles  = Generates CodeBlocks project files
+#                                  (deprecated).
+#   CodeLite - MinGW Makefiles   = Generates CodeLite project files
+#                                  (deprecated).
+#   CodeLite - NMake Makefiles   = Generates CodeLite project files
+#                                  (deprecated).
+#   CodeLite - Ninja             = Generates CodeLite project files
+#                                  (deprecated).
+#   CodeLite - Unix Makefiles    = Generates CodeLite project files
+#                                  (deprecated).
+#   Eclipse CDT4 - NMake Makefiles
+#                                = Generates Eclipse CDT 4.0 project files
+#                                  (deprecated).
+#   Eclipse CDT4 - MinGW Makefiles
+#                                = Generates Eclipse CDT 4.0 project files
+#                                  (deprecated).
+#   Eclipse CDT4 - Ninja         = Generates Eclipse CDT 4.0 project files
+#                                  (deprecated).
+#   Eclipse CDT4 - Unix Makefiles= Generates Eclipse CDT 4.0 project files
+#                                  (deprecated).
+#   Kate - MinGW Makefiles       = Generates Kate project files (deprecated).
+#   Kate - NMake Makefiles       = Generates Kate project files (deprecated).
+#   Kate - Ninja                 = Generates Kate project files (deprecated).
+#   Kate - Ninja Multi-Config    = Generates Kate project files (deprecated).
+#   Kate - Unix Makefiles        = Generates Kate project files (deprecated).
+#   Sublime Text 2 - MinGW Makefiles
+#                                = Generates Sublime Text 2 project files
+#                                  (deprecated).
+#   Sublime Text 2 - NMake Makefiles
+#                                = Generates Sublime Text 2 project files
+#                                  (deprecated).
+#   Sublime Text 2 - Ninja       = Generates Sublime Text 2 project files
+#                                  (deprecated).
+#   Sublime Text 2 - Unix Makefiles
+#                                = Generates Sublime Text 2 project files
+#                                  (deprecated).
+stdc = "11" # 指定C标准
+# 此配置项是可选的
+# 若未指定此项，则使用默认值17
+# 可选值(任意有效的C标准)：
+#   89, 95, 99, 11, 17, 23
+stdcxx = "11" # 指定C++标准
+# 此配置项是可选的
+# 若未指定此项，则使用默认值20
+# 可选值(任意有效的C++标准)：
+#   98, 03, 11, 14, 17, 20, 23, 26
+define = ["DEBUG"] # 定义全局宏
+# 此配置项是可选的
+# 此项指定全局的宏定义，此宏只针对其所在项目定义，不会在项目间传递
+# 宏定义格式为：
+# "<宏名>" 或 "<宏名>=<替换序列>"
+# 例如：
+#   define = ["UNICODE", "PI=3.1415926"]
+#   定义了两个宏：UNICODE 和 PI
+#   其中，UNICODE 无值，PI 值为 "3.1415926"
+include = ["path/to/include"] # 指定外部头文件搜索路径
+# 此配置项是可选的
+# 此项指定外部头文件依赖搜索路径，通常适用于依赖外部的仅头文件库
+# 如果路径为相对路径，则视为相对于此项目的根目录
+jobs = 0 # 指定构建时的并行任务数
+# 此配置项是可选的
+# 默认情况下，该值为 1
+# 如果该值为 0，则使用计算机所拥有的CPU核心数
+# 否则，使用该值作为并行任务数
 options = { compile = ["-Wall"], link = ["-lstdc++"] } # 指定编译选项和链接选项
-system = { name = "Generic", processor = "arm" }       # 指定交叉编译设置
-suffix = ".elf"                                        # 指定输出文件后缀名
+# 此配置项是可选的
+# 该配置项指定编译选项和链接选项，它们通常是编译器或链接接器的参数
+system = { name = "Generic", processor = "arm" } # 指定交叉编译设置
+# 此配置项是可选的
+# 此项通常用于嵌入式项目的交叉编译配置
+# name 指定交叉编译器名称，processor 指定处理器架构
+suffix = ".elf" # 指定输出文件后缀名
+# 此配置项是可选的
+# 此项通常用于嵌入式项目的输出文件后缀名指定
 
 [build.toolchain]
-cc = ""  # 指定 C 编译器
-cxx = "" # 指定 C++ 编译器
-asm = "" # 指定汇编器
-ld = ""  # 指定链接器
+# 此表是可选的
+# 指定项目构建工具链
+# 此项通常用于指定嵌入式项目构建工具链
+cc = "arm-none-eabi-gcc"  # 指定 C 编译器
+cxx = "arm-none-eabi-g++" # 指定 C++ 编译器
+asm = "arm-none-eabi-gcc" # 指定汇编器
+ld = "arm-none-eabi-g++"  # 指定链接器
 
 [link]
+# 此表是可选的
+# 此表用于列出外部链接库依赖项
+# 格式为:
+#    <name> = <path>
+# 其中，<name> 为链接库名称，<path> 为链接库所在路径
+# 如果路径为空字符串，则表示链接库为系统库
 name = "path/to/lib" # 外部链接库
 # ...
 
 [dependencies]
+# 此表是可选的
+# 此表用于列出项目依赖项
+# 格式为:
+#    <name> = { path = "<path>", define = ["<macro>"] }
+# 其中：
+#   <name> 为依赖项名称
+#   <path> 为依赖项所在路径，该依赖项必须是另一个 Cup 项目，并且此项必须存在
+#   <macro> 为依赖项的特性宏，此宏会在构建依赖项时进行可控的条件编译
 name = { path = "path/to/dependency", define = ["UNICODE"] } # 依赖项的所在路径及特性宏
 # ...
