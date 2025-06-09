@@ -44,6 +44,20 @@ ConfigInfo::ConfigInfo(const Config &config)
     this->build.stdcxx = config.need<int>("build.stdcxx", 20, false);
     this->build.generator = config.need<std::string>("build.generator", "", false);
     this->build.jobs = config.need<unsigned int>("build.jobs", 1, false);
+
+    auto cc = config.need<std::string>("build.toolchain.cc", "", false);
+    auto cxx = config.need<std::string>("build.toolchain.cxx", "", false);
+    auto asm_ = config.need<std::string>("build.toolchain.asm", "", false);
+    auto ld = config.need<std::string>("build.toolchain.ld", "", false);
+    if (!cc.empty())
+        this->build.toolchain.cc = cc;
+    if (!cxx.empty())
+        this->build.toolchain.cxx = cxx;
+    if (!asm_.empty())
+        this->build.toolchain.asm_ = asm_;
+    if (!ld.empty())
+        this->build.toolchain.ld = ld;
+
     if (config.table_.contains("build") && config.table_.at("build").is_table())
     {
         auto build_table = *config.table_.at("build").as_table();

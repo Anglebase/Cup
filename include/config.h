@@ -126,6 +126,13 @@ struct ConfigInfo
             std::vector<std::string> compile;
             std::vector<std::string> link;
         } options;
+        struct ToolChain
+        {
+            std::optional<std::string> cc;
+            std::optional<std::string> cxx;
+            std::optional<std::string> asm_;
+            std::optional<std::string> ld;
+        } toolchain;
     } build;
     std::unordered_map<std::string, fs::path> link;
     std::unordered_map<std::string, CupProject> dependencies;
