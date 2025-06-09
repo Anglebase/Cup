@@ -5,4 +5,5 @@ license = "GPL-2.0"
 [build]
 stdcxx = 20
 target = "binary"
+include = ["./package/header-only"]
 jobs = 0
