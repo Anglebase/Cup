@@ -28,6 +28,7 @@ class Build
 {
     BuildInfo info;
     ConfigInfo config;
+    std::unordered_set<std::string> build_depends;
 
 public:
     Build(const BuildInfo &info, const ConfigInfo &config);

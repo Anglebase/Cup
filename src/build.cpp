@@ -51,7 +51,13 @@ void Build::generate_cmake_root(cmake::Generator &gen)
     const char *STATIC = "static";
     const char *SHARED = "shared";
     for (const auto &[name, cup] : this->config.dependencies)
-        this->generate_cmake_sub(cup.path, gen);
+    {
+        if (this->build_depends.find(name) == this->build_depends.end())
+        {
+            this->generate_cmake_sub(cup.path, gen);
+            this->build_depends.insert(name);
+        }
+    }
     auto src_files = fs::exists(this->info.project_dir / "src")
                          ? find_all_source(this->info.project_dir / "src")
                          : std::vector<fs::path>{};
@@ -188,7 +194,13 @@ void Build::generate_cmake_sub(const fs::path &path, cmake::Generator &gen)
     auto project_dir = path.is_relative() ? this->info.project_dir / path : path;
     Config config(project_dir);
     for (const auto &[name, cup] : config.config->dependencies)
-        this->generate_cmake_sub(cup.path, gen);
+    {
+        if (this->build_depends.find(name) == this->build_depends.end())
+        {
+            this->generate_cmake_sub(cup.path, gen);
+            this->build_depends.insert(name);
+        }
+    }
     auto src_files = fs::exists(project_dir / "src")
                          ? find_all_source(project_dir / "src")
                          : std::vector<fs::path>{};
