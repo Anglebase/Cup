@@ -53,6 +53,11 @@ int main(int argc, char **argv)
              RunCmd runCmd(args);
              return runCmd.exec();
          }},
+        {"list", [&]()
+         {
+             ListCmd listCmd(args);
+             return listCmd.run();
+         }},
     };
     if (table.find(cmd) == table.end())
     {

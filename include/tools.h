@@ -47,3 +47,13 @@ public:
     RunCmd(const SysArgs &args);
     int exec();
 };
+
+class ListCmd
+{
+    std::optional<fs::path> at;
+    std::string option;
+
+public:
+    ListCmd(const SysArgs &args);
+    int run();
+};
