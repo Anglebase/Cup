@@ -29,6 +29,16 @@ void cmake::Generator::project(const std::string &name)
     this->commands.push_back("project(" + name + ")");
 }
 
+void cmake::Generator::set_system_name(const std::string &name)
+{
+    this->commands.push_back("set(CMAKE_SYSTEM_NAME " + name + ")");
+}
+
+void cmake::Generator::set_system_processor(const std::string &processor)
+{
+    this->commands.push_back("set(CMAKE_SYSTEM_PROCESSOR " + processor + ")");
+}
+
 void cmake::Generator::set_c_compiler(const std::string &compiler)
 {
     this->commands.push_back("set(CMAKE_C_COMPILER " + compiler + ")");
