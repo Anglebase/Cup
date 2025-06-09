@@ -79,6 +79,42 @@ ConfigInfo::ConfigInfo(const Config &config)
                 }
             }
         }
+        if (build_table.contains("options") && build_table.at("options").is_table())
+        {
+            auto options_table = *build_table.at("options").as_table();
+            if (options_table.contains("compile") && options_table.at("compile").is_array())
+            {
+                auto compile_options = *options_table.at("compile").as_array();
+                for (auto &&option : compile_options)
+                {
+                    if (option.is_string())
+                    {
+                        auto opt = option.value<std::string>().value();
+                        this->build.options.compile.push_back(opt);
+                    }
+                    else
+                    {
+                        throw std::runtime_error(config.path.string() + ": build.options.compile must be an array of strings.");
+                    }
+                }
+            }
+            if (options_table.contains("link") && options_table.at("link").is_array())
+            {
+                auto link_options = *options_table.at("link").as_array();
+                for (auto &&option : link_options)
+                {
+                    if (option.is_string())
+                    {
+                        auto opt = option.value<std::string>().value();
+                        this->build.options.link.push_back(opt);
+                    }
+                    else
+                    {
+                        throw std::runtime_error(config.path.string() + ": build.options.link must be an array of strings.");
+                    }
+                }
+            }
+        }
     }
     if (config.table_.contains("dependencies") && config.table_.at("dependencies").is_table())
     {
