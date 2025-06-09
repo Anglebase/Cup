@@ -353,7 +353,10 @@ void Build::generate_build(std::ofstream &ofs)
     if (this->config.build.toolchain.ld.has_value())
         generator.set_linker(this->config.build.toolchain.ld.value());
     if (this->config.build.toolchain.asm_.has_value())
+    {
+        generator.enable_language("ASM");
         generator.set_asm_compiler(this->config.build.toolchain.asm_.value());
+    }
     this->generate_cmake_root(generator);
     generator.write_to(ofs);
 }
