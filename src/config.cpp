@@ -150,7 +150,7 @@ ConfigInfo::ConfigInfo(const Config &config)
         {
             auto key = std::string(name.str());
             auto path = config.need<std::string>("dependencies." + key + ".path", "", false);
-            if (path.empty())
+            if (path.empty() && !key.starts_with("Qt"))
                 throw std::runtime_error(config.path.string() + ": 'dependencies." + key + "' does not have the 'path'.");
             this->dependencies.insert({key, CupProject{.path = path}});
             if (table.is_table())
