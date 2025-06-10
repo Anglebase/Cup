@@ -57,4 +57,4 @@ Hello, world!
 
 ## 许可证
 
-GNU Affero General Public License v3.0
+GPL-v3.0
