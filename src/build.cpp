@@ -405,7 +405,9 @@ int Build::build()
     LOG_DEBUG("Build command: ", make.as_command());
     int res = 0;
     if ((res = system(make.as_command().c_str())) != 0)
-        return res;
+    {
+        throw std::runtime_error("Build failed with error code: " + std::to_string(res));
+    }
 
     cmake::Execute bud;
     bud.build(this->info.build_dir / cmake_build);
@@ -423,6 +425,8 @@ int Build::build()
     else
         bud.config(cmake::Config::Debug);
     if ((res = system(bud.as_command().c_str())) != 0)
-        return res;
+    {
+        throw std::runtime_error("Build failed with error code: " + std::to_string(res));
+    }
     return 0;
 }
