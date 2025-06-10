@@ -293,65 +293,7 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
                           : std::vector<fs::path>{};
     if (config.config->build.target == BINARY)
     {
-        for (const auto &main_file : main_files)
-        {
-            auto source = src_files;
-            auto hash = MD5(main_file);
-            auto raw_path = main_file;
-            const auto raw_name = raw_path.replace_extension().filename().string();
-            const auto item = raw_name + "_" + hash.toStr();
-            source.push_back(main_file);
-            gen.add_executable(item, source);
-            gen.set_target_output_name(item, raw_name);
-            gen.target_include_directories(item, cmake::Visual::Public, {(project_dir / "include").lexically_normal()});
-            gen.set_target_output_directory(item, std::nullopt, replace_finally_name(main_file.parent_path(), "bin", "target"));
-            gen.set_target_c_standard(item, config.config->build.stdc);
-            gen.set_target_cxx_standard(item, config.config->build.stdcxx);
-            if (!config.config->build.include.empty())
-                gen.target_include_directories(item, cmake::Visual::Public, config.config->build.include);
-            if (!config.config->build.options.compile.empty())
-                gen.target_compile_options(item, cmake::Visual::Private, config.config->build.options.compile);
-            if (!config.config->build.options.link.empty())
-                gen.target_link_options(item, cmake::Visual::Private, config.config->build.options.link);
-            if (!root_cup.features.empty())
-                gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.features);
-            if (!config.config->build.define.empty())
-                gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.define);
-            if (config.config->qt.has_value())
-            {
-                auto qt = config.config->qt.value();
-                gen.target_link_qt_libraries(item, cmake::Visual::Private, qt.version, qt.modules);
-            }
-            if (!config.config->build.debug.options.compile.empty() && this->info.type == BuildType::Debug)
-                gen.target_compile_options(item, cmake::Visual::Private, config.config->build.debug.options.compile);
-            if (!config.config->build.debug.options.link.empty() && this->info.type == BuildType::Debug)
-                gen.target_link_options(item, cmake::Visual::Private, config.config->build.debug.options.link);
-            if (!config.config->build.release.options.compile.empty() && this->info.type == BuildType::Release)
-                gen.target_compile_options(item, cmake::Visual::Private, config.config->build.release.options.compile);
-            if (!config.config->build.release.options.link.empty() && this->info.type == BuildType::Release)
-                gen.target_link_options(item, cmake::Visual::Private, config.config->build.release.options.link);
-            if (!config.config->build.debug.define.empty() && this->info.type == BuildType::Debug)
-                gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.debug.define);
-            if (!config.config->build.release.define.empty() && this->info.type == BuildType::Release)
-                gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.release.define);
-            std::vector<fs::path> libs_dir;
-            std::vector<std::string> libs;
-            for (const auto &[name, dir] : config.config->link)
-            {
-                libs.push_back(name);
-                libs_dir.push_back(dir);
-            }
-            for (const auto &[name, cup] : config.config->dependencies)
-            {
-                MD5 lhash(cup.path.is_relative() ? project_dir / cup.path : cup.path);
-                const auto lib_name = name + "_" + lhash.toStr();
-                libs.push_back(lib_name);
-            }
-            if (!libs.empty())
-                gen.target_link_libraries(item, cmake::Visual::Public, libs);
-            if (!libs_dir.empty())
-                gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
-        }
+        throw std::runtime_error("Binary target(" + config.config->name + ") cannot be used as a dependency.");
     }
     else if (config.config->build.target == STATIC)
     {
