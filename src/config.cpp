@@ -1,5 +1,6 @@
 #include "config.h"
 #include <fstream>
+#include <unordered_set>
 
 Config::Config(const fs::path &project)
 {
@@ -170,6 +171,23 @@ ConfigInfo::ConfigInfo(const Config &config)
                             throw std::runtime_error(config.path.string() + ": 'dependencies." + key + ".features' must be an array of strings.");
                         }
                     }
+                }
+            }
+            if (key.starts_with("Qt"))
+            {
+                if (this->qt.has_value())
+                    throw std::runtime_error("There are multiple incompatible Qt versions.");
+                else
+                    this->qt = Qt{.version = key};
+                auto features = this->dependencies.at(key).features;
+                this->dependencies.erase(key);
+                for (auto &&feature : features)
+                {
+                    std::unordered_set<std::string> flag = {"AUTOMOC", "AUTORCC", "AUTOUIC"};
+                    if (flag.find(feature) != flag.end())
+                        this->qt.value().flags.insert(feature);
+                    else
+                        this->qt.value().modules.insert(feature);
                 }
             }
         }

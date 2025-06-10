@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <variant>
 #include <unordered_map>
+#include <unordered_set>
 namespace fs = std::filesystem;
 
 struct ConfigInfo;
@@ -105,6 +106,13 @@ struct CupProject
     std::vector<std::string> features;
 };
 
+struct Qt
+{
+    std::string version;
+    std::unordered_set<std::string> modules;
+    std::unordered_set<std::string> flags;
+};
+
 struct ConfigInfo
 {
     std::string name;
@@ -142,6 +150,8 @@ struct ConfigInfo
     } build;
     std::unordered_map<std::string, fs::path> link;
     std::unordered_map<std::string, CupProject> dependencies;
+
+    std::optional<Qt> qt;
 
     ConfigInfo(const Config &table);
 };
