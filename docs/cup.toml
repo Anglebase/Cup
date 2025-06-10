@@ -28,6 +28,7 @@ generator = "MinGW Makefiles" # 指定CMake生成器
 # 此配置项是可选的
 # 若未指定，则由CMake自动确认；否则使用指定的CMake生成器
 # 可选值：
+# Windows 下
 #   Visual Studio 17 2022        = Generates Visual Studio 2022 project files.
 #                                  Use -A option to specify architecture.
 #   Visual Studio 16 2019        = Generates Visual Studio 2019 project files.
@@ -88,6 +89,33 @@ generator = "MinGW Makefiles" # 指定CMake生成器
 #   Sublime Text 2 - NMake Makefiles
 #                                = Generates Sublime Text 2 project files
 #                                  (deprecated).
+#   Sublime Text 2 - Ninja       = Generates Sublime Text 2 project files
+#                                  (deprecated).
+#   Sublime Text 2 - Unix Makefiles
+#                                = Generates Sublime Text 2 project files
+#                                  (deprecated).
+# Lunix 下：
+#   Green Hills MULTI            = Generates Green Hills MULTI files
+#                                  (experimental, work-in-progress).
+#   Unix Makefiles               = Generates standard UNIX makefiles.
+#   Ninja                        = Generates build.ninja files.
+#   Ninja Multi-Config           = Generates build-<Config>.ninja files.
+#   Watcom WMake                 = Generates Watcom WMake makefiles.
+#   CodeBlocks - Ninja           = Generates CodeBlocks project files
+#                                  (deprecated).
+#   CodeBlocks - Unix Makefiles  = Generates CodeBlocks project files
+#                                  (deprecated).
+#   CodeLite - Ninja             = Generates CodeLite project files
+#                                  (deprecated).
+#   CodeLite - Unix Makefiles    = Generates CodeLite project files
+#                                  (deprecated).
+#   Eclipse CDT4 - Ninja         = Generates Eclipse CDT 4.0 project files
+#                                  (deprecated).
+#   Eclipse CDT4 - Unix Makefiles= Generates Eclipse CDT 4.0 project files
+#                                  (deprecated).
+#   Kate - Ninja                 = Generates Kate project files (deprecated).
+#   Kate - Ninja Multi-Config    = Generates Kate project files (deprecated).
+#   Kate - Unix Makefiles        = Generates Kate project files (deprecated).
 #   Sublime Text 2 - Ninja       = Generates Sublime Text 2 project files
 #                                  (deprecated).
 #   Sublime Text 2 - Unix Makefiles
