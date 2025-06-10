@@ -155,10 +155,10 @@ name = "path/to/lib" # 外部链接库
 # 此表是可选的
 # 此表用于列出项目依赖项
 # 格式为:
-#    <name> = { path = "<path>", define = ["<macro>"] }
+#    <name> = { path = "<path>", features = ["<macro>"] }
 # 其中：
 #   <name> 为依赖项名称
 #   <path> 为依赖项所在路径，该依赖项必须是另一个 Cup 项目，并且此项必须存在
 #   <macro> 为依赖项的特性宏，此宏会在构建依赖项时进行可控的条件编译
-name = { path = "path/to/dependency", define = ["UNICODE"] } # 依赖项的所在路径及特性宏
+name = { path = "path/to/dependency", features = ["UNICODE"] } # 依赖项的所在路径及特性宏
 # ...
