@@ -13,6 +13,7 @@ struct ConfigInfo;
 class Config
 {
     toml::table table_;
+public:
     fs::path path;
 #ifdef DEBUG_CONFIG
 public:
@@ -146,6 +147,14 @@ struct ConfigInfo
             std::optional<std::string> processor;
         } system;
         std::optional<std::string> suffix;
+        struct Debug
+        {
+            Options options;
+        } debug;
+        struct Release
+        {
+            Options options;
+        } release;
     } build;
     std::unordered_map<std::string, fs::path> link;
     std::unordered_map<std::string, CupProject> dependencies;

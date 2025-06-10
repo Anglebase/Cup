@@ -18,6 +18,46 @@ Config::~Config()
     delete this->config;
 }
 
+void load_options(const toml::table &build_table, ConfigInfo::Build::Options &options, const Config &config)
+{
+    if (build_table.contains("options") && build_table.at("options").is_table())
+    {
+        auto options_table = *build_table.at("options").as_table();
+        if (options_table.contains("compile") && options_table.at("compile").is_array())
+        {
+            auto compile_options = *options_table.at("compile").as_array();
+            for (auto &&option : compile_options)
+            {
+                if (option.is_string())
+                {
+                    auto opt = option.value<std::string>().value();
+                    options.compile.push_back(opt);
+                }
+                else
+                {
+                    throw std::runtime_error(config.path.string() + ": build.options.compile must be an array of strings.");
+                }
+            }
+        }
+        if (options_table.contains("link") && options_table.at("link").is_array())
+        {
+            auto link_options = *options_table.at("link").as_array();
+            for (auto &&option : link_options)
+            {
+                if (option.is_string())
+                {
+                    auto opt = option.value<std::string>().value();
+                    options.link.push_back(opt);
+                }
+                else
+                {
+                    throw std::runtime_error(config.path.string() + ": build.options.link must be an array of strings.");
+                }
+            }
+        }
+    }
+}
+
 ConfigInfo::ConfigInfo(const Config &config)
 {
     this->name = config.get<std::string>("name");
@@ -97,42 +137,7 @@ ConfigInfo::ConfigInfo(const Config &config)
                 }
             }
         }
-        if (build_table.contains("options") && build_table.at("options").is_table())
-        {
-            auto options_table = *build_table.at("options").as_table();
-            if (options_table.contains("compile") && options_table.at("compile").is_array())
-            {
-                auto compile_options = *options_table.at("compile").as_array();
-                for (auto &&option : compile_options)
-                {
-                    if (option.is_string())
-                    {
-                        auto opt = option.value<std::string>().value();
-                        this->build.options.compile.push_back(opt);
-                    }
-                    else
-                    {
-                        throw std::runtime_error(config.path.string() + ": build.options.compile must be an array of strings.");
-                    }
-                }
-            }
-            if (options_table.contains("link") && options_table.at("link").is_array())
-            {
-                auto link_options = *options_table.at("link").as_array();
-                for (auto &&option : link_options)
-                {
-                    if (option.is_string())
-                    {
-                        auto opt = option.value<std::string>().value();
-                        this->build.options.link.push_back(opt);
-                    }
-                    else
-                    {
-                        throw std::runtime_error(config.path.string() + ": build.options.link must be an array of strings.");
-                    }
-                }
-            }
-        }
+        load_options(build_table, this->build.options, config);
         if (build_table.contains("system") && build_table.at("system").is_table())
         {
             auto name = config.need<std::string>("build.system.name", "", false);
@@ -141,6 +146,16 @@ ConfigInfo::ConfigInfo(const Config &config)
             auto processor = config.need<std::string>("build.system.processor", "", false);
             if (!processor.empty())
                 this->build.system.processor = processor;
+        }
+        if (build_table.contains("debug") && build_table.at("debug").is_table())
+        {
+            auto debug_table = *build_table.at("debug").as_table();
+            load_options(debug_table, this->build.debug.options, config);
+        }
+        if (build_table.contains("release") && build_table.at("release").is_table())
+        {
+            auto release_table = *build_table.at("release").as_table();
+            load_options(release_table, this->build.release.options, config);
         }
     }
     if (config.table_.contains("dependencies") && config.table_.at("dependencies").is_table())
