@@ -102,7 +102,7 @@ public:
 struct CupProject
 {
     fs::path path;
-    std::vector<std::string> define;
+    std::vector<std::string> features;
 };
 
 struct ConfigInfo

@@ -155,19 +155,19 @@ ConfigInfo::ConfigInfo(const Config &config)
             if (table.is_table())
             {
                 auto sub_table = *table.as_table();
-                if (sub_table.contains("define") && sub_table.at("define").is_array())
+                if (sub_table.contains("features") && sub_table.at("features").is_array())
                 {
-                    auto defines = *sub_table.at("define").as_array();
+                    auto defines = *sub_table.at("features").as_array();
                     for (auto &&define : defines)
                     {
                         if (define.is_string())
                         {
                             auto def = define.value<std::string>().value();
-                            this->dependencies.at(key).define.push_back(def);
+                            this->dependencies.at(key).features.push_back(def);
                         }
                         else
                         {
-                            throw std::runtime_error(config.path.string() + ": 'dependencies." + key + ".define' must be an array of strings.");
+                            throw std::runtime_error(config.path.string() + ": 'dependencies." + key + ".features' must be an array of strings.");
                         }
                     }
                 }

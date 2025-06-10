@@ -251,8 +251,8 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
                 gen.target_compile_options(item, cmake::Visual::Private, config.config->build.options.compile);
             if (!config.config->build.options.link.empty())
                 gen.target_link_options(item, cmake::Visual::Private, config.config->build.options.link);
-            if (!root_cup.define.empty())
-                gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.define);
+            if (!root_cup.features.empty())
+                gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.features);
             if (!config.config->build.define.empty())
                 gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.define);
             std::vector<fs::path> libs_dir;
@@ -289,8 +289,8 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
             gen.target_compile_options(item, cmake::Visual::Private, config.config->build.options.compile);
         if (!config.config->build.options.link.empty())
             gen.target_link_options(item, cmake::Visual::Public, config.config->build.options.link);
-        if (!root_cup.define.empty())
-            gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.define);
+        if (!root_cup.features.empty())
+            gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.features);
         if (!config.config->build.define.empty())
             gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.define);
         std::vector<fs::path> libs_dir;
@@ -326,8 +326,8 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
             gen.target_compile_options(item, cmake::Visual::Private, config.config->build.options.compile);
         if (!config.config->build.options.link.empty())
             gen.target_link_options(item, cmake::Visual::Public, config.config->build.options.link);
-        if (!root_cup.define.empty())
-            gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.define);
+        if (!root_cup.features.empty())
+            gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.features);
         if (!config.config->build.define.empty())
             gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.define);
         std::vector<fs::path> libs_dir;
