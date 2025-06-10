@@ -6,7 +6,6 @@
 #include <filesystem>
 #include <variant>
 #include <unordered_map>
-#include <unordered_set>
 namespace fs = std::filesystem;
 
 struct ConfigInfo;
@@ -109,8 +108,8 @@ struct CupProject
 struct Qt
 {
     std::string version;
-    std::unordered_set<std::string> modules;
-    std::unordered_set<std::string> flags;
+    std::vector<std::string> modules;
+    std::vector<std::string> flags;
 };
 
 struct ConfigInfo

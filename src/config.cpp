@@ -185,9 +185,9 @@ ConfigInfo::ConfigInfo(const Config &config)
                 {
                     std::unordered_set<std::string> flag = {"AUTOMOC", "AUTORCC", "AUTOUIC"};
                     if (flag.find(feature) != flag.end())
-                        this->qt.value().flags.insert(feature);
+                        this->qt.value().flags.push_back(feature);
                     else
-                        this->qt.value().modules.insert(feature);
+                        this->qt.value().modules.push_back(feature);
                 }
             }
         }
