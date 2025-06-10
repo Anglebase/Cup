@@ -13,7 +13,7 @@ options = { compile = [
     # "-fno-rtti -fno-exceptions -fno-threadsafe-statics", 如果需要构建 C++ 目标，则添加此项
 ], link = [
     "-mcpu=cortex-m3",
-    "-T path/to/STM32F103XX_FLASH.ld",
+    "-T", "$env:LD_DIR/STM32F103XX_FLASH.ld",
     "--specs=nano.specs",
     "-Wl,-Map=demo.map -Wl,--gc-sections",
     "-Wl,--start-group -lc -lm -Wl,--end-group",
