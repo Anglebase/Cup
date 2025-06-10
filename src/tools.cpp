@@ -197,7 +197,7 @@ ListCmd::ListCmd(const SysArgs &args)
 
 void load_all_includes(std::unordered_set<std::string> &includes, const fs::path &root)
 {
-    includes.insert(root.lexically_normal().string());
+    includes.insert((root / "include").lexically_normal().string());
     Config config(root);
     for (const auto &include : config.config->build.include)
     {
