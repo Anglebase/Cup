@@ -132,6 +132,20 @@ suffix = ".elf" # 指定输出文件后缀名
 # 此配置项是可选的
 # 此项通常用于嵌入式项目的输出文件后缀名指定
 
+[build.debug]
+# 此表是可选的
+# 此表下的配置项仅在 cup 以 debug 模式构建时生效
+# 它们与 [build] 下的配置项意义相同
+options = { compile = [], link = [] }
+define = []
+
+[build.release]
+# 此表是可选的
+# 此表下的配置项仅在 cup 以 release 模式构建时生效
+# 它们与 [build] 下的配置项意义相同
+options = { compile = [], link = [] }
+define = []
+
 [build.toolchain]
 # 此表是可选的
 # 指定项目构建工具链
@@ -162,3 +176,14 @@ name = "path/to/lib" # 外部链接库
 #   <macro> 为依赖项的特性宏，此宏会在构建依赖项时进行可控的条件编译
 name = { path = "path/to/dependency", features = ["UNICODE"] } # 依赖项的所在路径及特性宏
 # ...
+
+# 特殊依赖项
+# Qt<num> = { features = ["<modlue|flag>"] }
+# 其中，<num> 为 Qt 版本，<module|flag> 为 Qt 模块或编译指示标志
+# flag 可取的值有：
+#   AUTOMOC
+#   AUTORCC
+#   AUTOUIC
+# Cup 不会自动地复制 Qt 的 DLL 文件，若要运行 cup run,请确保 target 目录下满足程序的执行环境
+# 例如：
+Qt6 = { features = ["AUTOMOC", "AUTORCC", "AUTOUIC", "Core", "Gui", "Widgets"] }
