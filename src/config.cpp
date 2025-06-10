@@ -58,6 +58,26 @@ void load_options(const toml::table &build_table, ConfigInfo::Build::Options &op
     }
 }
 
+void load_define(const toml::table& build_table, std::vector<std::string>& define_, const Config& config)
+{
+    if (build_table.contains("define") && build_table.at("define").is_array())
+    {
+        auto defines = *build_table.at("define").as_array();
+        for (auto &&define : defines)
+        {
+            if (define.is_string())
+            {
+                auto def = define.value<std::string>().value();
+                define_.push_back(def);
+            }
+            else
+            {
+                throw std::runtime_error(config.path.string() + ": build.define must be an array of strings.");
+            }
+        }
+    }
+}
+
 ConfigInfo::ConfigInfo(const Config &config)
 {
     this->name = config.get<std::string>("name");
@@ -105,22 +125,7 @@ ConfigInfo::ConfigInfo(const Config &config)
     if (config.table_.contains("build") && config.table_.at("build").is_table())
     {
         auto build_table = *config.table_.at("build").as_table();
-        if (build_table.contains("define") && build_table.at("define").is_array())
-        {
-            auto defines = *build_table.at("define").as_array();
-            for (auto &&define : defines)
-            {
-                if (define.is_string())
-                {
-                    auto def = define.value<std::string>().value();
-                    this->build.define.push_back(def);
-                }
-                else
-                {
-                    throw std::runtime_error(config.path.string() + ": build.define must be an array of strings.");
-                }
-            }
-        }
+        load_define(build_table, this->build.define, config);
         if (build_table.contains("include") && build_table.at("include").is_array())
         {
             auto includes = *build_table.at("include").as_array();
@@ -151,11 +156,13 @@ ConfigInfo::ConfigInfo(const Config &config)
         {
             auto debug_table = *build_table.at("debug").as_table();
             load_options(debug_table, this->build.debug.options, config);
+            load_define(debug_table, this->build.debug.define, config);
         }
         if (build_table.contains("release") && build_table.at("release").is_table())
         {
             auto release_table = *build_table.at("release").as_table();
             load_options(release_table, this->build.release.options, config);
+            load_define(release_table, this->build.release.define, config);
         }
     }
     if (config.table_.contains("dependencies") && config.table_.at("dependencies").is_table())

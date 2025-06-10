@@ -150,10 +150,12 @@ struct ConfigInfo
         struct Debug
         {
             Options options;
+            std::vector<std::string> define;
         } debug;
         struct Release
         {
             Options options;
+            std::vector<std::string> define;
         } release;
     } build;
     std::unordered_map<std::string, fs::path> link;
