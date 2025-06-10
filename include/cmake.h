@@ -62,7 +62,8 @@ namespace cmake
         void set_target_output_directory(const std::string &name, const std::optional<LibaryType> &type, const fs::path &output_dir);
         void if_(const std::string &condition);
         void find_package(const std::string &name, const std::vector<std::string> &components);
-        void set(const std::string& flag, const std::string& value);
+        void set(const std::string &flag, const std::string &value);
+        void target_link_qt_libraries(const std::string &name, cmake::Visual visual, const std::string& version, const std::vector<std::string> &libs);
         void else_();
         void endif_();
 

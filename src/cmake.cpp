@@ -289,6 +289,16 @@ void cmake::Generator::set(const std::string &flag, const std::string &value)
     this->commands.push_back("set(" + flag + " " + value + ")");
 }
 
+void cmake::Generator::target_link_qt_libraries(const std::string &name, cmake::Visual visual, const std::string &version, const std::vector<std::string> &libs)
+{
+    std::ostringstream oss;
+    oss << "target_link_libraries(" << name << " " << visual_to_string(visual) << " ";
+    for (const auto &lib : libs)
+        oss << version << "::" << lib << " ";
+    oss << ")";
+    this->commands.push_back(oss.str());
+}
+
 void cmake::Generator::else_()
 {
     this->commands.push_back("else()");
