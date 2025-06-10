@@ -18,6 +18,23 @@ Config::~Config()
     delete this->config;
 }
 
+fs::path parser_env(const std::string &str)
+{
+    if (str.empty())
+        return fs::path();
+    if (!str.starts_with("$env:"))
+        return fs::path(str).lexically_normal();
+    auto raw_path = fs::path(str.substr(5));
+    auto first = *raw_path.begin();
+    auto env_name = first.string();
+    if (env_name.find("/") != std::string::npos || env_name.find("\\") != std::string::npos || env_name.find("..") != std::string::npos)
+        throw std::runtime_error("Invalid environment variable name.");
+    auto env = std::getenv(env_name.c_str());
+    if (!env)
+        throw std::runtime_error("Environment variable not found.");
+    return fs::path(std::string(env) + raw_path.string().substr(first.string().size())).lexically_normal();
+}
+
 void load_options(const toml::table &build_table, ConfigInfo::Build::Options &options, const Config &config)
 {
     if (build_table.contains("options") && build_table.at("options").is_table())
@@ -31,6 +48,8 @@ void load_options(const toml::table &build_table, ConfigInfo::Build::Options &op
                 if (option.is_string())
                 {
                     auto opt = option.value<std::string>().value();
+                    if(opt.starts_with("$env:"))
+                        opt = replace_all(parser_env(opt).string(), "\\", "/");
                     options.compile.push_back(opt);
                 }
                 else
@@ -47,6 +66,8 @@ void load_options(const toml::table &build_table, ConfigInfo::Build::Options &op
                 if (option.is_string())
                 {
                     auto opt = option.value<std::string>().value();
+                    if(opt.starts_with("$env:"))
+                        opt = replace_all(parser_env(opt).string(), "\\", "/");
                     options.link.push_back(opt);
                 }
                 else
@@ -58,7 +79,7 @@ void load_options(const toml::table &build_table, ConfigInfo::Build::Options &op
     }
 }
 
-void load_define(const toml::table& build_table, std::vector<std::string>& define_, const Config& config)
+void load_define(const toml::table &build_table, std::vector<std::string> &define_, const Config &config)
 {
     if (build_table.contains("define") && build_table.at("define").is_array())
     {
@@ -133,7 +154,7 @@ ConfigInfo::ConfigInfo(const Config &config)
             {
                 if (include.is_string())
                 {
-                    fs::path inc = include.value<std::string>().value();
+                    fs::path inc = parser_env(include.value<std::string>().value());
                     this->build.include.push_back(inc.is_relative() ? config.path.parent_path() / inc : inc);
                 }
                 else
@@ -171,7 +192,7 @@ ConfigInfo::ConfigInfo(const Config &config)
         for (auto &&[name, table] : dependencies)
         {
             auto key = std::string(name.str());
-            auto path = config.need<std::string>("dependencies." + key + ".path", "", false);
+            auto path = parser_env(config.need<std::string>("dependencies." + key + ".path", "", false));
             if (path.empty() && !key.starts_with("Qt"))
                 throw std::runtime_error(config.path.string() + ": 'dependencies." + key + "' does not have the 'path'.");
             this->dependencies.insert({key, CupProject{.path = path}});
@@ -222,7 +243,7 @@ ConfigInfo::ConfigInfo(const Config &config)
             auto key = std::string(name.str());
             if (dir.is_string())
             {
-                fs::path dir_str = dir.value<std::string>().value();
+                fs::path dir_str = parser_env(dir.value<std::string>().value());
                 this->link.insert({key, dir_str.is_relative() ? config.path.parent_path() / dir_str : dir_str});
             }
             else
