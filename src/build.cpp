@@ -95,6 +95,14 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                 auto qt = this->config.qt.value();
                 gen.target_link_qt_libraries(item, cmake::Visual::Private, qt.version, qt.modules);
             }
+            if (!this->config.build.debug.options.compile.empty() && this->info.type == BuildType::Debug)
+                gen.target_compile_options(item, cmake::Visual::Private, this->config.build.debug.options.compile);
+            if (!this->config.build.debug.options.link.empty() && this->info.type == BuildType::Debug)
+                gen.target_link_options(item, cmake::Visual::Private, this->config.build.debug.options.link);
+            if (!this->config.build.release.options.compile.empty() && this->info.type == BuildType::Release)
+                gen.target_compile_options(item, cmake::Visual::Private, this->config.build.release.options.compile);
+            if (!this->config.build.release.options.link.empty() && this->info.type == BuildType::Release)
+                gen.target_link_options(item, cmake::Visual::Private, this->config.build.release.options.link);
             std::vector<fs::path> libs_dir;
             std::vector<std::string> libs;
             for (const auto &[name, dir] : this->config.link)
@@ -136,6 +144,14 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             auto qt = this->config.qt.value();
             gen.target_link_qt_libraries(item, cmake::Visual::Public, qt.version, qt.modules);
         }
+        if (!this->config.build.debug.options.compile.empty() && this->info.type == BuildType::Debug)
+            gen.target_compile_options(item, cmake::Visual::Private, this->config.build.debug.options.compile);
+        if (!this->config.build.debug.options.link.empty() && this->info.type == BuildType::Debug)
+            gen.target_link_options(item, cmake::Visual::Private, this->config.build.debug.options.link);
+        if (!this->config.build.release.options.compile.empty() && this->info.type == BuildType::Release)
+            gen.target_compile_options(item, cmake::Visual::Private, this->config.build.release.options.compile);
+        if (!this->config.build.release.options.link.empty() && this->info.type == BuildType::Release)
+            gen.target_link_options(item, cmake::Visual::Private, this->config.build.release.options.link);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : this->config.link)
@@ -189,6 +205,14 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             auto qt = this->config.qt.value();
             gen.target_link_qt_libraries(item, cmake::Visual::Public, qt.version, qt.modules);
         }
+        if (!this->config.build.debug.options.compile.empty() && this->info.type == BuildType::Debug)
+            gen.target_compile_options(item, cmake::Visual::Private, this->config.build.debug.options.compile);
+        if (!this->config.build.debug.options.link.empty() && this->info.type == BuildType::Debug)
+            gen.target_link_options(item, cmake::Visual::Private, this->config.build.debug.options.link);
+        if (!this->config.build.release.options.compile.empty() && this->info.type == BuildType::Release)
+            gen.target_compile_options(item, cmake::Visual::Private, this->config.build.release.options.compile);
+        if (!this->config.build.release.options.link.empty() && this->info.type == BuildType::Release)
+            gen.target_link_options(item, cmake::Visual::Private, this->config.build.release.options.link);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : this->config.link)
@@ -286,6 +310,14 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
                 auto qt = config.config->qt.value();
                 gen.target_link_qt_libraries(item, cmake::Visual::Private, qt.version, qt.modules);
             }
+            if (!config.config->build.debug.options.compile.empty() && this->info.type == BuildType::Debug)
+                gen.target_compile_options(item, cmake::Visual::Private, config.config->build.debug.options.compile);
+            if (!config.config->build.debug.options.link.empty() && this->info.type == BuildType::Debug)
+                gen.target_link_options(item, cmake::Visual::Private, config.config->build.debug.options.link);
+            if (!config.config->build.release.options.compile.empty() && this->info.type == BuildType::Release)
+                gen.target_compile_options(item, cmake::Visual::Private, config.config->build.release.options.compile);
+            if (!config.config->build.release.options.link.empty() && this->info.type == BuildType::Release)
+                gen.target_link_options(item, cmake::Visual::Private, config.config->build.release.options.link);
             std::vector<fs::path> libs_dir;
             std::vector<std::string> libs;
             for (const auto &[name, dir] : config.config->link)
@@ -329,6 +361,14 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
             auto qt = config.config->qt.value();
             gen.target_link_qt_libraries(item, cmake::Visual::Public, qt.version, qt.modules);
         }
+        if (!config.config->build.debug.options.compile.empty() && this->info.type == BuildType::Debug)
+            gen.target_compile_options(item, cmake::Visual::Private, config.config->build.debug.options.compile);
+        if (!config.config->build.debug.options.link.empty() && this->info.type == BuildType::Debug)
+            gen.target_link_options(item, cmake::Visual::Private, config.config->build.debug.options.link);
+        if (!config.config->build.release.options.compile.empty() && this->info.type == BuildType::Release)
+            gen.target_compile_options(item, cmake::Visual::Private, config.config->build.release.options.compile);
+        if (!config.config->build.release.options.link.empty() && this->info.type == BuildType::Release)
+            gen.target_link_options(item, cmake::Visual::Private, config.config->build.release.options.link);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : config.config->link)
@@ -371,6 +411,14 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
             auto qt = config.config->qt.value();
             gen.target_link_qt_libraries(item, cmake::Visual::Public, qt.version, qt.modules);
         }
+        if (!config.config->build.debug.options.compile.empty() && this->info.type == BuildType::Debug)
+            gen.target_compile_options(item, cmake::Visual::Private, config.config->build.debug.options.compile);
+        if (!config.config->build.debug.options.link.empty() && this->info.type == BuildType::Debug)
+            gen.target_link_options(item, cmake::Visual::Private, config.config->build.debug.options.link);
+        if (!config.config->build.release.options.compile.empty() && this->info.type == BuildType::Release)
+            gen.target_compile_options(item, cmake::Visual::Private, config.config->build.release.options.compile);
+        if (!config.config->build.release.options.link.empty() && this->info.type == BuildType::Release)
+            gen.target_link_options(item, cmake::Visual::Private, config.config->build.release.options.link);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : config.config->link)
