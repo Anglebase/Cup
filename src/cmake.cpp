@@ -274,6 +274,21 @@ void cmake::Generator::if_(const std::string &condition)
     this->commands.push_back("if(" + condition + ")");
 }
 
+void cmake::Generator::find_package(const std::string &name, const std::vector<std::string> &components)
+{
+    std::ostringstream oss;
+    oss << "find_package(" << name << " COMPONENTS ";
+    for (const auto &component : components)
+        oss << component << " ";
+    oss << " REQUIRED)";
+    this->commands.push_back(oss.str());
+}
+
+void cmake::Generator::set(const std::string &flag, const std::string &value)
+{
+    this->commands.push_back("set(" + flag + " " + value + ")");
+}
+
 void cmake::Generator::else_()
 {
     this->commands.push_back("else()");

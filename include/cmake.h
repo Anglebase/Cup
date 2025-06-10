@@ -61,6 +61,8 @@ namespace cmake
         void set_target_output_name(const std::string &name, const std::string &output_name);
         void set_target_output_directory(const std::string &name, const std::optional<LibaryType> &type, const fs::path &output_dir);
         void if_(const std::string &condition);
+        void find_package(const std::string &name, const std::vector<std::string> &components);
+        void set(const std::string& flag, const std::string& value);
         void else_();
         void endif_();
 
