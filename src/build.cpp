@@ -50,6 +50,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
     const char *BINARY = "binary";
     const char *STATIC = "static";
     const char *SHARED = "shared";
+    if (!this->config.build.generator.empty())
+        this->cmake_gen = this->config.build.generator;
     for (const auto &[name, cup] : this->config.dependencies)
     {
         if (this->build_depends.find(name) == this->build_depends.end())
@@ -215,6 +217,15 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
     const char *SHARED = "shared";
     auto project_dir = path.is_relative() ? this->info.project_dir / path : path;
     Config config(project_dir);
+    if (!config.config->build.generator.empty())
+    {
+        if (this->cmake_gen.has_value() && this->cmake_gen.value() != config.config->build.generator)
+            throw std::runtime_error(
+                "Inconsistent cmake generator: '" + config.config->build.generator +
+                "' and '" + this->cmake_gen.value() + "'");
+        else
+            this->cmake_gen = config.config->build.generator;
+    }
     for (const auto &[name, cup] : config.config->dependencies)
     {
         if (this->build_depends.find(name) == this->build_depends.end())

@@ -29,6 +29,7 @@ class Build
     BuildInfo info;
     ConfigInfo config;
     std::unordered_set<std::string> build_depends;
+    std::optional<std::string> cmake_gen;
 
 public:
     Build(const BuildInfo &info, const ConfigInfo &config);
