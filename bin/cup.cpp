@@ -13,8 +13,8 @@ Commands:
         Creates a new C++ project. 
         <project name> specifies the project's name.
         options can include:
-            --target <target> Specifies the project type (default: binary).
-            --dir <path> Specifies the project's storage path (default: current directory).
+            --target <target>   Specifies the project type (default: binary).
+            --dir <path>        Specifies the project's storage path (default: current directory).
 
     cup build [build target] [options...] 
         Builds the project. 
@@ -23,31 +23,31 @@ Commands:
         This should specify the path of the source file containing the
         main function relative to the bin directory. 
         options can include:
-            -r or -release Builds the project in Release mode.
-            --dir <path> Specifies the project's path.
-            --build <path> Specifies the build directory's path.
+            -r or -release      Builds the project in Release mode.
+            --dir <path>        Specifies the project's path.
+            --build <path>      Specifies the build directory's path.
 
     cup clean [options...]
         Cleans the current project's build files. 
         options can include:
-            --dir <path> Specifies the project's path.
+            --dir <path>        Specifies the project's path.
 
     cup run <build target> [options...]
         Runs the project's executable. 
         build target specifies the target to run, corresponding to the
         source file containing the main function relative to the bin directory. 
         options can include:
-            -r or -release Runs the Release build.
-            --dir <path> Specifies the project's path.
-            --build <path> Specifies the build directory's path.
-            --args <args...> Specifies arguments to pass to the executable.
+            -r or -release      Runs the Release build.
+            --dir <path>        Specifies the project's path.
+            --build <path>      Specifies the build directory's path.
+            --args <args...>    Specifies arguments to pass to the executable.
 
     cup list <option> [options...]
         Lists one of the following properties for the specified Cup project:
-            include: All header file directories referenced by the project (absolute paths).
-            deps: List of projects this project depends on.
+            include             All header file directories referenced by the project (absolute paths).
+            deps                List of projects this project depends on.
         options can include:
-            --dir <path> Specifies the project's path.
+            --dir <path>        Specifies the project's path.
 )";
 
 int main(int argc, char **argv)
