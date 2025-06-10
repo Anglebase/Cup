@@ -435,7 +435,7 @@ void Build::generate_build(std::ofstream &ofs)
     {
         auto qt = this->config.qt.value();
         for (auto &&flag : qt.flags)
-            generator.set(flag, "ON");
+            generator.set("CMAKE_" + flag, "ON");
         generator.find_package(qt.version, qt.modules);
     }
     this->generate_cmake_root(generator);
