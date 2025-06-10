@@ -29,21 +29,23 @@ Cup 的基本命令格式为 `cup <command> [args...]`
 
 + `cup new <project name> [options...]`
 创建一个新的 C++ 项目，`project name`指定项目的名称
-`options` 可以包含一下选项：
+`options` 可以包含以下选项：
     + `--target <target>` 指定项目的类型，默认为`binary`
     + `--dir <path>` 指定项目的存放路径，默认为当前目录
 
 + `cup build [build target] [options...]`
-构建项目，`build target`指定构建的目标，若未指定，则构建所有的目标，该项应指定包含主函数的源文件相对于`bin`目录的路径，`options`可以包含一下选项：
+构建项目，`build target`指定构建的目标，若未指定，则构建所有的目标，该项应指定包含主函数的源文件相对于`bin`目录的路径，`options`可以包含以下选项：
     + `-r` `-release` 指定项目以 Relase 模式构建
     + `--dir <path>` 指定项目所在的路径
     + `--build <path>` 指定构建目录的生成路径
 
-+ `cup clean [project name]`
-清理项目的构建文件，`project name`指定项目的名称，若未指定，则视为当前路径下的项目
++ `cup clean [options...]`
+清理项目的构建文件，`options`可以包含以下选项：
+    + `--dir <path>` 指定项目所在的路径
+    + `--build <path>` 指定构建目录的生成路径
 
 + `cup run <build target> [options...]`
-运行项目的可执行文件，`build target`指定要构建目标的名称，该项应指定包含主函数的源文件相对于`bin`目录的路径，`options`可以包含一下选项：
+运行项目的可执行文件，`build target`指定要构建目标的名称，该项应指定包含主函数的源文件相对于`bin`目录的路径，`options`可以包含以下选项：
     + `-r` `-release` 指定项目以 Relase 模式构建
     + `--dir <path>` 指定项目所在的路径
     + `--build <path>` 指定构建目录的生成路径
@@ -55,3 +57,6 @@ Cup 的基本命令格式为 `cup <command> [args...]`
     + `deps`: 项目所依赖的其它项目列表
 `options`可以包含以下选项：
     + `--dir <path>` 指定项目所在的路径
+
++ `cup help`
+显示Cup的帮助信息
