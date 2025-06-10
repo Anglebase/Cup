@@ -309,12 +309,6 @@ int CleanCmd::run()
         fs::remove_all("build");
         finished = true;
     }
-    if (fs::exists("target"))
-    {
-        LOG_INFO("Cleaning target directory...");
-        fs::remove_all("target");
-        finished = true;
-    }
     finished
         ? LOG_INFO("Finised.")
         : LOG_INFO("Nothing to clean.");
