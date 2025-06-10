@@ -90,6 +90,13 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                 gen.target_link_options(item, cmake::Visual::Private, this->config.build.options.link);
             if (!this->config.build.define.empty())
                 gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.define);
+            if (this->config.qt.has_value())
+            {
+                auto qt = this->config.qt.value();
+                gen.target_link_libraries(
+                    item, cmake::Visual::Private,
+                    split(join(qt.modules, " " + qt.version + "::"), " "));
+            }
             std::vector<fs::path> libs_dir;
             std::vector<std::string> libs;
             for (const auto &[name, dir] : this->config.link)
@@ -126,6 +133,13 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
         if (!this->config.build.define.empty())
             gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.define);
+        if (this->config.qt.has_value())
+        {
+            auto qt = this->config.qt.value();
+            gen.target_link_libraries(
+                item, cmake::Visual::Public,
+                split(join(qt.modules, " " + qt.version + "::"), " "));
+        }
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : this->config.link)
@@ -174,6 +188,13 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
         if (!this->config.build.define.empty())
             gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.define);
+        if (this->config.qt.has_value())
+        {
+            auto qt = this->config.qt.value();
+            gen.target_link_libraries(
+                item, cmake::Visual::Public,
+                split(join(qt.modules, " " + qt.version + "::"), " "));
+        }
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : this->config.link)
@@ -266,6 +287,13 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
                 gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.features);
             if (!config.config->build.define.empty())
                 gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.define);
+            if (config.config->qt.has_value())
+            {
+                auto qt = config.config->qt.value();
+                gen.target_link_libraries(
+                    item, cmake::Visual::Private,
+                    split(join(qt.modules, " " + qt.version + "::"), " "));
+            }
             std::vector<fs::path> libs_dir;
             std::vector<std::string> libs;
             for (const auto &[name, dir] : config.config->link)
@@ -304,6 +332,13 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
             gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.features);
         if (!config.config->build.define.empty())
             gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.define);
+        if (config.config->qt.has_value())
+        {
+            auto qt = config.config->qt.value();
+            gen.target_link_libraries(
+                item, cmake::Visual::Public,
+                split(join(qt.modules, " " + qt.version + "::"), " "));
+        }
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : config.config->link)
@@ -341,6 +376,13 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
             gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.features);
         if (!config.config->build.define.empty())
             gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.define);
+        if (config.config->qt.has_value())
+        {
+            auto qt = config.config->qt.value();
+            gen.target_link_libraries(
+                item, cmake::Visual::Public,
+                split(join(qt.modules, " " + qt.version + "::"), " "));
+        }
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : config.config->link)
@@ -401,6 +443,11 @@ void Build::generate_build(std::ofstream &ofs)
     }
     if (this->config.build.suffix.has_value())
         generator.set_executable_suffix(this->config.build.suffix.value());
+    if (this->config.qt.has_value())
+    {
+        auto qt = this->config.qt.value();
+        generator.find_package(qt.version, qt.modules);
+    }
     this->generate_cmake_root(generator);
     generator.write_to(ofs);
 }
