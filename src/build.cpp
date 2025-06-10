@@ -103,6 +103,10 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                 gen.target_compile_options(item, cmake::Visual::Private, this->config.build.release.options.compile);
             if (!this->config.build.release.options.link.empty() && this->info.type == BuildType::Release)
                 gen.target_link_options(item, cmake::Visual::Private, this->config.build.release.options.link);
+            if (!this->config.build.debug.define.empty() && this->info.type == BuildType::Debug)
+                gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.debug.define);
+            if (!this->config.build.release.define.empty() && this->info.type == BuildType::Release)
+                gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.release.define);
             std::vector<fs::path> libs_dir;
             std::vector<std::string> libs;
             for (const auto &[name, dir] : this->config.link)
@@ -152,6 +156,10 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.target_compile_options(item, cmake::Visual::Private, this->config.build.release.options.compile);
         if (!this->config.build.release.options.link.empty() && this->info.type == BuildType::Release)
             gen.target_link_options(item, cmake::Visual::Private, this->config.build.release.options.link);
+        if (!this->config.build.debug.define.empty() && this->info.type == BuildType::Debug)
+            gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.debug.define);
+        if (!this->config.build.release.define.empty() && this->info.type == BuildType::Release)
+            gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.release.define);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : this->config.link)
@@ -213,6 +221,10 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.target_compile_options(item, cmake::Visual::Private, this->config.build.release.options.compile);
         if (!this->config.build.release.options.link.empty() && this->info.type == BuildType::Release)
             gen.target_link_options(item, cmake::Visual::Private, this->config.build.release.options.link);
+        if (!this->config.build.debug.define.empty() && this->info.type == BuildType::Debug)
+            gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.debug.define);
+        if (!this->config.build.release.define.empty() && this->info.type == BuildType::Release)
+            gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.release.define);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : this->config.link)
@@ -318,6 +330,10 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
                 gen.target_compile_options(item, cmake::Visual::Private, config.config->build.release.options.compile);
             if (!config.config->build.release.options.link.empty() && this->info.type == BuildType::Release)
                 gen.target_link_options(item, cmake::Visual::Private, config.config->build.release.options.link);
+            if (!config.config->build.debug.define.empty() && this->info.type == BuildType::Debug)
+                gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.debug.define);
+            if (!config.config->build.release.define.empty() && this->info.type == BuildType::Release)
+                gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.release.define);
             std::vector<fs::path> libs_dir;
             std::vector<std::string> libs;
             for (const auto &[name, dir] : config.config->link)
@@ -369,6 +385,10 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
             gen.target_compile_options(item, cmake::Visual::Private, config.config->build.release.options.compile);
         if (!config.config->build.release.options.link.empty() && this->info.type == BuildType::Release)
             gen.target_link_options(item, cmake::Visual::Private, config.config->build.release.options.link);
+        if (!config.config->build.debug.define.empty() && this->info.type == BuildType::Debug)
+            gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.debug.define);
+        if (!config.config->build.release.define.empty() && this->info.type == BuildType::Release)
+            gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.release.define);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : config.config->link)
@@ -419,6 +439,10 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
             gen.target_compile_options(item, cmake::Visual::Private, config.config->build.release.options.compile);
         if (!config.config->build.release.options.link.empty() && this->info.type == BuildType::Release)
             gen.target_link_options(item, cmake::Visual::Private, config.config->build.release.options.link);
+        if (!config.config->build.debug.define.empty() && this->info.type == BuildType::Debug)
+            gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.debug.define);
+        if (!config.config->build.release.define.empty() && this->info.type == BuildType::Release)
+            gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.release.define);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : config.config->link)
