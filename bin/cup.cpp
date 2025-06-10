@@ -121,7 +121,7 @@ int main(int argc, char **argv)
     }
     catch (const std::exception &e)
     {
-        LOG_ERROR("Exception: ", e.what());
+        LOG_ERROR(e.what());
         return 1;
     }
 }
