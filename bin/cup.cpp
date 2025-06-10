@@ -74,6 +74,7 @@ int main(int argc, char **argv)
     if (args.getArguments().empty())
     {
         LOG_DEBUG("Help| Error: {No Cmd}");
+        std::cout << HELP_INFO << std::endl;
         return 0;
     }
     auto cmd = args.getArguments()[0];
