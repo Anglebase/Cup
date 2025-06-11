@@ -114,6 +114,14 @@ struct Qt
     std::vector<std::string> flags;
 };
 
+struct Flags {
+    std::vector<std::string> c;
+    std::vector<std::string> cxx;
+    std::vector<std::string> asm_;
+    std::vector<std::string> ld_c;
+    std::vector<std::string> ld_cxx;
+};
+
 struct ConfigInfo
 {
     std::string name;
@@ -159,14 +167,17 @@ struct ConfigInfo
             std::optional<std::string> processor;
         } system;
         std::optional<std::string> suffix;
+        Flags flags;
         struct Debug
         {
             Options options;
+            Flags flags;
             std::vector<std::string> define;
         } debug;
         struct Release
         {
             Options options;
+            Flags flags;
             std::vector<std::string> define;
         } release;
     } build;

@@ -106,6 +106,38 @@ void load_define(const toml::table &build_table, std::vector<std::string> &defin
     }
 }
 
+void load_flags(const toml::table &build_table, Flags &flags, const Config &config)
+{
+    if (build_table.contains("flags") && build_table.at("flags").is_table())
+    {
+        auto flags_table = *build_table.at("flags").as_table();
+        auto get = [&](const std::string &key, std::vector<std::string> &vec)
+        {
+            if (flags_table.contains(key) && flags_table.at(key).is_array())
+            {
+                auto flags = *flags_table.at(key).as_array();
+                for (auto &&flag : flags)
+                {
+                    if (flag.is_string())
+                    {
+                        auto f = flag.value<std::string>().value();
+                        vec.push_back(f);
+                    }
+                    else
+                    {
+                        throw std::runtime_error(config.path.string() + ": build.flags.c must be an array of strings.");
+                    }
+                }
+            }
+        };
+        get("c", flags.c);
+        get("cxx", flags.cxx);
+        get("asm", flags.asm_);
+        get("ld_c", flags.ld_c);
+        get("ld_cxx", flags.ld_cxx);
+    }
+}
+
 ConfigInfo::Version parser_version(std::string a)
 {
     std::vector<std::string> a_parts = split(a, ".");
@@ -123,8 +155,7 @@ ConfigInfo::Version parser_version(std::string a)
     return ConfigInfo::Version{
         .x = a_nums[0],
         .y = a_nums[1],
-        .z = a_nums[2]
-    };
+        .z = a_nums[2]};
 }
 
 ConfigInfo::ConfigInfo(const Config &config)
@@ -201,17 +232,20 @@ ConfigInfo::ConfigInfo(const Config &config)
             if (!processor.empty())
                 this->build.system.processor = processor;
         }
+        load_flags(build_table, this->build.flags, config);
         if (build_table.contains("debug") && build_table.at("debug").is_table())
         {
             auto debug_table = *build_table.at("debug").as_table();
             load_options(debug_table, this->build.debug.options, config);
             load_define(debug_table, this->build.debug.define, config);
+            load_flags(debug_table, this->build.debug.flags, config);
         }
         if (build_table.contains("release") && build_table.at("release").is_table())
         {
             auto release_table = *build_table.at("release").as_table();
             load_options(release_table, this->build.release.options, config);
             load_define(release_table, this->build.release.define, config);
+            load_flags(release_table, this->build.release.flags, config);
         }
     }
     if (config.table_.contains("dependencies") && config.table_.at("dependencies").is_table())
