@@ -6,7 +6,7 @@ Config::Config(const fs::path &project)
 {
     auto cup_toml = project / "cup.toml";
     if (!fs::exists(cup_toml))
-        throw std::runtime_error("'" + project.string() + "' is not a valid cup project.");
+        throw std::runtime_error("'" + project.lexically_normal().string() + "' is not a valid cup project.");
     std::ifstream ifs(cup_toml.string());
     this->table_ = toml::parse(ifs);
     this->path = cup_toml;
@@ -18,10 +18,17 @@ Config::~Config()
     delete this->config;
 }
 
-fs::path parser_env(const std::string &str)
+fs::path parser_env(const std::string &str, const fs::path &root)
 {
     if (str.empty())
         return fs::path();
+    if (str.starts_with("$root:"))
+    {
+        LOG_DEBUG("$root:", root);
+        LOG_DEBUG("sub: ", str.substr(6));
+        LOG_DEBUG("New Dir: ", root / str.substr(6));
+        return root / str.substr(6);
+    }
     if (!str.starts_with("$env:"))
         return fs::path(str).lexically_normal();
     auto raw_path = fs::path(str.substr(5));
@@ -48,8 +55,8 @@ void load_options(const toml::table &build_table, ConfigInfo::Build::Options &op
                 if (option.is_string())
                 {
                     auto opt = option.value<std::string>().value();
-                    if(opt.starts_with("$env:"))
-                        opt = replace_all(parser_env(opt).string(), "\\", "/");
+                    if (opt.starts_with("$env:") || opt.starts_with("$root:"))
+                        opt = replace_all(parser_env(opt, config.path.parent_path()).string(), "\\", "/");
                     options.compile.push_back(opt);
                 }
                 else
@@ -66,8 +73,8 @@ void load_options(const toml::table &build_table, ConfigInfo::Build::Options &op
                 if (option.is_string())
                 {
                     auto opt = option.value<std::string>().value();
-                    if(opt.starts_with("$env:"))
-                        opt = replace_all(parser_env(opt).string(), "\\", "/");
+                    if (opt.starts_with("$env:") || opt.starts_with("$root:"))
+                        opt = replace_all(parser_env(opt, config.path.parent_path()).string(), "\\", "/");
                     options.link.push_back(opt);
                 }
                 else
@@ -154,7 +161,7 @@ ConfigInfo::ConfigInfo(const Config &config)
             {
                 if (include.is_string())
                 {
-                    fs::path inc = parser_env(include.value<std::string>().value());
+                    fs::path inc = parser_env(include.value<std::string>().value(), config.path.parent_path());
                     this->build.include.push_back(inc.is_relative() ? config.path.parent_path() / inc : inc);
                 }
                 else
@@ -192,7 +199,7 @@ ConfigInfo::ConfigInfo(const Config &config)
         for (auto &&[name, table] : dependencies)
         {
             auto key = std::string(name.str());
-            auto path = parser_env(config.need<std::string>("dependencies." + key + ".path", "", false));
+            auto path = parser_env(config.need<std::string>("dependencies." + key + ".path", "", false), config.path.parent_path());
             if (path.empty() && !key.starts_with("Qt"))
                 throw std::runtime_error(config.path.string() + ": 'dependencies." + key + "' does not have the 'path'.");
             this->dependencies.insert({key, CupProject{.path = path}});
@@ -243,7 +250,7 @@ ConfigInfo::ConfigInfo(const Config &config)
             auto key = std::string(name.str());
             if (dir.is_string())
             {
-                fs::path dir_str = parser_env(dir.value<std::string>().value());
+                fs::path dir_str = parser_env(dir.value<std::string>().value(), config.path.parent_path());
                 this->link.insert({key, dir_str.is_relative() ? config.path.parent_path() / dir_str : dir_str});
             }
             else
