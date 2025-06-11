@@ -7,11 +7,11 @@ Cup 只有一个可执行文件，你只需将它放置在任何你喜欢的路�
 **Cup 需要依赖 CMake(>=3.10) 运行，因而你还需确保你的设备环境中可以通过环境变量访问到 CMake，你可以通过在命令行运行 `cmake --version` 来检查你的环境中是否有 CMake 以及它的版本号**
 
 ## 使用
-针对于 Cup 的使用，可以通过 [使用说明](https://github.com/Anglebase/Cup/blob/master/docs/use.md) 学习更多；通过查阅 [配置文件](https://github.com/Anglebase/Cup/blob/master/docs/cup.toml)，可以了解 Cup 的配置文件都支持哪些参数；通过查阅 [君子协定](https://github.com/Anglebase/Cup/blob/master/docs/agree.md)可以了解如何让你编写的库更易使用
+针对于 Cup 的使用，可以通过 [使用说明](https://github.com/Anglebase/Cup/blob/v1.0.0/docs/use.md) 学习更多；通过查阅 [配置文件](https://github.com/Anglebase/Cup/blob/v1.0.0/docs/cup.toml)，可以了解 Cup 的配置文件都支持哪些参数；通过查阅 [君子协定](https://github.com/Anglebase/Cup/blob/v1.0.0/docs/agree.md)可以了解如何让你编写的库更易使用
 
-对于嵌入式项目的配置文件，可以参考[STM32F103C8T6 Demo项目配置文件](https://github.com/Anglebase/Cup/blob/master/docs/stm32f103.toml)
+对于嵌入式项目的配置文件，可以参考[STM32F103C8T6 Demo项目配置文件](https://github.com/Anglebase/Cup/blob/v1.0.0/docs/stm32f103.toml)
 
-对于Qt项目的配置文件，可以参考[Qt6 Demo项目配置文件](https://github.com/Anglebase/Cup/blob/master/docs/qt.toml)
+对于Qt项目的配置文件，可以参考[Qt6 Demo项目配置文件](https://github.com/Anglebase/Cup/blob/v1.0.0/docs/qt.toml)
 
 ## 示例
 
