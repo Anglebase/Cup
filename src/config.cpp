@@ -192,6 +192,16 @@ ConfigInfo::ConfigInfo(const Config &config)
     auto cxx = config.need<std::string>("build.toolchain.cxx", "", false);
     auto asm_ = config.need<std::string>("build.toolchain.asm", "", false);
     auto ld = config.need<std::string>("build.toolchain.ld", "", false);
+
+    if (cc.starts_with("$env:") || cc.starts_with("$root:"))
+        cc = replace_all(parser_env(cc, config.path.parent_path()).string(), "\\", "/");
+    if (cxx.starts_with("$env:") || cxx.starts_with("$root:"))
+        cxx = replace_all(parser_env(cxx, config.path.parent_path()).string(), "\\", "/");
+    if (asm_.starts_with("$env:") || asm_.starts_with("$root:"))
+        asm_ = replace_all(parser_env(asm_, config.path.parent_path()).string(), "\\", "/");
+    if (ld.starts_with("$env:") || ld.starts_with("$root:"))
+        ld = replace_all(parser_env(ld, config.path.parent_path()).string(), "\\", "/");
+
     if (!cc.empty())
         this->build.toolchain.cc = cc;
     if (!cxx.empty())
