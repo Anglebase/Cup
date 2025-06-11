@@ -109,6 +109,11 @@ int main(int argc, char **argv)
              std::cout << HELP_INFO << std::endl;
              return 0;
          }},
+        {"version", [&]()
+         {
+             std::cout << "Cup version " << _VER_X << "." << _VER_Y << "." << _VER_Z << std::endl;
+             return 0;
+         }},
     };
     if (table.find(cmd) == table.end())
     {
