@@ -329,7 +329,6 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
         gen.target_include_directories(item, cmake::Visual::Public, {(project_dir / "include").lexically_normal()});
         gen.set_target_c_standard(item, config.config->build.stdc);
         gen.set_target_cxx_standard(item, config.config->build.stdcxx);
-        gen.set_target_cxx_standard(item, config.config->build.stdcxx);
         gen.target_compile_definitions(
             item,
             cmake::Visual::Private,
