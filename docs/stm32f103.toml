@@ -5,24 +5,61 @@ version = "0.1.0"
 
 [build]
 target = "binary"
+# 指定生成器为 MinGW Makefiles
 generator = "MinGW Makefiles"
+# 指定目标系统为 Generic，处理器为 arm
 system = { name = "Generic", processor = "arm" }
-options = { compile = [
-    "-mcpu=cortex-m3",
-    "-Wall -Wextra -Wpedantic -fdata-sections -ffunction-sections",
-    # "-fno-rtti -fno-exceptions -fno-threadsafe-statics", 如果需要构建 C++ 目标，则添加此项
-], link = [
-    "-mcpu=cortex-m3",
-    "-T", "$env:LD_DIR/STM32F103XX_FLASH.ld",
-    "--specs=nano.specs",
-    "-Wl,-Map=demo.map -Wl,--gc-sections",
-    "-Wl,--start-group -lc -lm -Wl,--end-group",
-    "-Wl,--print-memory-usage",
-] }
+# 指定输出文件的后缀名
 suffix = ".elf"
 
+# 指定编译工具链的路径或名称(如果在环境变量中已指定)
+# 此项允许使用`$:`前缀
 [build.toolchain]
 cc = "arm-none-eabi-gcc"
 cxx = "arm-none-eabi-g++"
 asm = "arm-none-eabi-gcc"
 ld = "arm-none-eabi-g++"
+
+# 指定编译相关的标志
+[build.flags]
+c = [
+    "-mcpu=cortex-m3",
+    "-Wall -Wextra -Wpedantic -fdata-sections -ffunction-sections",
+]
+cxx = [
+    "-mcpu=cortex-m3",
+    "-Wall -Wextra -Wpedantic -fdata-sections -ffunction-sections",
+    "-fno-rtti -fno-exceptions -fno-threadsafe-statics",
+]
+asm = ["-x", "assembler-with-cpp", "-MMD", "-MP"]
+ld_c = [
+    "-mcpu=cortex-m3",
+    "-T",
+    "$root:STM32F103XX_FLASH.ld",
+    "--specs=nano.specs",
+    "-Wl,-Map=demo.map -Wl,--gc-sections",
+    "-Wl,--start-group -lc -lm -Wl,--end-group",
+    "-Wl,--print-memory-usage",
+]
+ld_cxx = [
+    "-mcpu=cortex-m3",
+    "-T",
+    "$root:STM32F103XX_FLASH.ld",
+    "--specs=nano.specs",
+    "-Wl,-Map=demo.map -Wl,--gc-sections",
+    "-Wl,--start-group -lc -lm -Wl,--end-group",
+    "-Wl,--print-memory-usage",
+    "-Wl,--start-group",
+    " -lstdc++",
+    " -lsupc++",
+    " -Wl,--end-group",
+]
+
+# 不同模式下的编译选项
+[build.debug.flags]
+c = ["-O0", "-g3"]
+cxx = ["-O0", "-g3"]
+
+[build.release.flags]
+c = ["-Os", "-g0"]
+cxx = ["-Os", "-g0"]
