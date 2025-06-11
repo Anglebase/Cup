@@ -47,6 +47,16 @@ Build::Build(const BuildInfo &info, const ConfigInfo &config)
 
 void Build::generate_cmake_root(cmake::Generator &gen)
 {
+    if (!this->config.build.flags.c.empty())
+        gen.set("CMAKE_C_FLAGS", '"' + join(this->config.build.flags.c, " ") + '"');
+    if (!this->config.build.flags.cxx.empty())
+        gen.set("CMAKE_CXX_FLAGS", '"' + join(this->config.build.flags.cxx, " ") + '"');
+    if (!this->config.build.flags.asm_.empty())
+        gen.set("CMAKE_ASM_FLAGS", '"' + join(this->config.build.flags.asm_, " ") + '"');
+    if (!this->config.build.flags.ld_c.empty())
+        gen.set("CMAKE_C_LINK_FLAGS", '"' + join(this->config.build.flags.ld_c, " ") + '"');
+    if (!this->config.build.flags.ld_cxx.empty())
+        gen.set("CMAKE_CXX_LINK_FLAGS", '"' + join(this->config.build.flags.ld_cxx, " ") + '"');
     const char *BINARY = "binary";
     const char *STATIC = "static";
     const char *SHARED = "shared";
@@ -293,6 +303,16 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
     const char *SHARED = "shared";
     auto project_dir = path.is_relative() ? this->info.project_dir / path : path;
     Config config(project_dir);
+    if (!config.config->build.flags.c.empty())
+        gen.set("CMAKE_C_FLAGS", '"' + join(config.config->build.flags.c, " ") + '"');
+    if (!config.config->build.flags.cxx.empty())
+        gen.set("CMAKE_CXX_FLAGS", '"' + join(config.config->build.flags.cxx, " ") + '"');
+    if (!config.config->build.flags.asm_.empty())
+        gen.set("CMAKE_ASM_FLAGS", '"' + join(config.config->build.flags.asm_, " ") + '"');
+    if (!config.config->build.flags.ld_c.empty())
+        gen.set("CMAKE_C_LINK_FLAGS", '"' + join(config.config->build.flags.ld_c, " ") + '"');
+    if (!config.config->build.flags.ld_cxx.empty())
+        gen.set("CMAKE_CXX_LINK_FLAGS", '"' + join(config.config->build.flags.ld_cxx, " ") + '"');
     if (!config.config->build.generator.empty())
     {
         if (this->cmake_gen.has_value() && this->cmake_gen.value() != config.config->build.generator)
@@ -493,16 +513,6 @@ void Build::generate_build(std::ofstream &ofs)
             generator.set("CMAKE_" + flag, "ON");
         generator.find_package(qt.version, qt.modules);
     }
-    if (!this->config.build.flags.c.empty())
-        generator.set("CMAKE_C_FLAGS", '"' + join(this->config.build.flags.c, " ") + '"');
-    if (!this->config.build.flags.cxx.empty())
-        generator.set("CMAKE_CXX_FLAGS", '"' + join(this->config.build.flags.cxx, " ") + '"');
-    if (!this->config.build.flags.asm_.empty())
-        generator.set("CMAKE_ASM_FLAGS", '"' + join(this->config.build.flags.asm_, " ") + '"');
-    if (!this->config.build.flags.ld_c.empty())
-        generator.set("CMAKE_C_LINK_FLAGS", '"' + join(this->config.build.flags.ld_c, " ") + '"');
-    if (!this->config.build.flags.ld_cxx.empty())
-        generator.set("CMAKE_CXX_LINK_FLAGS", '"' + join(this->config.build.flags.ld_cxx, " ") + '"');
     this->generate_cmake_root(generator);
     generator.write_to(ofs);
 }
