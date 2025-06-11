@@ -121,6 +121,8 @@ void load_flags(const toml::table &build_table, Flags &flags, const Config &conf
                     if (flag.is_string())
                     {
                         auto f = flag.value<std::string>().value();
+                        if (f.starts_with("$env:") || f.starts_with("$root:"))
+                            f = replace_all(parser_env(f, config.path.parent_path()).string(), "\\", "/");
                         vec.push_back(f);
                     }
                     else
