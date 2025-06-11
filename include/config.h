@@ -13,6 +13,7 @@ struct ConfigInfo;
 class Config
 {
     toml::table table_;
+
 public:
     fs::path path;
 #ifdef DEBUG_CONFIG
@@ -116,7 +117,18 @@ struct Qt
 struct ConfigInfo
 {
     std::string name;
-    std::string version;
+    struct Version
+    {
+        int x;
+        int y;
+        int z;
+
+        Version &operator=(const Version &other) = default;
+        bool operator==(const Version &other) const
+        {
+            return x == other.x && y == other.y && z == other.z;
+        }
+    } version;
     std::string description;
     std::vector<std::string> authors;
     std::string license;
@@ -165,6 +177,12 @@ struct ConfigInfo
 
     ConfigInfo(const Config &table);
 };
+
+inline std::ostream &operator<<(std::ostream &os, const ConfigInfo::Version &version)
+{
+    os << version.x << "." << version.y << "." << version.z;
+    return os;
+}
 
 #ifdef DEBUG_CONFIG
 #include <iostream>

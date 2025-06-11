@@ -216,42 +216,18 @@ void load_all_includes(std::unordered_set<std::string> &includes, const fs::path
     }
 }
 
-std::string compare(std::string a, std::string b)
+ConfigInfo::Version compare(ConfigInfo::Version a, ConfigInfo::Version b)
 {
-    std::vector<std::string> a_parts = split(a, ".");
-    std::vector<std::string> b_parts = split(b, ".");
-    if (a_parts.size() != 3)
-        throw std::runtime_error("Invalid version number: " + a);
-    if (b_parts.size() != 3)
-        throw std::runtime_error("Invalid version number: " + b);
-    std::vector<int> a_nums;
-    try
-    {
-        a_nums = {std::stoi(a_parts[0]), std::stoi(a_parts[1]), std::stoi(a_parts[2])};
-    }
-    catch (...)
-    {
-        throw std::runtime_error("Invalid version number: " + a);
-    }
-    std::vector<int> b_nums;
-    try
-    {
-        b_nums = {std::stoi(b_parts[0]), std::stoi(b_parts[1]), std::stoi(b_parts[2])};
-    }
-    catch (...)
-    {
-        throw std::runtime_error("Invalid version number: " + b);
-    }
-    if (a_nums[0] != b_nums[0])
+    if (a.x != b.x)
         throw std::runtime_error("Simultaneously having incompatible versions is not allowed!");
-    if (a_nums[1] != b_nums[1])
-        return a_nums[1] < b_nums[1] ? b : a;
-    if (a_nums[2] != b_nums[2])
-        return a_nums[2] < b_nums[2] ? b : a;
+    if (a.y != b.y)
+        return a.y < b.y ? b : a;
+    if (a.z != b.z)
+        return a.z < b.z ? b : a;
     return a;
 }
 
-void load_all_dependecies(std::unordered_map<std::string, std::string> &dependencies, const fs::path &root)
+void load_all_dependecies(std::unordered_map<std::string, ConfigInfo::Version> &dependencies, const fs::path &root)
 {
     Config config(root);
     if (dependencies.find(config.config->name) == dependencies.end())
@@ -290,7 +266,7 @@ int ListCmd::run()
     else if (this->option == "deps")
     {
         LOG_INFO("Dependencies:");
-        std::unordered_map<std::string, std::string> dependencies;
+        std::unordered_map<std::string, ConfigInfo::Version> dependencies;
         load_all_dependecies(dependencies, project_dir);
         for (const auto &[name, version] : dependencies)
             std::cout << "    " << name << " v" << version << std::endl;

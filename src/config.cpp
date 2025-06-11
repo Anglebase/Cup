@@ -106,10 +106,31 @@ void load_define(const toml::table &build_table, std::vector<std::string> &defin
     }
 }
 
+ConfigInfo::Version parser_version(std::string a)
+{
+    std::vector<std::string> a_parts = split(a, ".");
+    if (a_parts.size() != 3)
+        throw std::runtime_error("Invalid version number: " + a);
+    std::vector<int> a_nums;
+    try
+    {
+        a_nums = {std::stoi(a_parts[0]), std::stoi(a_parts[1]), std::stoi(a_parts[2])};
+    }
+    catch (...)
+    {
+        throw std::runtime_error("Invalid version number: " + a);
+    }
+    return ConfigInfo::Version{
+        .x = a_nums[0],
+        .y = a_nums[1],
+        .z = a_nums[2]
+    };
+}
+
 ConfigInfo::ConfigInfo(const Config &config)
 {
     this->name = config.get<std::string>("name");
-    this->version = config.get<std::string>("version");
+    this->version = parser_version(config.get<std::string>("version"));
     this->description = config.need<std::string>("description", "", false);
     if (config.table_.contains("authors") && config.table_.at("authors").is_array())
     {

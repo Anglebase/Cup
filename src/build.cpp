@@ -82,6 +82,14 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.set_target_output_directory(item, std::nullopt, replace_finally_name(main_file.parent_path(), "bin", "target"));
             gen.set_target_c_standard(item, this->config.build.stdc);
             gen.set_target_cxx_standard(item, this->config.build.stdcxx);
+            gen.target_compile_definitions(
+                item,
+                cmake::Visual::Private,
+                {
+                    std::string("_VER_X=") + std::to_string(this->config.version.x),
+                    std::string("_VER_Y=") + std::to_string(this->config.version.y),
+                    std::string("_VER_Z=") + std::to_string(this->config.version.z),
+                });
             if (!this->config.build.include.empty())
                 gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
             if (!this->config.build.options.compile.empty())
@@ -135,6 +143,14 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
         gen.set_target_c_standard(item, this->config.build.stdc);
         gen.set_target_cxx_standard(item, this->config.build.stdcxx);
+        gen.target_compile_definitions(
+            item,
+            cmake::Visual::Private,
+            {
+                std::string("_VER_X=") + std::to_string(this->config.version.x),
+                std::string("_VER_Y=") + std::to_string(this->config.version.y),
+                std::string("_VER_Z=") + std::to_string(this->config.version.z),
+            });
         if (!this->config.build.include.empty())
             gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
         if (!this->config.build.options.compile.empty())
@@ -200,6 +216,15 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
         gen.set_target_c_standard(item, this->config.build.stdc);
         gen.set_target_cxx_standard(item, this->config.build.stdcxx);
+        gen.set_target_cxx_standard(item, this->config.build.stdcxx);
+        gen.target_compile_definitions(
+            item,
+            cmake::Visual::Private,
+            {
+                std::string("_VER_X=") + std::to_string(this->config.version.x),
+                std::string("_VER_Y=") + std::to_string(this->config.version.y),
+                std::string("_VER_Z=") + std::to_string(this->config.version.z),
+            });
         if (!this->config.build.include.empty())
             gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
         if (!this->config.build.options.compile.empty())
@@ -304,6 +329,15 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
         gen.target_include_directories(item, cmake::Visual::Public, {(project_dir / "include").lexically_normal()});
         gen.set_target_c_standard(item, config.config->build.stdc);
         gen.set_target_cxx_standard(item, config.config->build.stdcxx);
+        gen.set_target_cxx_standard(item, config.config->build.stdcxx);
+        gen.target_compile_definitions(
+            item,
+            cmake::Visual::Private,
+            {
+                std::string("_VER_X=") + std::to_string(config.config->version.x),
+                std::string("_VER_Y=") + std::to_string(config.config->version.y),
+                std::string("_VER_Z=") + std::to_string(config.config->version.z),
+            });
         if (!config.config->build.include.empty())
             gen.target_include_directories(item, cmake::Visual::Public, config.config->build.include);
         if (!config.config->build.options.compile.empty())
@@ -358,6 +392,14 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
         gen.target_include_directories(item, cmake::Visual::Public, {(project_dir / "include").lexically_normal()});
         gen.set_target_c_standard(item, config.config->build.stdc);
         gen.set_target_cxx_standard(item, config.config->build.stdcxx);
+        gen.target_compile_definitions(
+            item,
+            cmake::Visual::Private,
+            {
+                std::string("_VER_X=") + std::to_string(config.config->version.x),
+                std::string("_VER_Y=") + std::to_string(config.config->version.y),
+                std::string("_VER_Z=") + std::to_string(config.config->version.z),
+            });
         if (!config.config->build.include.empty())
             gen.target_include_directories(item, cmake::Visual::Public, config.config->build.include);
         if (!config.config->build.options.compile.empty())
