@@ -216,7 +216,7 @@ void load_all_includes(std::unordered_set<std::string> &includes, const fs::path
     }
 }
 
-ConfigInfo::Version compare(ConfigInfo::Version a, ConfigInfo::Version b)
+Version compare(Version a, Version b)
 {
     if (a.x != b.x)
         throw std::runtime_error("Simultaneously having incompatible versions is not allowed!");
@@ -227,7 +227,7 @@ ConfigInfo::Version compare(ConfigInfo::Version a, ConfigInfo::Version b)
     return a;
 }
 
-void load_all_dependecies(std::unordered_map<std::string, ConfigInfo::Version> &dependencies, const fs::path &root)
+void load_all_dependecies(std::unordered_map<std::string, Version> &dependencies, const fs::path &root)
 {
     Config config(root);
     if (dependencies.find(config.config->name) == dependencies.end())
@@ -266,7 +266,7 @@ int ListCmd::run()
     else if (this->option == "deps")
     {
         LOG_INFO("Dependencies:");
-        std::unordered_map<std::string, ConfigInfo::Version> dependencies;
+        std::unordered_map<std::string, Version> dependencies;
         load_all_dependecies(dependencies, project_dir);
         for (const auto &[name, version] : dependencies)
             std::cout << "    " << name << " v" << version << std::endl;

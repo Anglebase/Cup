@@ -1,6 +1,7 @@
 #include "build.h"
 #include "md5.h"
 #include <thread>
+#include <string_view>
 
 std::vector<fs::path> find_all_source(const fs::path &root)
 {
@@ -64,10 +65,10 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         this->cmake_gen = this->config.build.generator;
     for (const auto &[name, cup] : this->config.dependencies)
     {
-        if (this->build_depends.find(name) == this->build_depends.end())
+        if (this->build_depends.find(std::string(name)) == this->build_depends.end())
         {
             this->generate_cmake_sub(cup, gen);
-            this->build_depends.insert(name);
+            this->build_depends.insert(std::string(name));
         }
     }
     auto src_files = fs::exists(this->info.project_dir / "src")
@@ -129,13 +130,13 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             std::vector<std::string> libs;
             for (const auto &[name, dir] : this->config.link)
             {
-                libs.push_back(name);
+                libs.push_back(std::string(name));
                 libs_dir.push_back(dir);
             }
             for (const auto &[name, cup] : this->config.dependencies)
             {
                 MD5 lhash(cup.path.is_relative() ? this->info.project_dir / cup.path : cup.path);
-                const auto lib_name = name + "_" + lhash.toStr();
+                const auto lib_name = std::string(name) + "_" + lhash.toStr();
                 libs.push_back(lib_name);
             }
             if (!libs.empty())
@@ -190,13 +191,13 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         std::vector<std::string> libs;
         for (const auto &[name, dir] : this->config.link)
         {
-            libs.push_back(name);
+            libs.push_back(std::string(name));
             libs_dir.push_back(dir);
         }
         for (const auto &[name, cup] : this->config.dependencies)
         {
             MD5 lhash(cup.path.is_relative() ? this->info.project_dir / cup.path : cup.path);
-            const auto lib_name = name + "_" + lhash.toStr();
+            const auto lib_name = std::string(name) + "_" + lhash.toStr();
             libs.push_back(lib_name);
         }
         if (!libs.empty())
@@ -264,13 +265,13 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         std::vector<std::string> libs;
         for (const auto &[name, dir] : this->config.link)
         {
-            libs.push_back(name);
+            libs.push_back(std::string(name));
             libs_dir.push_back(dir);
         }
         for (const auto &[name, cup] : this->config.dependencies)
         {
             MD5 lhash(cup.path.is_relative() ? this->info.project_dir / cup.path : cup.path);
-            const auto lib_name = name + "_" + lhash.toStr();
+            const auto lib_name = std::string(name) + "_" + lhash.toStr();
             libs.push_back(lib_name);
         }
         if (!libs.empty())
@@ -295,7 +296,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         throw std::runtime_error("Unknown target type: '" + this->config.build.target + "'");
 }
 
-void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen)
+void Build::generate_cmake_sub(const Dependency&root_cup, cmake::Generator &gen)
 {
     const fs::path path = root_cup.path;
     const char *BINARY = "binary";
@@ -324,10 +325,10 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
     }
     for (const auto &[name, cup] : config.config->dependencies)
     {
-        if (this->build_depends.find(name) == this->build_depends.end())
+        if (this->build_depends.find(std::string(name)) == this->build_depends.end())
         {
             this->generate_cmake_sub(cup, gen);
-            this->build_depends.insert(name);
+            this->build_depends.insert(std::string(name));
         }
     }
     auto src_files = fs::exists(project_dir / "src")
@@ -388,13 +389,13 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
         std::vector<std::string> libs;
         for (const auto &[name, dir] : config.config->link)
         {
-            libs.push_back(name);
+            libs.push_back(std::string(name));
             libs_dir.push_back(dir);
         }
         for (const auto &[name, cup] : config.config->dependencies)
         {
             MD5 lhash(cup.path.is_relative() ? project_dir / cup.path : cup.path);
-            const auto lib_name = name + "_" + lhash.toStr();
+            const auto lib_name = std::string(name) + "_" + lhash.toStr();
             libs.push_back(lib_name);
         }
         if (!libs.empty())
@@ -450,13 +451,13 @@ void Build::generate_cmake_sub(const CupProject &root_cup, cmake::Generator &gen
         std::vector<std::string> libs;
         for (const auto &[name, dir] : config.config->link)
         {
-            libs.push_back(name);
+            libs.push_back(std::string(name));
             libs_dir.push_back(dir);
         }
         for (const auto &[name, cup] : config.config->dependencies)
         {
             MD5 lhash(cup.path.is_relative() ? project_dir / cup.path : cup.path);
-            const auto lib_name = name + "_" + lhash.toStr();
+            const auto lib_name = std::string(name) + "_" + lhash.toStr();
             libs.push_back(lib_name);
         }
         if (!libs.empty())
