@@ -7,6 +7,7 @@
 #include <optional>
 #include <filesystem>
 #include "dollar.h"
+#include <iostream>
 
 class DeserdeError : public std::exception
 {
@@ -207,13 +208,25 @@ struct Deserde<fs::path>
     static inline fs::path from(const ::toml::node &node)
     {
         if (node.is_string())
-            return fs::path(Dollar::dollar(node.value<std::string>().value()));
+        {
+            auto path = fs::path(Dollar::dollar(node.value<std::string>().value()));
+            return (path.is_relative()
+                        ? fs::current_path() / path
+                        : path)
+                .lexically_normal();
+        }
         throw DeserdeError{};
     }
     static inline std::optional<fs::path> try_from(const ::toml::node &node) noexcept
     {
         if (node.is_string())
-            return fs::path(Dollar::dollar(node.value<std::string>().value()));
+        {
+            auto path = fs::path(Dollar::dollar(node.value<std::string>().value()));
+            return (path.is_relative()
+                        ? fs::current_path() / path
+                        : path)
+                .lexically_normal();
+        }
         return std::nullopt;
     }
 };

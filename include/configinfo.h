@@ -2,6 +2,7 @@
 
 #include "deserde.hpp"
 #include "utils.h"
+#include <iostream>
 
 class Config;
 
@@ -304,6 +305,11 @@ struct Deserde<BuildSettings>
                                      .value_or(std::vector<fs::path>{});
         build_settings.define = option<std::vector<std::string>>(table.get("define"))
                                     .value_or(std::vector<std::string>{});
+#ifdef _DEBUG
+        std::cout << "Debug mode: [include]" << std::endl;
+        for (auto &p : build_settings.include)
+            std::cout << p << std::endl;
+#endif
         build_settings.suffix = option<std::string>(table.get("suffix"));
         build_settings.options = option<Options>(table.get("options")).value_or(Options{});
         build_settings.toolchain = option<ToolChain>(table.get("toolchain")).value_or(ToolChain{});
@@ -330,6 +336,11 @@ struct Deserde<BuildSettings>
         build_settings.stdcxx = option<long long>(table->get("stdcxx")).value_or(20);
         build_settings.include = option<std::vector<fs::path>>(table->get("include"))
                                      .value_or(std::vector<fs::path>{});
+#ifdef _DEBUG
+        std::cout << "Debug mode: [include]" << std::endl;
+        for (auto &p : build_settings.include)
+            std::cout << p << std::endl;
+#endif
         build_settings.define = option<std::vector<std::string>>(table->get("define"))
                                     .value_or(std::vector<std::string>{});
         build_settings.suffix = option<std::string>(table->get("suffix"));
@@ -398,6 +409,7 @@ struct ConfigInfo
     std::map<std::string, Dependency> dependencies;
 
     std::optional<Qt> qt;
+
 public:
     ConfigInfo() = default;
     ConfigInfo(const Config &config);
