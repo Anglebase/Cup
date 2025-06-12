@@ -262,3 +262,17 @@ Qt6 = { path = 'C:\Qt\6.9.0\mingw_64\lib\cmake\Qt6', features = [
     "Gui",
     "Widgets",
 ] }
+
+[generator."<GENERATOR>"]
+# 此表是可选的
+# 此表用于指定特定生成器的配置
+# <GENERATOR> 可以为 build.generator 的任意有效值
+link = { name = "path" }                  # 此项与 [link] 相同，用于指定链接器路径
+options = { compile = [""], link = [""] } # 此项与 [build.options] 相同，用于指定编译选项和链接选项
+define = [""]                             # 此项与 build.define 相同，用于指定全局宏定义
+
+[generator."<GENERATOR>".debug]
+# 此表是可选的，它与 [generator."<GENERATOR>"] 相同，但仅在 cup 以 debug 模式构建时生效
+
+[generator."<GENERATOR>".release]
+# 此表是可选的，它与 [generator."<GENERATOR>"] 相同，但仅在 cup 以 release 模式构建时生效

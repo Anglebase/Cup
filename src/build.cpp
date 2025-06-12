@@ -88,7 +88,7 @@ void generate_generator(const std::string &item, const ConfigInfo &config,
             break;
         }
     }
-    if (!has_config && !config.generators.empty() && type != "binary")
+    if (!has_config && !config.generators.empty())
     {
         LOG_WARN("No generator config for generator \"", *cmake_gen, "\" in \"", config.name, "\".");
         LOG_WARN("It may not support this generator.");
@@ -281,6 +281,8 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
     {
         MD5 hash(project_dir);
         auto item = config.config->name + "_" + hash.toStr();
+        if (src_files.empty())
+            throw std::runtime_error("No source files found in dependency \"" + config.config->name + "\".");
         gen.add_library(
             item,
             config.config->build.target == STATIC

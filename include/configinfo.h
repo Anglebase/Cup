@@ -510,7 +510,7 @@ struct Deserde<ConfigInfo>
                                .value_or(std::map<std::string, fs::path>{});
         config_info.dependencies = option<std::map<std::string, Dependency>>(table.get("dependencies"))
                                        .value_or(std::map<std::string, Dependency>{});
-        config_info.generators = option<std::map<std::string, GeneratorSettings>>(table.get("generators"))
+        config_info.generators = option<std::map<std::string, GeneratorSettings>>(table.get("generator"))
                                      .value_or(std::map<std::string, GeneratorSettings>{});
         return config_info;
     }
@@ -539,7 +539,7 @@ struct Deserde<ConfigInfo>
                                .value_or(std::map<std::string, fs::path>{});
         config_info.dependencies = option<std::map<std::string, Dependency>>(table->get("dependencies"))
                                        .value_or(std::map<std::string, Dependency>{});
-        config_info.generators = option<std::map<std::string, GeneratorSettings>>(table->get("generators"))
+        config_info.generators = option<std::map<std::string, GeneratorSettings>>(table->get("generator"))
                                      .value_or(std::map<std::string, GeneratorSettings>{});
         return config_info;
     }
