@@ -135,7 +135,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             }
             for (const auto &[name, cup] : this->config.dependencies)
             {
-                MD5 lhash(cup.path.is_relative() ? this->info.project_dir / cup.path : cup.path);
+                MD5 lhash(cup.path->is_relative() ? this->info.project_dir / *cup.path : *cup.path);
                 const auto lib_name = std::string(name) + "_" + lhash.toStr();
                 libs.push_back(lib_name);
             }
@@ -201,7 +201,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         }
         for (const auto &[name, cup] : this->config.dependencies)
         {
-            MD5 lhash(cup.path.is_relative() ? this->info.project_dir / cup.path : cup.path);
+            MD5 lhash(cup.path->is_relative() ? this->info.project_dir / *cup.path : *cup.path);
             const auto lib_name = std::string(name) + "_" + lhash.toStr();
             libs.push_back(lib_name);
         }
@@ -229,7 +229,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
 
 void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen)
 {
-    const fs::path path = root_cup.path;
+    const fs::path path = root_cup.path.value();
     const char *BINARY = "binary";
     const char *STATIC = "static";
     const char *SHARED = "shared";
@@ -330,7 +330,7 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
         }
         for (const auto &[name, cup] : config.config->dependencies)
         {
-            MD5 lhash(cup.path.is_relative() ? project_dir / cup.path : cup.path);
+            MD5 lhash(cup.path->is_relative() ? project_dir / *cup.path : *cup.path);
             const auto lib_name = std::string(name) + "_" + lhash.toStr();
             libs.push_back(lib_name);
         }
@@ -383,11 +383,16 @@ void Build::generate_build(std::ofstream &ofs)
         generator.set_executable_suffix(this->config.build.suffix.value());
     if (this->config.qt.has_value())
     {
+        generator.add_prefix_path(*this->config.qt->path);
+    }
+    if (this->config.qt.has_value())
+    {
         auto qt = this->config.qt.value();
         for (auto &&flag : qt.flags)
             generator.set("CMAKE_" + flag, "ON");
         generator.find_package(qt.version, qt.modules);
     }
+
     this->generate_cmake_root(generator);
     generator.write_to(ofs);
 }

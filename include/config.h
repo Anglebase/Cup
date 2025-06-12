@@ -50,7 +50,7 @@ std::ostream &operator<<(std::ostream &os, const ConfigInfo &config)
         os << "  -l " << link.first << " -> " << link.second << std::endl;
     os << "dependencies: " << std::endl;
     for (auto &dependency : config.dependencies)
-        os << "  - " << dependency.first << " -> " << dependency.second.path << std::endl;
+        os << "  - " << dependency.first << " -> " << dependency.second.path.value_or(fs::path()) << std::endl;
     return os;
 }
 #endif

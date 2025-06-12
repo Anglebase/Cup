@@ -309,6 +309,12 @@ void cmake::Generator::endif_()
     this->commands.push_back("endif()");
 }
 
+void cmake::Generator::add_prefix_path(const fs::path &path)
+{
+    this->set("CMAKE_PREFIX_PATH",
+              "${CMAKE_PREFIX_PATH};" + replace_all((path).lexically_normal().string(), "\\", "/"));
+}
+
 std::string cmake::Generator::generator() const
 {
     std::ostringstream oss;

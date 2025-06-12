@@ -208,9 +208,12 @@ void load_all_includes(std::unordered_set<std::string> &includes, const fs::path
     }
     for (const auto &[name, path] : config.config->dependencies)
     {
-        auto dir = path.path;
-        if (dir.is_relative())
-            dir = root / dir;
+        auto dir_ = path.path;
+        auto dir = fs::path();
+        if (dir_.has_value())
+            dir = root / dir_.value();
+        else
+            continue;
         dir.lexically_normal();
         load_all_includes(includes, dir);
     }
@@ -241,9 +244,12 @@ void load_all_dependecies(std::unordered_map<std::string, Version> &dependencies
     }
     for (const auto &[name, path] : config.config->dependencies)
     {
-        auto dir = path.path;
-        if (dir.is_relative())
-            dir = root / dir;
+        auto dir_ = path.path;
+        auto dir = fs::path();
+        if (dir_.has_value())
+            dir = root / dir_.value();
+        else
+            continue;
         dir.lexically_normal();
         load_all_dependecies(dependencies, dir);
     }

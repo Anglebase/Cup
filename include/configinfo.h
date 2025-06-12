@@ -357,7 +357,7 @@ struct Deserde<BuildSettings>
 
 struct Dependency
 {
-    fs::path path;
+    std::optional<fs::path> path;
     std::vector<std::string> features;
 };
 
@@ -392,7 +392,7 @@ struct Deserde<Dependency>
 
 struct Qt
 {
-    fs::path path;
+    std::optional<fs::path> path;
     std::string version;
     std::vector<std::string> modules;
     std::vector<std::string> flags;
