@@ -167,33 +167,33 @@ struct Deserde<std::vector<E>>
 
 template <typename V>
     requires Deserdeable<V>
-struct Deserde<std::map<std::string_view, V>>
+struct Deserde<std::map<std::string, V>>
 {
-    static inline std::map<std::string_view, V> from(const ::toml::node &node)
+    static inline std::map<std::string, V> from(const ::toml::node &node)
     {
         if (!node.is_table())
             throw DeserdeError{};
-        std::map<std::string_view, V> map;
+        std::map<std::string, V> map;
         for (const auto &[key_, value_] : *node.as_table())
         {
             auto key = key_.str();
             auto value = Deserde<V>::from(value_);
-            map[std::string_view(key)] = value;
+            map[std::string(key)] = value;
         }
         return map;
     }
-    static inline std::optional<std::map<std::string_view, V>> try_from(const ::toml::node &node) noexcept
+    static inline std::optional<std::map<std::string, V>> try_from(const ::toml::node &node) noexcept
     {
         if (!node.is_table())
             return std::nullopt;
-        std::map<std::string_view, V> map;
+        std::map<std::string, V> map;
         for (const auto &[key_, value_] : *node.as_table())
         {
             auto key = key_.str();
             auto value = Deserde<V>::try_from(value_);
             if (!value)
                 return std::nullopt;
-            map[std::string_view(key)] = value.value();
+            map[std::string(key)] = value.value();
         }
         return map;
     }

@@ -394,8 +394,8 @@ struct ConfigInfo
     std::vector<std::string> authors;
     std::string license;
     BuildSettings build;
-    std::map<std::string_view, fs::path> link;
-    std::map<std::string_view, Dependency> dependencies;
+    std::map<std::string, fs::path> link;
+    std::map<std::string, Dependency> dependencies;
 
     std::optional<Qt> qt;
 public:
@@ -418,10 +418,10 @@ struct Deserde<ConfigInfo>
                                   .value_or(std::vector<std::string>{});
         config_info.license = option<std::string>(table.get("license")).value_or("");
         config_info.build = require<BuildSettings>(table.get("build"));
-        config_info.link = option<std::map<std::string_view, fs::path>>(table.get("link"))
-                               .value_or(std::map<std::string_view, fs::path>{});
-        config_info.dependencies = option<std::map<std::string_view, Dependency>>(table.get("dependencies"))
-                                       .value_or(std::map<std::string_view, Dependency>{});
+        config_info.link = option<std::map<std::string, fs::path>>(table.get("link"))
+                               .value_or(std::map<std::string, fs::path>{});
+        config_info.dependencies = option<std::map<std::string, Dependency>>(table.get("dependencies"))
+                                       .value_or(std::map<std::string, Dependency>{});
 
         return config_info;
     }
@@ -446,10 +446,10 @@ struct Deserde<ConfigInfo>
         if (!build)
             return std::nullopt;
         config_info.build = *build;
-        config_info.link = option<std::map<std::string_view, fs::path>>(table->get("link"))
-                               .value_or(std::map<std::string_view, fs::path>{});
-        config_info.dependencies = option<std::map<std::string_view, Dependency>>(table->get("dependencies"))
-                                       .value_or(std::map<std::string_view, Dependency>{});
+        config_info.link = option<std::map<std::string, fs::path>>(table->get("link"))
+                               .value_or(std::map<std::string, fs::path>{});
+        config_info.dependencies = option<std::map<std::string, Dependency>>(table->get("dependencies"))
+                                       .value_or(std::map<std::string, Dependency>{});
 
         return config_info;
     }
