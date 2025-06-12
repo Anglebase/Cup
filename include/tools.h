@@ -47,6 +47,7 @@ class RunCmd : public BuildCmd
     fs::path run_target;
 
 public:
+    static std::optional<std::string> suffix;
     RunCmd(const SysArgs &args);
     int exec();
 };

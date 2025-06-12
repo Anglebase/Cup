@@ -59,14 +59,22 @@ RunCmd::RunCmd(const SysArgs &args) : BuildCmd(args)
     this->run_target = dir.lexically_normal();
 }
 
+std::optional<std::string> RunCmd::suffix = std::nullopt;
 int RunCmd::exec()
 {
     auto res = 0;
     if ((res = this->run()) != 0)
         return res;
+    if (RunCmd::suffix.has_value())
+    {
+        this->run_target.replace_extension(RunCmd::suffix.value());
+    }
+    else
+    {
 #ifdef _WIN32
-    this->run_target.replace_extension(".exe");
+        this->run_target.replace_extension(".exe");
 #endif
+    }
     if (!fs::exists(this->run_target))
         this->run_target = this->run_target.parent_path() /
                            (this->config == BuildType::Release ? "Release" : "Debug") /

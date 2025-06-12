@@ -2,6 +2,7 @@
 #include "md5.h"
 #include <thread>
 #include <string_view>
+#include "tools.h"
 
 std::vector<fs::path> find_all_source(const fs::path &root)
 {
@@ -346,6 +347,7 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
 
 void Build::generate_build(std::ofstream &ofs)
 {
+    RunCmd::suffix = this->config.build.suffix;
     cmake::Generator generator;
     if (this->config.build.system.name.has_value())
         generator.set_system_name(this->config.build.system.name.value());
