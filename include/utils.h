@@ -50,7 +50,8 @@ inline std::string replace_all(const std::string &str, const std::string &from, 
     return result;
 }
 
-inline fs::path replace_finally_name(const fs::path &path, const std::string &from, const std::string &to)
+inline fs::path replace_finally_name(const fs::path &path, const std::string &from,
+                                     const std::string &to, const std::optional<fs::path> special_path = std::nullopt)
 {
     auto at = -1;
     for (auto it = path.begin(); it != path.end(); ++it)
@@ -59,7 +60,17 @@ inline fs::path replace_finally_name(const fs::path &path, const std::string &fr
     if (at == -1)
         return path;
     auto result = fs::path();
-    for (auto it = path.begin(); it != path.end(); ++it)
-        result /= std::distance(path.begin(), it) == at ? fs::path(to) : *it;
+    if (!special_path)
+    {
+        for (auto it = path.begin(); it != path.end(); ++it)
+            result /= std::distance(path.begin(), it) == at ? fs::path(to) : *it;
+    }
+    else
+    {
+        result = *special_path;
+        for (auto it = path.begin(); it != path.end(); ++it)
+            if (std::distance(path.begin(), it) > at)
+                result /= *it;
+    }
     return result.lexically_normal();
 }

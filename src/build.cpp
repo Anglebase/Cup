@@ -28,6 +28,10 @@ BuildInfo::BuildInfo(const fs::path &project_dir, const SysArgs &args)
     this->target_dir = args.hasConfig("target") && args.getConfigs().at("target").size() > 0
                            ? fs::path(args.getConfigs().at("target").at(0))
                            : this->project_dir / "target";
+    if (this->build_dir.is_relative())
+        this->build_dir = fs::current_path() / this->build_dir;
+    if (this->target_dir.is_relative())
+        this->target_dir = fs::current_path() / this->target_dir;
     this->build_dir = this->build_dir.lexically_normal();
     this->target_dir = this->target_dir.lexically_normal();
     if (args.getArguments().size() <= 1)
@@ -103,6 +107,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.release.define);
         }
     };
+    LOG_DEBUG("Target:", this->info.target_dir);
     if (this->config.build.target == BINARY)
     {
         for (const auto &main_file : main_files)
@@ -115,7 +120,9 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             source.push_back(main_file);
             gen.add_executable(item, source);
             gen.set_target_output_name(item, raw_name);
-            gen.set_target_output_directory(item, std::nullopt, replace_finally_name(main_file.parent_path(), "bin", "target"));
+            gen.set_target_output_directory(
+                item, std::nullopt,
+                replace_finally_name(main_file.parent_path(), "bin", "target", this->info.target_dir));
             config_gen(item, BINARY);
             std::vector<fs::path> libs_dir;
             std::vector<std::string> libs;
@@ -130,10 +137,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                 const auto lib_name = std::string(name) + "_" + lhash.toStr();
                 libs.push_back(lib_name);
             }
-            if (!libs.empty())
-                gen.target_link_libraries(item, cmake::Visual::Public, libs);
-            if (!libs_dir.empty())
-                gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
+            gen.target_link_libraries(item, cmake::Visual::Public, libs);
+            gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
         }
     }
     else if (this->config.build.target == STATIC || this->config.build.target == SHARED)
@@ -172,7 +177,9 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.add_executable(demo, {main_file});
             gen.set_target_output_name(demo, raw_name);
             gen.target_link_libraries(demo, cmake::Visual::Public, {item});
-            gen.set_target_output_directory(demo, std::nullopt, replace_finally_name(main_file.parent_path(), "bin", "target"));
+            gen.set_target_output_directory(
+                demo, std::nullopt,
+                replace_finally_name(main_file.parent_path(), "bin", "target", this->info.target_dir));
             gen.set_target_c_standard(demo, this->config.build.stdc);
             gen.set_target_cxx_standard(demo, this->config.build.stdcxx);
         }

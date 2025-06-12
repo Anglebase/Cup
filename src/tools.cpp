@@ -27,9 +27,24 @@ BuildCmd::BuildCmd(const SysArgs &args)
 {
     if (args.hasConfig("dir") && !args.getConfigs().at("dir").empty())
         this->at = args.getConfigs().at("dir")[0];
+
+    this->project_dir = this->at.value_or(fs::current_path());
+    if (this->project_dir.is_relative())
+        this->project_dir = fs::current_path() / this->project_dir;
+    this->project_dir = project_dir.lexically_normal();
     this->config = args.hasFlag("r") || args.hasFlag("release")
                        ? BuildType::Release
                        : BuildType::Debug;
+    this->build_dir = args.hasConfig("build") && args.getConfigs().at("build").size() > 0
+                          ? fs::path(args.getConfigs().at("build").at(0))
+                          : this->project_dir / "build";
+    this->target_dir = args.hasConfig("target") && args.getConfigs().at("target").size() > 0
+                           ? fs::path(args.getConfigs().at("target").at(0))
+                           : this->project_dir / "target";
+    if (this->build_dir.is_relative())
+        this->build_dir = fs::current_path() / this->build_dir;
+    if (this->target_dir.is_relative())
+        this->target_dir = fs::current_path() / this->target_dir;
 }
 
 RunCmd::RunCmd(const SysArgs &args) : BuildCmd(args)
@@ -39,10 +54,7 @@ RunCmd::RunCmd(const SysArgs &args) : BuildCmd(args)
     if (args.getArguments().size() <= 1)
         throw std::runtime_error("No target provided.");
     auto target = args.getArguments()[1];
-    auto dir = this->at.value_or(fs::current_path());
-    if (dir.is_relative())
-        dir = fs::current_path() / dir;
-    dir = dir / "target" / target;
+    auto dir = this->target_dir / target;
     dir.replace_extension();
     this->run_target = dir.lexically_normal();
 }
@@ -299,12 +311,8 @@ int CleanCmd::run()
 
 int BuildCmd::run()
 {
-    auto dir = this->at.value_or(fs::current_path());
-    if (dir.is_relative())
-        dir = fs::current_path() / dir;
-    dir = dir.lexically_normal();
-    auto build_info = BuildInfo(dir, this->args);
-    auto config_info = ConfigInfo(Config(dir));
+    auto build_info = BuildInfo(project_dir, this->args);
+    auto config_info = ConfigInfo(Config(project_dir));
     auto build = Build(build_info, config_info);
     if (!fs::exists(build_info.build_dir))
         fs::create_directories(build_info.build_dir);
