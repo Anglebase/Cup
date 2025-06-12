@@ -50,6 +50,51 @@ BuildInfo::BuildInfo(const fs::path &project_dir, const SysArgs &args)
 Build::Build(const BuildInfo &info, const ConfigInfo &config)
     : info(info), config(config) {}
 
+void generate_generator(const std::string &item, const ConfigInfo &config,
+                        const BuildInfo &info, cmake::Generator &gen,
+                        const std::optional<std::string> &cmake_gen,
+                        const std::string &type)
+{
+    bool has_config = false;
+    for (const auto &[gener, config_gen] : config.generators)
+    {
+        auto link_visual = type == "binary" ? cmake::Visual::Private : cmake::Visual::Public;
+        auto config_gener = [&](const GeneratorInfo &gener_info)
+        {
+            gen.target_compile_options(item, cmake::Visual::Private, gener_info.options.compile);
+            gen.target_link_options(item, link_visual, gener_info.options.link);
+            gen.target_compile_definitions(item, cmake::Visual::Private, gener_info.define);
+            std::vector<std::string> libs;
+            std::vector<fs::path> lib_paths;
+            for (const auto &[lib, path] : gener_info.link)
+            {
+                if (path.is_absolute())
+                    lib_paths.push_back(path.string());
+                else
+                    lib_paths.push_back(info.project_dir / path);
+                libs.push_back(lib);
+            }
+            gen.target_link_directories(item, link_visual, lib_paths);
+            gen.target_link_libraries(item, link_visual, libs);
+        };
+        if (gener == cmake_gen)
+        {
+            config_gener(config_gen.default_);
+            if (info.type == BuildType::Debug)
+                config_gener(config_gen.debug);
+            else if (info.type == BuildType::Release)
+                config_gener(config_gen.release);
+            has_config = true;
+            break;
+        }
+    }
+    if (!has_config && !config.generators.empty() && type != "binary")
+    {
+        LOG_WARN("No generator config for generator \"", *cmake_gen, "\" in \"", config.name, "\".");
+        LOG_WARN("It may not support this generator.");
+    }
+}
+
 void Build::generate_cmake_root(cmake::Generator &gen)
 {
     const char *BINARY = "binary";
@@ -116,36 +161,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.target_link_options(item, link_visual, this->config.build.release.options.link);
             gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.release.define);
         }
-
-        bool has_config = false;
-        for (const auto &[gener, config_gen] : this->config.generators)
-        {
-            if (gener == this->cmake_gen)
-            {
-                gen.target_link_options(item, link_visual, config_gen.default_.options.link);
-                gen.target_compile_options(item, cmake::Visual::Private, config_gen.default_.options.compile);
-                gen.target_compile_definitions(item, cmake::Visual::Private, config_gen.default_.define);
-                if (this->info.type == BuildType::Debug)
-                {
-                    gen.target_compile_options(item, cmake::Visual::Private, config_gen.debug.options.compile);
-                    gen.target_link_options(item, link_visual, config_gen.debug.options.link);
-                    gen.target_compile_definitions(item, cmake::Visual::Private, config_gen.debug.define);
-                }
-                else if (this->info.type == BuildType::Release)
-                {
-                    gen.target_compile_options(item, cmake::Visual::Private, config_gen.release.options.compile);
-                    gen.target_link_options(item, link_visual, config_gen.release.options.link);
-                    gen.target_compile_definitions(item, cmake::Visual::Private, config_gen.release.define);
-                }
-                has_config = true;
-                break;
-            }
-        }
-        if (!has_config && !this->config.generators.empty())
-        {
-            LOG_WARN("No generator config for generator \"", *this->cmake_gen, "\" in \"", this->config.name, "\".");
-            LOG_WARN("It may not support this generator.");
-        }
+        generate_generator(item, this->config, this->info, gen, this->cmake_gen, BINARY);
     };
     LOG_DEBUG("Target:", this->info.target_dir);
     if (this->config.build.target == BINARY)
@@ -320,36 +336,7 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
         }
         gen.target_link_libraries(item, cmake::Visual::Public, libs);
         gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
-
-        bool has_config = false;
-        for (const auto &[gener, config_gen] : this->config.generators)
-        {
-            if (gener == this->cmake_gen)
-            {
-                gen.target_link_options(item, cmake::Visual::Private, config_gen.default_.options.link);
-                gen.target_compile_options(item, cmake::Visual::Private, config_gen.default_.options.compile);
-                gen.target_compile_definitions(item, cmake::Visual::Private, config_gen.default_.define);
-                if (this->info.type == BuildType::Debug)
-                {
-                    gen.target_compile_options(item, cmake::Visual::Private, config_gen.debug.options.compile);
-                    gen.target_link_options(item, cmake::Visual::Private, config_gen.debug.options.link);
-                    gen.target_compile_definitions(item, cmake::Visual::Private, config_gen.debug.define);
-                }
-                else if (this->info.type == BuildType::Release)
-                {
-                    gen.target_compile_options(item, cmake::Visual::Private, config_gen.release.options.compile);
-                    gen.target_link_options(item, cmake::Visual::Private, config_gen.release.options.link);
-                    gen.target_compile_definitions(item, cmake::Visual::Private, config_gen.release.define);
-                }
-                has_config = true;
-                break;
-            }
-        }
-        if (!has_config && !this->config.generators.empty())
-        {
-            LOG_WARN("No generator config for generator \"", *this->cmake_gen, "\" in \"", this->config.name, "\".");
-            LOG_WARN("It may not support this generator.");
-        }
+        generate_generator(item, *config.config, this->info, gen, this->cmake_gen, BINARY);
     }
     else
         throw std::runtime_error("Unknown target type: '" + config.config->build.target + "'");

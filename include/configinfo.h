@@ -400,9 +400,8 @@ struct Qt
 
 struct GeneratorInfo
 {
-    std::map<std::string, std::string> link;
+    std::map<std::string, fs::path> link;
     Options options;
-    Flags flags;
     std::vector<std::string> define;
 };
 
@@ -413,10 +412,9 @@ struct Deserde<GeneratorInfo>
     {
         auto table = require(node.as_table());
         GeneratorInfo generator;
-        generator.link = option<std::map<std::string, std::string>>(table.get("link"))
-                             .value_or(std::map<std::string, std::string>{});
+        generator.link = option<std::map<std::string, fs::path>>(table.get("link"))
+                             .value_or(std::map<std::string, fs::path>{});
         generator.options = option<Options>(table.get("options")).value_or(Options{});
-        generator.flags = option<Flags>(table.get("flags")).value_or(Flags{});
         generator.define = option<std::vector<std::string>>(table.get("define"))
                                .value_or(std::vector<std::string>{});
 
@@ -428,10 +426,9 @@ struct Deserde<GeneratorInfo>
         if (!table)
             return std::nullopt;
         GeneratorInfo generator;
-        generator.link = option<std::map<std::string, std::string>>(table->get("link"))
-                             .value_or(std::map<std::string, std::string>{});
+        generator.link = option<std::map<std::string, fs::path>>(table->get("link"))
+                             .value_or(std::map<std::string, fs::path>{});
         generator.options = option<Options>(table->get("options")).value_or(Options{});
-        generator.flags = option<Flags>(table->get("flags")).value_or(Flags{});
         generator.define = option<std::vector<std::string>>(table->get("define"))
                                .value_or(std::vector<std::string>{});
 
