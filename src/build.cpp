@@ -435,7 +435,7 @@ int Build::build()
         const auto item = target.filename().replace_extension().string() + "_" + hash.toStr();
         bud.target(item);
     }
-    bud.jobs(this->config.build.jobs == 0 ? std::thread::hardware_concurrency() : this->config.build.jobs);
+    bud.jobs(this->config.build.jobs == 0 ? std::max(std::thread::hardware_concurrency(), 1u) : this->config.build.jobs);
     LOG_DEBUG("Build command: ", bud.as_command());
     if (this->info.type == BuildType::Release)
         bud.config(cmake::Config::Release);
