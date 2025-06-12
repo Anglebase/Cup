@@ -7,9 +7,10 @@ Config::Config(const fs::path &project)
     auto cup_toml = project / "cup.toml";
     if (!fs::exists(cup_toml))
         throw std::runtime_error("'" + project.lexically_normal().string() + "' is not a valid cup project.");
-    std::ifstream ifs(cup_toml.string());
+    std::ifstream ifs(cup_toml);
     this->table_ = toml::parse(ifs);
     this->path = cup_toml;
+    Dollar::root = project;
     this->config = new ConfigInfo(*this);
 }
 
