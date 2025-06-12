@@ -211,7 +211,7 @@ struct Deserde<fs::path>
         {
             auto path = fs::path(Dollar::dollar(node.value<std::string>().value()));
             return (path.is_relative()
-                        ? fs::current_path() / path
+                        ? Dollar::root / path
                         : path)
                 .lexically_normal();
         }
@@ -223,7 +223,7 @@ struct Deserde<fs::path>
         {
             auto path = fs::path(Dollar::dollar(node.value<std::string>().value()));
             return (path.is_relative()
-                        ? fs::current_path() / path
+                        ? Dollar::root / path
                         : path)
                 .lexically_normal();
         }
