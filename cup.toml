@@ -7,3 +7,4 @@ stdcxx = 20
 target = "binary"
 include = ["./package/header-only"]
 jobs = 0
+# generator = "MinGW Makefiles"
