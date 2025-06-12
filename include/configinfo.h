@@ -398,6 +398,80 @@ struct Qt
     std::vector<std::string> flags;
 };
 
+struct GeneratorInfo
+{
+    std::map<std::string, fs::path> link;
+    Options options;
+    std::vector<std::string> define;
+};
+
+template <>
+struct Deserde<GeneratorInfo>
+{
+    static inline GeneratorInfo from(const toml::node &node)
+    {
+        auto table = require(node.as_table());
+        GeneratorInfo generator;
+        generator.link = option<std::map<std::string, fs::path>>(table.get("link"))
+                             .value_or(std::map<std::string, fs::path>{});
+        generator.options = option<Options>(table.get("options")).value_or(Options{});
+        generator.define = option<std::vector<std::string>>(table.get("define"))
+                               .value_or(std::vector<std::string>{});
+
+        return generator;
+    }
+    static inline std::optional<GeneratorInfo> try_from(const toml::node &node) noexcept
+    {
+        auto table = node.as_table();
+        if (!table)
+            return std::nullopt;
+        GeneratorInfo generator;
+        generator.link = option<std::map<std::string, fs::path>>(table->get("link"))
+                             .value_or(std::map<std::string, fs::path>{});
+        generator.options = option<Options>(table->get("options")).value_or(Options{});
+        generator.define = option<std::vector<std::string>>(table->get("define"))
+                               .value_or(std::vector<std::string>{});
+
+        return generator;
+    }
+};
+
+struct GeneratorSettings
+{
+    GeneratorInfo default_;
+    GeneratorInfo debug;
+    GeneratorInfo release;
+};
+
+template <>
+struct Deserde<GeneratorSettings>
+{
+    static inline GeneratorSettings from(const toml::node &node)
+    {
+        auto table = require(node.as_table());
+        GeneratorSettings generator_settings;
+        generator_settings.default_ = Deserde<GeneratorInfo>::from(table);
+        generator_settings.debug = option<GeneratorInfo>(table.get("debug")).value_or(GeneratorInfo{});
+        generator_settings.release = option<GeneratorInfo>(table.get("release"))
+                                         .value_or(GeneratorInfo{});
+
+        return generator_settings;
+    }
+    static inline std::optional<GeneratorSettings> try_from(const toml::node &node) noexcept
+    {
+        auto table = node.as_table();
+        if (!table)
+            return std::nullopt;
+        GeneratorSettings generator_settings;
+        generator_settings.default_ = Deserde<GeneratorInfo>::try_from(*table).value();
+        generator_settings.debug = option<GeneratorInfo>(table->get("debug")).value_or(GeneratorInfo{});
+        generator_settings.release = option<GeneratorInfo>(table->get("release"))
+                                         .value_or(GeneratorInfo{});
+
+        return generator_settings;
+    }
+};
+
 struct ConfigInfo
 {
     std::string name;
@@ -408,6 +482,7 @@ struct ConfigInfo
     BuildSettings build;
     std::map<std::string, fs::path> link;
     std::map<std::string, Dependency> dependencies;
+    std::map<std::string, GeneratorSettings> generators;
 
     std::optional<Qt> qt;
 
@@ -435,7 +510,8 @@ struct Deserde<ConfigInfo>
                                .value_or(std::map<std::string, fs::path>{});
         config_info.dependencies = option<std::map<std::string, Dependency>>(table.get("dependencies"))
                                        .value_or(std::map<std::string, Dependency>{});
-
+        config_info.generators = option<std::map<std::string, GeneratorSettings>>(table.get("generators"))
+                                     .value_or(std::map<std::string, GeneratorSettings>{});
         return config_info;
     }
 
@@ -463,7 +539,8 @@ struct Deserde<ConfigInfo>
                                .value_or(std::map<std::string, fs::path>{});
         config_info.dependencies = option<std::map<std::string, Dependency>>(table->get("dependencies"))
                                        .value_or(std::map<std::string, Dependency>{});
-
+        config_info.generators = option<std::map<std::string, GeneratorSettings>>(table->get("generators"))
+                                     .value_or(std::map<std::string, GeneratorSettings>{});
         return config_info;
     }
 };

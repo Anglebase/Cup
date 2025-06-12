@@ -30,6 +30,9 @@ class BuildCmd
 {
 protected:
     std::optional<fs::path> at;
+    fs::path build_dir;
+    fs::path target_dir;
+    fs::path project_dir;
     BuildType config;
     SysArgs args;
 

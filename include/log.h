@@ -20,6 +20,6 @@ inline std::string format(Args... args)
 #else
 #define LOG_DEBUG(...) // 调试级别信息输出
 #endif
-#define LOG_INFO(...) _log("Info", format(__VA_ARGS__))  // 信息级别信息输出
-#define LOG_WARN(...) _log("Warn", format(__VA_ARGS__))  // 警告级别信息输出
-#define LOG_ERROR(...) _log("Error", format(__VA_ARGS__)) // 错误级别信息输出
+#define LOG_INFO(...) _log("Info", format(__VA_ARGS__))                          // 信息级别信息输出
+#define LOG_WARN(...) _log("Warn", format("\033[33m", __VA_ARGS__, "\033[0m"))   // 警告级别信息输出
+#define LOG_ERROR(...) _log("Error", format("\033[31m", __VA_ARGS__, "\033[0m")) // 错误级别信息输出

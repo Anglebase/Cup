@@ -28,6 +28,10 @@ BuildInfo::BuildInfo(const fs::path &project_dir, const SysArgs &args)
     this->target_dir = args.hasConfig("target") && args.getConfigs().at("target").size() > 0
                            ? fs::path(args.getConfigs().at("target").at(0))
                            : this->project_dir / "target";
+    if (this->build_dir.is_relative())
+        this->build_dir = fs::current_path() / this->build_dir;
+    if (this->target_dir.is_relative())
+        this->target_dir = fs::current_path() / this->target_dir;
     this->build_dir = this->build_dir.lexically_normal();
     this->target_dir = this->target_dir.lexically_normal();
     if (args.getArguments().size() <= 1)
@@ -46,23 +50,68 @@ BuildInfo::BuildInfo(const fs::path &project_dir, const SysArgs &args)
 Build::Build(const BuildInfo &info, const ConfigInfo &config)
     : info(info), config(config) {}
 
+void generate_generator(const std::string &item, const ConfigInfo &config,
+                        const BuildInfo &info, cmake::Generator &gen,
+                        const std::optional<std::string> &cmake_gen,
+                        const std::string &type)
+{
+    bool has_config = false;
+    for (const auto &[gener, config_gen] : config.generators)
+    {
+        auto link_visual = type == "binary" ? cmake::Visual::Private : cmake::Visual::Public;
+        auto config_gener = [&](const GeneratorInfo &gener_info)
+        {
+            gen.target_compile_options(item, cmake::Visual::Private, gener_info.options.compile);
+            gen.target_link_options(item, link_visual, gener_info.options.link);
+            gen.target_compile_definitions(item, cmake::Visual::Private, gener_info.define);
+            std::vector<std::string> libs;
+            std::vector<fs::path> lib_paths;
+            for (const auto &[lib, path] : gener_info.link)
+            {
+                if (path.is_absolute())
+                    lib_paths.push_back(path.string());
+                else
+                    lib_paths.push_back(info.project_dir / path);
+                libs.push_back(lib);
+            }
+            gen.target_link_directories(item, link_visual, lib_paths);
+            gen.target_link_libraries(item, link_visual, libs);
+        };
+        if (gener == cmake_gen)
+        {
+            config_gener(config_gen.default_);
+            if (info.type == BuildType::Debug)
+                config_gener(config_gen.debug);
+            else if (info.type == BuildType::Release)
+                config_gener(config_gen.release);
+            has_config = true;
+            break;
+        }
+    }
+    if (!has_config && !config.generators.empty() && type != "binary")
+    {
+        LOG_WARN("No generator config for generator \"", *cmake_gen, "\" in \"", config.name, "\".");
+        LOG_WARN("It may not support this generator.");
+    }
+}
+
 void Build::generate_cmake_root(cmake::Generator &gen)
 {
-    if (!this->config.build.flags.c.empty())
-        gen.set("CMAKE_C_FLAGS", '"' + join(this->config.build.flags.c, " ") + '"');
-    if (!this->config.build.flags.cxx.empty())
-        gen.set("CMAKE_CXX_FLAGS", '"' + join(this->config.build.flags.cxx, " ") + '"');
-    if (!this->config.build.flags.asm_.empty())
-        gen.set("CMAKE_ASM_FLAGS", '"' + join(this->config.build.flags.asm_, " ") + '"');
-    if (!this->config.build.flags.ld_c.empty())
-        gen.set("CMAKE_C_LINK_FLAGS", '"' + join(this->config.build.flags.ld_c, " ") + '"');
-    if (!this->config.build.flags.ld_cxx.empty())
-        gen.set("CMAKE_CXX_LINK_FLAGS", '"' + join(this->config.build.flags.ld_cxx, " ") + '"');
     const char *BINARY = "binary";
     const char *STATIC = "static";
     const char *SHARED = "shared";
     if (!this->config.build.generator.empty())
         this->cmake_gen = this->config.build.generator;
+    else
+    {
+#ifdef _WIN32
+        LOG_WARN("No generator specified, use default generator \"Visual Studio 17 2022\".");
+        this->cmake_gen = "Visual Studio 17 2022";
+#else
+        LOG_WARN("No generator specified, use default generator \"Unix Makefiles\".");
+        this->cmake_gen = "Unix Makefiles";
+#endif
+    }
     for (const auto &[name, cup] : this->config.dependencies)
     {
         if (this->build_depends.find(std::string(name)) == this->build_depends.end())
@@ -77,6 +126,44 @@ void Build::generate_cmake_root(cmake::Generator &gen)
     auto main_files = fs::exists(this->info.project_dir / "bin")
                           ? find_all_source(this->info.project_dir / "bin")
                           : std::vector<fs::path>{};
+    auto config_gen = [&](const std::string &item, const std::string &type)
+    {
+        auto link_visual = type == BINARY ? cmake::Visual::Private : cmake::Visual::Public;
+        gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
+        gen.set_target_c_standard(item, this->config.build.stdc);
+        gen.set_target_cxx_standard(item, this->config.build.stdcxx);
+        gen.target_compile_definitions(
+            item,
+            cmake::Visual::Private,
+            {
+                std::string("_VER_X=") + std::to_string(this->config.version.x),
+                std::string("_VER_Y=") + std::to_string(this->config.version.y),
+                std::string("_VER_Z=") + std::to_string(this->config.version.z),
+            });
+        gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
+        gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
+        gen.target_link_options(item, link_visual, this->config.build.options.link);
+        gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.define);
+        if (this->config.qt.has_value())
+        {
+            auto qt = this->config.qt.value();
+            gen.target_link_qt_libraries(item, cmake::Visual::Private, qt.version, qt.modules);
+        }
+        if (this->info.type == BuildType::Debug)
+        {
+            gen.target_compile_options(item, cmake::Visual::Private, this->config.build.debug.options.compile);
+            gen.target_link_options(item, link_visual, this->config.build.debug.options.link);
+            gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.debug.define);
+        }
+        else if (this->info.type == BuildType::Release)
+        {
+            gen.target_compile_options(item, cmake::Visual::Private, this->config.build.release.options.compile);
+            gen.target_link_options(item, link_visual, this->config.build.release.options.link);
+            gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.release.define);
+        }
+        generate_generator(item, this->config, this->info, gen, this->cmake_gen, BINARY);
+    };
+    LOG_DEBUG("Target:", this->info.target_dir);
     if (this->config.build.target == BINARY)
     {
         for (const auto &main_file : main_files)
@@ -89,43 +176,10 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             source.push_back(main_file);
             gen.add_executable(item, source);
             gen.set_target_output_name(item, raw_name);
-            gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
-            gen.set_target_output_directory(item, std::nullopt, replace_finally_name(main_file.parent_path(), "bin", "target"));
-            gen.set_target_c_standard(item, this->config.build.stdc);
-            gen.set_target_cxx_standard(item, this->config.build.stdcxx);
-            gen.target_compile_definitions(
-                item,
-                cmake::Visual::Private,
-                {
-                    std::string("_VER_X=") + std::to_string(this->config.version.x),
-                    std::string("_VER_Y=") + std::to_string(this->config.version.y),
-                    std::string("_VER_Z=") + std::to_string(this->config.version.z),
-                });
-            if (!this->config.build.include.empty())
-                gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
-            if (!this->config.build.options.compile.empty())
-                gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
-            if (!this->config.build.options.link.empty())
-                gen.target_link_options(item, cmake::Visual::Private, this->config.build.options.link);
-            if (!this->config.build.define.empty())
-                gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.define);
-            if (this->config.qt.has_value())
-            {
-                auto qt = this->config.qt.value();
-                gen.target_link_qt_libraries(item, cmake::Visual::Private, qt.version, qt.modules);
-            }
-            if (!this->config.build.debug.options.compile.empty() && this->info.type == BuildType::Debug)
-                gen.target_compile_options(item, cmake::Visual::Private, this->config.build.debug.options.compile);
-            if (!this->config.build.debug.options.link.empty() && this->info.type == BuildType::Debug)
-                gen.target_link_options(item, cmake::Visual::Private, this->config.build.debug.options.link);
-            if (!this->config.build.release.options.compile.empty() && this->info.type == BuildType::Release)
-                gen.target_compile_options(item, cmake::Visual::Private, this->config.build.release.options.compile);
-            if (!this->config.build.release.options.link.empty() && this->info.type == BuildType::Release)
-                gen.target_link_options(item, cmake::Visual::Private, this->config.build.release.options.link);
-            if (!this->config.build.debug.define.empty() && this->info.type == BuildType::Debug)
-                gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.debug.define);
-            if (!this->config.build.release.define.empty() && this->info.type == BuildType::Release)
-                gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.release.define);
+            gen.set_target_output_directory(
+                item, std::nullopt,
+                replace_finally_name(main_file.parent_path(), "bin", "target", this->info.target_dir));
+            config_gen(item, BINARY);
             std::vector<fs::path> libs_dir;
             std::vector<std::string> libs;
             for (const auto &[name, dir] : this->config.link)
@@ -139,10 +193,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                 const auto lib_name = std::string(name) + "_" + lhash.toStr();
                 libs.push_back(lib_name);
             }
-            if (!libs.empty())
-                gen.target_link_libraries(item, cmake::Visual::Public, libs);
-            if (!libs_dir.empty())
-                gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
+            gen.target_link_libraries(item, cmake::Visual::Public, libs);
+            gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
         }
     }
     else if (this->config.build.target == STATIC || this->config.build.target == SHARED)
@@ -156,42 +208,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                 : cmake::LibaryType::Shared,
             src_files);
         gen.set_target_output_name(item, this->config.name);
-        gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
-        gen.set_target_c_standard(item, this->config.build.stdc);
-        gen.set_target_cxx_standard(item, this->config.build.stdcxx);
-        gen.target_compile_definitions(
-            item,
-            cmake::Visual::Private,
-            {
-                std::string("_VER_X=") + std::to_string(this->config.version.x),
-                std::string("_VER_Y=") + std::to_string(this->config.version.y),
-                std::string("_VER_Z=") + std::to_string(this->config.version.z),
-            });
-        if (!this->config.build.include.empty())
-            gen.target_include_directories(item, cmake::Visual::Public, this->config.build.include);
-        if (!this->config.build.options.compile.empty())
-            gen.target_compile_options(item, cmake::Visual::Private, this->config.build.options.compile);
-        if (!this->config.build.options.link.empty())
-            gen.target_link_options(item, cmake::Visual::Public, this->config.build.options.link);
-        if (!this->config.build.define.empty())
-            gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.define);
-        if (this->config.qt.has_value())
-        {
-            auto qt = this->config.qt.value();
-            gen.target_link_qt_libraries(item, cmake::Visual::Public, qt.version, qt.modules);
-        }
-        if (!this->config.build.debug.options.compile.empty() && this->info.type == BuildType::Debug)
-            gen.target_compile_options(item, cmake::Visual::Private, this->config.build.debug.options.compile);
-        if (!this->config.build.debug.options.link.empty() && this->info.type == BuildType::Debug)
-            gen.target_link_options(item, cmake::Visual::Private, this->config.build.debug.options.link);
-        if (!this->config.build.release.options.compile.empty() && this->info.type == BuildType::Release)
-            gen.target_compile_options(item, cmake::Visual::Private, this->config.build.release.options.compile);
-        if (!this->config.build.release.options.link.empty() && this->info.type == BuildType::Release)
-            gen.target_link_options(item, cmake::Visual::Private, this->config.build.release.options.link);
-        if (!this->config.build.debug.define.empty() && this->info.type == BuildType::Debug)
-            gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.debug.define);
-        if (!this->config.build.release.define.empty() && this->info.type == BuildType::Release)
-            gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.release.define);
+        config_gen(item, this->config.build.target);
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : this->config.link)
@@ -205,10 +222,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             const auto lib_name = std::string(name) + "_" + lhash.toStr();
             libs.push_back(lib_name);
         }
-        if (!libs.empty())
-            gen.target_link_libraries(item, cmake::Visual::Public, libs);
-        if (!libs_dir.empty())
-            gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
+        gen.target_link_libraries(item, cmake::Visual::Public, libs);
+        gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
         for (auto &main_file : main_files)
         {
             auto main_hash = MD5(main_file);
@@ -218,7 +233,9 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.add_executable(demo, {main_file});
             gen.set_target_output_name(demo, raw_name);
             gen.target_link_libraries(demo, cmake::Visual::Public, {item});
-            gen.set_target_output_directory(demo, std::nullopt, replace_finally_name(main_file.parent_path(), "bin", "target"));
+            gen.set_target_output_directory(
+                demo, std::nullopt,
+                replace_finally_name(main_file.parent_path(), "bin", "target", this->info.target_dir));
             gen.set_target_c_standard(demo, this->config.build.stdc);
             gen.set_target_cxx_standard(demo, this->config.build.stdcxx);
         }
@@ -235,24 +252,12 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
     const char *SHARED = "shared";
     auto project_dir = path.is_relative() ? this->info.project_dir / path : path;
     Config config(project_dir);
-    if (!config.config->build.flags.c.empty())
-        gen.set("CMAKE_C_FLAGS", '"' + join(config.config->build.flags.c, " ") + '"');
-    if (!config.config->build.flags.cxx.empty())
-        gen.set("CMAKE_CXX_FLAGS", '"' + join(config.config->build.flags.cxx, " ") + '"');
-    if (!config.config->build.flags.asm_.empty())
-        gen.set("CMAKE_ASM_FLAGS", '"' + join(config.config->build.flags.asm_, " ") + '"');
-    if (!config.config->build.flags.ld_c.empty())
-        gen.set("CMAKE_C_LINK_FLAGS", '"' + join(config.config->build.flags.ld_c, " ") + '"');
-    if (!config.config->build.flags.ld_cxx.empty())
-        gen.set("CMAKE_CXX_LINK_FLAGS", '"' + join(config.config->build.flags.ld_cxx, " ") + '"');
-    if (!config.config->build.generator.empty())
+    if (!config.config->build.generator.empty() && config.config->build.generator != this->cmake_gen)
     {
-        if (this->cmake_gen.has_value() && this->cmake_gen.value() != config.config->build.generator)
-            throw std::runtime_error(
-                "Inconsistent cmake generator: '" + config.config->build.generator +
-                "' and '" + this->cmake_gen.value() + "'");
-        else
-            this->cmake_gen = config.config->build.generator;
+        LOG_WARN("Generator of dependency \"" +
+                 config.config->name +
+                 "\" is different from the root project. ");
+        LOG_DEBUG("This may result in the inability to build.");
     }
     for (const auto &[name, cup] : config.config->dependencies)
     {
@@ -294,33 +299,28 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
                 std::string("_VER_Y=") + std::to_string(config.config->version.y),
                 std::string("_VER_Z=") + std::to_string(config.config->version.z),
             });
-        if (!config.config->build.include.empty())
-            gen.target_include_directories(item, cmake::Visual::Public, config.config->build.include);
-        if (!config.config->build.options.compile.empty())
-            gen.target_compile_options(item, cmake::Visual::Private, config.config->build.options.compile);
-        if (!config.config->build.options.link.empty())
-            gen.target_link_options(item, cmake::Visual::Public, config.config->build.options.link);
-        if (!root_cup.features.empty())
-            gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.features);
-        if (!config.config->build.define.empty())
-            gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.define);
+        gen.target_include_directories(item, cmake::Visual::Public, config.config->build.include);
+        gen.target_compile_options(item, cmake::Visual::Private, config.config->build.options.compile);
+        gen.target_link_options(item, cmake::Visual::Public, config.config->build.options.link);
+        gen.target_compile_definitions(item, cmake::Visual::Private, root_cup.features);
+        gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.define);
         if (config.config->qt.has_value())
         {
             auto qt = config.config->qt.value();
             gen.target_link_qt_libraries(item, cmake::Visual::Public, qt.version, qt.modules);
         }
-        if (!config.config->build.debug.options.compile.empty() && this->info.type == BuildType::Debug)
+        if (this->info.type == BuildType::Debug)
+        {
             gen.target_compile_options(item, cmake::Visual::Private, config.config->build.debug.options.compile);
-        if (!config.config->build.debug.options.link.empty() && this->info.type == BuildType::Debug)
             gen.target_link_options(item, cmake::Visual::Private, config.config->build.debug.options.link);
-        if (!config.config->build.release.options.compile.empty() && this->info.type == BuildType::Release)
-            gen.target_compile_options(item, cmake::Visual::Private, config.config->build.release.options.compile);
-        if (!config.config->build.release.options.link.empty() && this->info.type == BuildType::Release)
-            gen.target_link_options(item, cmake::Visual::Private, config.config->build.release.options.link);
-        if (!config.config->build.debug.define.empty() && this->info.type == BuildType::Debug)
             gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.debug.define);
-        if (!config.config->build.release.define.empty() && this->info.type == BuildType::Release)
+        }
+        else if (this->info.type == BuildType::Release)
+        {
+            gen.target_compile_options(item, cmake::Visual::Private, config.config->build.release.options.compile);
+            gen.target_link_options(item, cmake::Visual::Private, config.config->build.release.options.link);
             gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.release.define);
+        }
         std::vector<fs::path> libs_dir;
         std::vector<std::string> libs;
         for (const auto &[name, dir] : config.config->link)
@@ -334,10 +334,9 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
             const auto lib_name = std::string(name) + "_" + lhash.toStr();
             libs.push_back(lib_name);
         }
-        if (!libs.empty())
-            gen.target_link_libraries(item, cmake::Visual::Public, libs);
-        if (!libs_dir.empty())
-            gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
+        gen.target_link_libraries(item, cmake::Visual::Public, libs);
+        gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
+        generate_generator(item, *config.config, this->info, gen, this->cmake_gen, BINARY);
     }
     else
         throw std::runtime_error("Unknown target type: '" + config.config->build.target + "'");
@@ -353,10 +352,12 @@ void Build::generate_build(std::ofstream &ofs)
     generator.project(this->config.name);
     generator.set_execute_output_path(this->info.target_dir);
     generator.set_library_output_path(this->info.build_dir / "lib");
+
     if (this->info.type == BuildType::Debug)
         generator.add_defines({"DEBUG", "_DEBUG"});
     else
         generator.add_defines({"NDEBUG", "_NDEBUG"});
+
     generator.if_("MSVC");
     if (this->info.type == BuildType::Debug)
         generator.add_complie_options({"/Zi"});
@@ -368,6 +369,7 @@ void Build::generate_build(std::ofstream &ofs)
     else
         generator.add_complie_options({"-O2"});
     generator.endif_();
+
     if (this->config.build.toolchain.cc.has_value())
         generator.set_c_compiler(this->config.build.toolchain.cc.value());
     if (this->config.build.toolchain.cxx.has_value())
@@ -381,10 +383,9 @@ void Build::generate_build(std::ofstream &ofs)
     }
     if (this->config.build.suffix.has_value())
         generator.set_executable_suffix(this->config.build.suffix.value());
+
     if (this->config.qt.has_value())
-    {
         generator.add_prefix_path(*this->config.qt->path);
-    }
     if (this->config.qt.has_value())
     {
         auto qt = this->config.qt.value();
@@ -392,6 +393,17 @@ void Build::generate_build(std::ofstream &ofs)
             generator.set("CMAKE_" + flag, "ON");
         generator.find_package(qt.version, qt.modules);
     }
+
+    if (!this->config.build.flags.c.empty())
+        generator.set("CMAKE_C_FLAGS", '"' + join(this->config.build.flags.c, " ") + '"');
+    if (!this->config.build.flags.cxx.empty())
+        generator.set("CMAKE_CXX_FLAGS", '"' + join(this->config.build.flags.cxx, " ") + '"');
+    if (!this->config.build.flags.asm_.empty())
+        generator.set("CMAKE_ASM_FLAGS", '"' + join(this->config.build.flags.asm_, " ") + '"');
+    if (!this->config.build.flags.ld_c.empty())
+        generator.set("CMAKE_C_LINK_FLAGS", '"' + join(this->config.build.flags.ld_c, " ") + '"');
+    if (!this->config.build.flags.ld_cxx.empty())
+        generator.set("CMAKE_CXX_LINK_FLAGS", '"' + join(this->config.build.flags.ld_cxx, " ") + '"');
 
     this->generate_cmake_root(generator);
     generator.write_to(ofs);

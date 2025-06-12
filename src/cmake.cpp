@@ -115,6 +115,8 @@ void cmake::Generator::set_library_output_path(const fs::path &path)
 
 void cmake::Generator::add_defines(const std::vector<std::string> &defines)
 {
+    if (defines.empty())
+        return;
     std::ostringstream oss;
     oss << "add_definitions(";
     for (const auto &define : defines)
@@ -125,6 +127,8 @@ void cmake::Generator::add_defines(const std::vector<std::string> &defines)
 
 void cmake::Generator::add_executable(const std::string &name, const std::vector<fs::path> &sources)
 {
+    if (sources.empty())
+        return;
     std::ostringstream oss;
     oss << "add_executable(" << name << " ";
     for (const auto &source : sources)
@@ -135,6 +139,8 @@ void cmake::Generator::add_executable(const std::string &name, const std::vector
 
 void cmake::Generator::add_library(const std::string &name, LibaryType type, const std::vector<fs::path> &sources)
 {
+    if (sources.empty())
+        return;
     std::ostringstream oss;
     oss << "add_library(" << name << " " << (type == LibaryType::Static ? "STATIC" : "SHARED") << " ";
     for (const auto &source : sources)
@@ -145,6 +151,8 @@ void cmake::Generator::add_library(const std::string &name, LibaryType type, con
 
 void cmake::Generator::include_directories(const std::vector<fs::path> &dirs)
 {
+    if (dirs.empty())
+        return;
     std::ostringstream oss;
     oss << "include_directories(";
     for (const auto &dir : dirs)
@@ -155,6 +163,8 @@ void cmake::Generator::include_directories(const std::vector<fs::path> &dirs)
 
 void cmake::Generator::link_directories(const std::vector<fs::path> &dirs)
 {
+    if (dirs.empty())
+        return;
     std::ostringstream oss;
     oss << "link_directories(";
     for (const auto &dir : dirs)
@@ -165,6 +175,8 @@ void cmake::Generator::link_directories(const std::vector<fs::path> &dirs)
 
 void cmake::Generator::link_libraries(const std::vector<std::string> &libs)
 {
+    if (libs.empty())
+        return;
     std::ostringstream oss;
     oss << "link_libraries(";
     for (const auto &lib : libs)
@@ -175,6 +187,8 @@ void cmake::Generator::link_libraries(const std::vector<std::string> &libs)
 
 void cmake::Generator::add_complie_options(const std::vector<std::string> &options)
 {
+    if (options.empty())
+        return;
     std::ostringstream oss;
     oss << "add_compile_options(";
     for (const auto &option : options)
@@ -185,6 +199,8 @@ void cmake::Generator::add_complie_options(const std::vector<std::string> &optio
 
 void cmake::Generator::add_link_options(const std::vector<std::string> &options)
 {
+    if (options.empty())
+        return;
     std::ostringstream oss;
     oss << "add_link_options(";
     for (const auto &option : options)
@@ -195,6 +211,8 @@ void cmake::Generator::add_link_options(const std::vector<std::string> &options)
 
 void cmake::Generator::target_compile_definitions(const std::string &name, Visual visual, const std::vector<std::string> &defines)
 {
+    if (defines.empty())
+        return;
     std::ostringstream oss;
     oss << "target_compile_definitions(" << name << " " << visual_to_string(visual) << " ";
     for (const auto &define : defines)
@@ -205,6 +223,8 @@ void cmake::Generator::target_compile_definitions(const std::string &name, Visua
 
 void cmake::Generator::target_link_libraries(const std::string &name, Visual visual, const std::vector<std::string> &libs)
 {
+    if (libs.empty())
+        return;
     std::ostringstream oss;
     oss << "target_link_libraries(" << name << " " << visual_to_string(visual) << " ";
     for (const auto &lib : libs)
@@ -215,6 +235,8 @@ void cmake::Generator::target_link_libraries(const std::string &name, Visual vis
 
 void cmake::Generator::target_link_directories(const std::string &name, Visual visual, const std::vector<fs::path> &dirs)
 {
+    if (dirs.empty())
+        return;
     std::ostringstream oss;
     oss << "target_link_directories(" << name << " " << visual_to_string(visual) << " ";
     for (const auto &dir : dirs)
@@ -225,6 +247,8 @@ void cmake::Generator::target_link_directories(const std::string &name, Visual v
 
 void cmake::Generator::target_include_directories(const std::string &name, Visual visual, const std::vector<fs::path> &dirs)
 {
+    if (dirs.empty())
+        return;
     std::ostringstream oss;
     oss << "target_include_directories(" << name << " " << visual_to_string(visual) << " ";
     for (const auto &dir : dirs)
@@ -235,6 +259,8 @@ void cmake::Generator::target_include_directories(const std::string &name, Visua
 
 void cmake::Generator::target_compile_options(const std::string &name, Visual visual, const std::vector<std::string> &options)
 {
+    if (options.empty())
+        return;
     std::ostringstream oss;
     oss << "target_compile_options(" << name << " " << visual_to_string(visual) << " ";
     for (const auto &option : options)
@@ -245,6 +271,8 @@ void cmake::Generator::target_compile_options(const std::string &name, Visual vi
 
 void cmake::Generator::target_link_options(const std::string &name, Visual visual, const std::vector<std::string> &options)
 {
+    if (options.empty())
+        return;
     std::ostringstream oss;
     oss << "target_link_options(" << name << " " << visual_to_string(visual) << " ";
     for (const auto &option : options)
@@ -277,9 +305,13 @@ void cmake::Generator::if_(const std::string &condition)
 void cmake::Generator::find_package(const std::string &name, const std::vector<std::string> &components)
 {
     std::ostringstream oss;
-    oss << "find_package(" << name << " COMPONENTS ";
-    for (const auto &component : components)
-        oss << component << " ";
+    oss << "find_package(" << name;
+    if (!components.empty())
+    {
+        oss << " COMPONENTS ";
+        for (const auto &component : components)
+            oss << component << " ";
+    }
     oss << " REQUIRED)";
     this->commands.push_back(oss.str());
 }
@@ -291,6 +323,8 @@ void cmake::Generator::set(const std::string &flag, const std::string &value)
 
 void cmake::Generator::target_link_qt_libraries(const std::string &name, cmake::Visual visual, const std::string &version, const std::vector<std::string> &libs)
 {
+    if (libs.empty())
+        return;
     std::ostringstream oss;
     oss << "target_link_libraries(" << name << " " << visual_to_string(visual) << " ";
     for (const auto &lib : libs)

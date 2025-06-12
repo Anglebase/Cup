@@ -245,8 +245,8 @@ name = { path = "path/to/dependency", features = ["UNICODE"] } # 依赖项的所
 # ...
 
 # 特殊依赖项
-# Qt<num> = { features = ["<modlue|flag>"] }
-# 其中，<num> 为 Qt 版本，<module|flag> 为 Qt 模块或编译指示标志
+# Qt<num> = { path = "path/to/qt", features = ["<modlue|flag>"] }
+# 其中，<num> 为 Qt 版本，<module|flag> 为 Qt 模块或编译指示标志，path 为 Qt 安装目录(如果已配置环境变量可省略)
 # flag 可取的值有：
 #   AUTOMOC
 #   AUTORCC
@@ -254,4 +254,11 @@ name = { path = "path/to/dependency", features = ["UNICODE"] } # 依赖项的所
 # Cup 不会自动地复制 Qt 的 DLL 文件，若要运行 cup run,请确保 target 目录下满足程序的执行环境
 # 使用此项之前，需确保已配置 Qt 的环境变量
 # 例如：
-Qt6 = { features = ["AUTOMOC", "AUTORCC", "AUTOUIC", "Core", "Gui", "Widgets"] }
+Qt6 = { path = 'C:\Qt\6.9.0\mingw_64\lib\cmake\Qt6', features = [
+    "AUTOMOC",
+    "AUTORCC",
+    "AUTOUIC",
+    "Core",
+    "Gui",
+    "Widgets",
+] }
