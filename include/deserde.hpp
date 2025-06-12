@@ -6,6 +6,7 @@
 #include <map>
 #include <optional>
 #include <filesystem>
+#include "dollar.h"
 
 class DeserdeError : public std::exception
 {
@@ -77,12 +78,14 @@ struct Deserde<std::string>
     static inline std::string from(const ::toml::node &node)
     {
         if (node.is_string())
-            return node.value<std::string>().value();
+            return Dollar::dollar(node.value<std::string>().value());
         throw DeserdeError{};
     }
     static inline std::optional<std::string> try_from(const ::toml::node &node) noexcept
     {
-        return node.value<std::string>();
+        return node.value<std::string>().has_value()
+                   ? std::optional(Dollar::dollar(node.value<std::string>().value()))
+                   : std::nullopt;
     }
 };
 
@@ -175,7 +178,7 @@ struct Deserde<std::map<std::string_view, V>>
         {
             auto key = key_.str();
             auto value = Deserde<V>::from(value_);
-            map[key] = value;
+            map[std::string_view(key)] = value;
         }
         return map;
     }
@@ -190,7 +193,7 @@ struct Deserde<std::map<std::string_view, V>>
             auto value = Deserde<V>::try_from(value_);
             if (!value)
                 return std::nullopt;
-            map[key] = value.value();
+            map[std::string_view(key)] = value.value();
         }
         return map;
     }
@@ -204,13 +207,13 @@ struct Deserde<fs::path>
     static inline fs::path from(const ::toml::node &node)
     {
         if (node.is_string())
-            return fs::path(node.value<std::string>().value());
+            return fs::path(Dollar::dollar(node.value<std::string>().value()));
         throw DeserdeError{};
     }
     static inline std::optional<fs::path> try_from(const ::toml::node &node) noexcept
     {
         if (node.is_string())
-            return fs::path(node.value<std::string>().value());
+            return fs::path(Dollar::dollar(node.value<std::string>().value()));
         return std::nullopt;
     }
 };
