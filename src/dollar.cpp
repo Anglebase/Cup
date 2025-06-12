@@ -2,6 +2,7 @@
 #include <unordered_map>
 #include <functional>
 #include "log.h"
+#include "tools.h"
 
 fs::path Dollar::root = fs::current_path();
 
@@ -49,7 +50,7 @@ std::string Dollar::dollar(const std::string &raw)
         if (raw.starts_with(key))
         {
             LOG_DEBUG("Goto: ", raw, " -> ", value(raw));
-            return value(raw);
+            return replace_all(value(raw), "\\", "/");
         }
 
     return raw;
