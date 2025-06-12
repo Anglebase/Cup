@@ -36,7 +36,7 @@ public:
 
 private:
     void generate_cmake_root(cmake::Generator &gen);
-    void generate_cmake_sub(const CupProject &cup, cmake::Generator &gen);
+    void generate_cmake_sub(const Dependency &cup, cmake::Generator &gen);
 
 public:
     void generate_build(std::ofstream &ofs);

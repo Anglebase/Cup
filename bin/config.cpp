@@ -6,7 +6,7 @@ int main()
 {
     try
     {
-        Config config("./target");
+        Config config("./target/demo");
         std::cout << *config.config << std::endl;
     }
     catch (const std::exception &e)

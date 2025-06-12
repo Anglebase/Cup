@@ -66,6 +66,7 @@ namespace cmake
         void target_link_qt_libraries(const std::string &name, cmake::Visual visual, const std::string& version, const std::vector<std::string> &libs);
         void else_();
         void endif_();
+        void add_prefix_path(const fs::path &path);
 
     public:
         std::string generator() const;
