@@ -274,9 +274,9 @@ struct BuildSettings
 {
     std::string target;
     std::string generator;
-    long long stdc;
-    long long stdcxx;
-    long long jobs;
+    int64_t stdc;
+    int64_t stdcxx;
+    int64_t jobs;
     std::vector<fs::path> include;
     std::vector<std::string> define;
     std::optional<std::string> suffix;
@@ -298,9 +298,9 @@ struct Deserde<BuildSettings>
 
         build_settings.target = require<std::string>(table.get("target"));
         build_settings.generator = option<std::string>(table.get("generator")).value_or("");
-        build_settings.stdc = option<long long>(table.get("stdc")).value_or(17);
-        build_settings.stdcxx = option<long long>(table.get("stdcxx")).value_or(20);
-        build_settings.jobs = option<long long>(table.get("jobs")).value_or(1);
+        build_settings.stdc = option<int64_t>(table.get("stdc")).value_or(17);
+        build_settings.stdcxx = option<int64_t>(table.get("stdcxx")).value_or(20);
+        build_settings.jobs = option<int64_t>(table.get("jobs")).value_or(1);
         build_settings.include = option<std::vector<fs::path>>(table.get("include"))
                                      .value_or(std::vector<fs::path>{});
         build_settings.define = option<std::vector<std::string>>(table.get("define"))
@@ -332,8 +332,8 @@ struct Deserde<BuildSettings>
             return std::nullopt;
         build_settings.target = *target;
         build_settings.generator = option<std::string>(table->get("generator")).value_or("");
-        build_settings.stdc = option<long long>(table->get("stdc")).value_or(17);
-        build_settings.stdcxx = option<long long>(table->get("stdcxx")).value_or(20);
+        build_settings.stdc = option<int64_t>(table->get("stdc")).value_or(17);
+        build_settings.stdcxx = option<int64_t>(table->get("stdcxx")).value_or(20);
         build_settings.include = option<std::vector<fs::path>>(table->get("include"))
                                      .value_or(std::vector<fs::path>{});
 #ifdef _DEBUG
