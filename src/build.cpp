@@ -57,6 +57,16 @@ void Build::generate_cmake_root(cmake::Generator &gen)
     const char *SHARED = "shared";
     if (!this->config.build.generator.empty())
         this->cmake_gen = this->config.build.generator;
+    else
+    {
+#ifdef _WIN32
+        LOG_WARN("No generator specified, use default generator \"Visual Studio 17 2022\".");
+        this->cmake_gen = "Visual Studio 17 2022";
+#else
+        LOG_WARN("No generator specified, use default generator \"Unix Makefiles\".");
+        this->cmake_gen = "Unix Makefiles";
+#endif
+    }
     for (const auto &[name, cup] : this->config.dependencies)
     {
         if (this->build_depends.find(std::string(name)) == this->build_depends.end())
@@ -196,6 +206,11 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
     const char *SHARED = "shared";
     auto project_dir = path.is_relative() ? this->info.project_dir / path : path;
     Config config(project_dir);
+    if (!config.config->build.generator.empty() && config.config->build.generator != this->cmake_gen)
+        LOG_WARN("Generator of dependency \"" +
+                 config.config->name +
+                 "\" is different from the root project. "
+                 "This may result in the inability to build.");
     for (const auto &[name, cup] : config.config->dependencies)
     {
         if (this->build_depends.find(std::string(name)) == this->build_depends.end())
