@@ -392,6 +392,7 @@ struct Deserde<Dependency>
 
 struct Qt
 {
+    fs::path path;
     std::string version;
     std::vector<std::string> modules;
     std::vector<std::string> flags;
