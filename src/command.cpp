@@ -1,5 +1,6 @@
 #include "command.h"
 #include "utils.h"
+#include "log.h"
 
 Command::Command(const std::string &name)
     : args({name})
@@ -26,9 +27,12 @@ Command &Command::set_stderr(const fs::path &stderr_)
 
 int Command::execute()
 {
-    this->args.push_back("1>" + this->stdout_.string());
-    this->args.push_back("2>" + this->stderr_.string());
+    if (this->stdout_)
+        this->args.push_back("1>\"" + this->stdout_->string() + "\"");
+    if (this->stderr_)
+        this->args.push_back("2>\"" + this->stderr_->string() + "\"");
     auto cmd = join(this->args, " ");
+    LOG_DEBUG("Run: ", cmd);
     auto result = system(cmd.c_str());
     return result;
 }

@@ -8,8 +8,8 @@ namespace fs = std::filesystem;
 class Command
 {
     std::vector<std::string> args;
-    fs::path stdout_;
-    fs::path stderr_;
+    std::optional<fs::path> stdout_;
+    std::optional<fs::path> stderr_;
 
 public:
     Command(const std::string &name);
