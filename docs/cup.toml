@@ -236,12 +236,15 @@ name = "path/to/lib" # 外部链接库
 # 此表是可选的
 # 此表用于列出项目依赖项
 # 格式为:
-#    <name> = { path = "<path>", features = ["<macro>"] }
+#    <name> = { path = "<path>", features = ["<macro>"], git = "<url|unique>", version = "X.Y.Z" }
 # 其中：
 #   <name> 为依赖项名称
 #   <path> 为依赖项所在路径，该依赖项必须是另一个 Cup 项目，并且此项必须存在
 #           该路径可以以 $env:<ENV> 开头，其中 ENV 是环境变量名，它将作为该路径的根目录
 #   <macro> 为依赖项的特性宏，此宏会在构建依赖项时进行可控的条件编译
+#   <url> 为依赖项的仓库地址
+#   <unique> 为依赖项的Github唯一标识符，格式为 `@<username>/<repo>`
+#   <version> 为依赖项的版本号，格式为 X.Y.Z
 name = { path = "path/to/dependency", features = ["UNICODE"] } # 依赖项的所在路径及特性宏
 # ...
 
