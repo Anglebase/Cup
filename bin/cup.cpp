@@ -115,6 +115,11 @@ int main(int argc, char **argv)
              std::cout << HELP_INFO << std::endl;
              return 0;
          }},
+        {"install", [&]()
+         {
+             InstallCmd installCmd(args);
+             return installCmd.run();
+         }},
         {"version", [&]()
          {
              std::cout << "Cup version " << _VER_X << "." << _VER_Y << "." << _VER_Z << std::endl;
