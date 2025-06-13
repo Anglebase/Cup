@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <optional>
 namespace fs = std::filesystem;
 
 class Command

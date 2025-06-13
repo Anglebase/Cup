@@ -404,6 +404,8 @@ struct Qt
     std::string version;
     std::vector<std::string> modules;
     std::vector<std::string> flags;
+
+    ~Qt() noexcept = default;
 };
 
 struct Link

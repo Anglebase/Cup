@@ -2,6 +2,7 @@
 #include "md5.h"
 #include <thread>
 #include <string_view>
+#include <algorithm>
 #include "tools.h"
 
 std::vector<fs::path> find_all_source(const fs::path &root)
@@ -120,7 +121,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
     auto main_files = fs::exists(this->info.project_dir / "bin")
                           ? find_all_source(this->info.project_dir / "bin")
                           : std::vector<fs::path>{};
-    auto config_gen = [=](const std::string &item, const std::string &type, cmake::Generator &gen)
+    auto config_gen = [=, this](const std::string &item, const std::string &type, cmake::Generator &gen)
     {
         auto link_visual = type == BINARY ? cmake::Visual::Private : cmake::Visual::Public;
         gen.target_include_directories(item, cmake::Visual::Public, {(this->info.project_dir / "include").lexically_normal()});
@@ -160,7 +161,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
     LOG_DEBUG("Target:", this->info.target_dir);
     if (this->config.build.target == BINARY)
     {
-        auto task = [=](cmake::Generator &gen)
+        auto task = [=, this](cmake::Generator &gen)
         {
             for (const auto &main_file : main_files)
             {
@@ -202,7 +203,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
     }
     else if (this->config.build.target == STATIC || this->config.build.target == SHARED)
     {
-        auto task = [=](cmake::Generator &gen)
+        auto task = [=, this](cmake::Generator &gen)
         {
             MD5 hash(this->info.project_dir);
             auto item = this->config.name + "_" + hash.toStr();
@@ -311,7 +312,7 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
     }
     else if (config.config->build.target == STATIC || config.config->build.target == SHARED)
     {
-        auto task_func = [=](cmake::Generator &gen)
+        auto task_func = [=, this](cmake::Generator &gen)
         {
             MD5 hash(project_dir);
             auto item = config.config->name + "_" + hash.toStr();
