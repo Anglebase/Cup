@@ -332,6 +332,7 @@ int InstallCmd::run()
             throw std::runtime_error("No tags found in repository: " + this->url);
         this->version = tags.back().substr(1);
     }
+    LOG_MSG("Installing package: ", this->url, " v", *this->version);
     git.download(this->url, "v" + *this->version);
     return 0;
 }
