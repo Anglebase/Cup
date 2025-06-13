@@ -37,6 +37,7 @@ protected:
     SysArgs args;
 
 public:
+    static bool auto_download;
     BuildCmd(const SysArgs &args);
     int run();
 };

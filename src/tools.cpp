@@ -23,6 +23,7 @@ CleanCmd::CleanCmd(const SysArgs &args)
     LOG_INFO("Begin Clean...");
 }
 
+bool BuildCmd::auto_download = false;
 BuildCmd::BuildCmd(const SysArgs &args)
     : args(args)
 {
@@ -46,6 +47,8 @@ BuildCmd::BuildCmd(const SysArgs &args)
         this->build_dir = fs::current_path() / this->build_dir;
     if (this->target_dir.is_relative())
         this->target_dir = fs::current_path() / this->target_dir;
+    if (args.hasFlag("auto"))
+        BuildCmd::auto_download = true;
 }
 
 RunCmd::RunCmd(const SysArgs &args) : BuildCmd(args)

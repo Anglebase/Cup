@@ -362,6 +362,7 @@ struct Dependency
     std::optional<std::string> version;
     std::vector<std::string> features;
 
+    std::string name;
     fs::path get_path() const;
 };
 
@@ -378,7 +379,6 @@ struct Deserde<Dependency>
         dependency.version = option<std::string>(table.get("version"));
         dependency.features = option<std::vector<std::string>>(table.get("features"))
                                   .value_or(std::vector<std::string>{});
-
         return dependency;
     }
     static inline std::optional<Dependency> try_from(const toml::node &node) noexcept
@@ -557,6 +557,9 @@ struct Deserde<ConfigInfo>
                                        .value_or(std::map<std::string, Dependency>{});
         config_info.generators = option<std::map<std::string, GeneratorSettings>>(table.get("generator"))
                                      .value_or(std::map<std::string, GeneratorSettings>{});
+
+        for (auto &[name, dep] : config_info.dependencies)
+            dep.name = name;
         return config_info;
     }
 
@@ -586,6 +589,9 @@ struct Deserde<ConfigInfo>
                                        .value_or(std::map<std::string, Dependency>{});
         config_info.generators = option<std::map<std::string, GeneratorSettings>>(table->get("generator"))
                                      .value_or(std::map<std::string, GeneratorSettings>{});
+
+        for (auto &[name, dep] : config_info.dependencies)
+            dep.name = name;
         return config_info;
     }
 };

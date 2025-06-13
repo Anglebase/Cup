@@ -1,6 +1,8 @@
 #include "configinfo.h"
 #include "config.h"
 #include <unordered_set>
+#include "tools.h"
+#include "git.h"
 
 ConfigInfo::ConfigInfo(const Config &config)
 {
@@ -45,5 +47,36 @@ fs::path Dependency::get_path() const
 {
     if (this->path.has_value())
         return *this->path;
-    return fs::path();
+    if (!this->git)
+        throw std::runtime_error("Invalid dependency '" + name + "'.");
+    auto git = Git{};
+    std::string tag;
+    if (!this->version)
+    {
+        auto tags = git.get_tags(*this->git);
+        if (tags.empty())
+            throw std::runtime_error("Cannot find any tags for dependency '" + name + "'.");
+        tag = tags.back();
+    }
+    else
+    {
+        tag = "v" + *this->version;
+    }
+    const auto &[author, library] = get_author_libary(*this->git);
+    const auto cup_dir = get_user_dir() / ".cup";
+    const auto dir = cup_dir / author / library / tag;
+    if (fs::exists(dir))
+        return dir;
+    if (BuildCmd::auto_download)
+    {
+        LOG_MSG("Installing dependency '" + name + "' from git repository '" +
+                *this->git + "' with tag '" + tag + "'.");
+        git.download(*this->git, tag);
+        LOG_MSG("Dependency '" + name + "' installed.");
+    }
+    else
+    {
+        throw std::runtime_error("Cannot find dependency '" + name + "'.");
+    }
+    return dir;
 }
