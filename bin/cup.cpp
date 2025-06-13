@@ -49,6 +49,22 @@ Commands:
             deps                List of projects this project depends on.
         options can include:
             --dir <path>        Specifies the project's path.
+
+    cup install <url|unique> [options...]
+        Installs a Cup package.
+        <url> specifies the repository URL to install from.
+        <unique> specifies the unique identifier(@<user>/<repo>) of the package on Gitbub to install.
+        options can include:
+            --version <version> Specifies the version of the package to install.
+                                If not specified, installs the latest version.
+    
+    cup uninstall <url|unique> [options...]
+        Uninstalls a Cup package.
+        <url> specifies the repository URL to uninstall from.
+        <unique> specifies the unique identifier(@<user>/<repo>) of the package on Gitbub to uninstall.
+        options can include:
+            --version <version> Specifies the version of the package to uninstall.
+                                If not specified, uninstalls all versions of the package.
 )";
 
 int main(int argc, char **argv)

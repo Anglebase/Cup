@@ -61,3 +61,11 @@ Cup 的基本命令格式为 `cup <command> [args...]`
 
 + `cup help`
 显示Cup的帮助信息
+
++ `cup install <url|unique> [options...]`
+安装由`<url>`指定的存储库中的依赖项或`<unique>`唯一标识(格式为`@<username>/<project>`)指定的Github项目，`options`可以包含以下选项：
+    + `--version <version>` 指定要安装的版本(Tag标签)，若未指定默认安装最新发行版
+
++ `cup uninstall <url|unique> [options...]`
+卸载由`<url>`指定的存储库中的依赖项或`<unique>`唯一标识(格式为`@<username>/<project>`)指定的Github项目，`options`可以包含以下选项：
+    + `--version <version>` 指定要卸载的版本(Tag标签)，若未指定则卸载所有版本(需要手动确认)
