@@ -1,0 +1,22 @@
+#pragma once
+
+#include <string>
+#include <vector>
+#include <filesystem>
+namespace fs = std::filesystem;
+
+class Command
+{
+    std::vector<std::string> args;
+    fs::path stdout_;
+    fs::path stderr_;
+
+public:
+    Command(const std::string &name);
+    Command &arg(const std::string &arg);
+
+    Command &set_stdout(const fs::path &stdout_);
+    Command &set_stderr(const fs::path &stderr_);
+
+    int execute();
+};
