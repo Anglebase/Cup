@@ -5,6 +5,7 @@
 #include "cmake.h"
 #include <fstream>
 #include <filesystem>
+#include <functional>
 namespace fs = std::filesystem;
 
 enum class BuildType
@@ -24,6 +25,11 @@ struct BuildInfo
     BuildInfo(const fs::path &project_dir, const SysArgs &args);
 };
 
+struct Task {
+    Version version;
+    std::function<void(cmake::Generator&)> func;
+};
+
 class Build
 {
     BuildInfo info;
@@ -31,6 +37,8 @@ class Build
     std::unordered_set<std::string> build_depends;
     std::optional<std::string> cmake_gen;
     std::vector<std::string> stack;
+
+    std::vector<std::pair<std::string, Task>> tasks;
 
 public:
     Build(const BuildInfo &info, const ConfigInfo &config);
