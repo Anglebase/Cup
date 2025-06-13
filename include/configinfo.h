@@ -358,6 +358,8 @@ struct Deserde<BuildSettings>
 struct Dependency
 {
     std::optional<fs::path> path;
+    std::optional<std::string> git;
+    std::optional<std::string> version;
     std::vector<std::string> features;
 };
 
@@ -369,7 +371,9 @@ struct Deserde<Dependency>
         auto table = require(node.as_table());
         Dependency dependency;
 
-        dependency.path = option<fs::path>(table.get("path")).value_or(fs::path{});
+        dependency.path = option<fs::path>(table.get("path"));
+        dependency.git = option<std::string>(table.get("git"));
+        dependency.version = option<std::string>(table.get("version"));
         dependency.features = option<std::vector<std::string>>(table.get("features"))
                                   .value_or(std::vector<std::string>{});
 
@@ -382,7 +386,9 @@ struct Deserde<Dependency>
             return std::nullopt;
         Dependency dependency;
 
-        dependency.path = option<fs::path>(table->get("path")).value_or(fs::path{});
+        dependency.path = option<fs::path>(table->get("path"));
+        dependency.git = option<std::string>(table->get("git"));
+        dependency.version = option<std::string>(table->get("version"));
         dependency.features = option<std::vector<std::string>>(table->get("features"))
                                   .value_or(std::vector<std::string>{});
 
