@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "command.h"
 #include <fstream>
+#include "log.h"
 
 bool git_valid()
 {
@@ -72,5 +73,6 @@ void Git::download(const std::string &url, const std::string &tag)
     auto result = git.execute();
     if (result != 0)
         throw std::runtime_error("Failed to download repository.");
+    if (!fs::exists(dir / "cup.toml"))
+        LOG_WARN("Dependency @", author, "/", library, " (", tag, ") not a cup project.");
 }
- 
