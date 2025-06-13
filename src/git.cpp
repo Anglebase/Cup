@@ -48,7 +48,11 @@ std::pair<std::string, std::string> get_author_libary(const std::string &url)
 {
     auto purl = fs::path(url);
     purl.replace_extension();
-    std::vector<std::string> parts{purl.begin(), purl.end()};
+    std::vector<std::string> parts;
+    for (auto part : purl)
+    {
+        parts.push_back(part.string());
+    }
     return {parts[parts.size() - 2], parts[parts.size() - 1]};
 }
 
@@ -65,5 +69,8 @@ void Git::download(const std::string &url, const std::string &tag)
     git.arg(tag);
     git.arg("--depth");
     git.arg("1");
-    git.execute();
+    auto result = git.execute();
+    if (result != 0)
+        throw std::runtime_error("Failed to download repository.");
 }
+ 
