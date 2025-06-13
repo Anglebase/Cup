@@ -320,6 +320,8 @@ InstallCmd::InstallCmd(const SysArgs &args)
     {
         this->url = package;
     }
+    if (args.hasConfig("version") && !args.getConfigs().at("version").empty())
+        this->version = args.getConfigs().at("version")[0];
 }
 
 int InstallCmd::run()
@@ -334,6 +336,59 @@ int InstallCmd::run()
     }
     LOG_MSG("Installing package: ", this->url, " v", *this->version);
     git.download(this->url, "v" + *this->version);
+    LOG_MSG("Package installed.");
+    return 0;
+}
+
+UninstallCmd::UninstallCmd(const SysArgs &args)
+{
+    if (args.getArguments().size() <= 1)
+        throw std::runtime_error("No package name provided.");
+    auto package = args.getArguments()[1];
+    if (package.starts_with("@"))
+    {
+        auto package_ = package.substr(1);
+        auto info = split(package_, "/");
+        if (info.size() != 2)
+            throw std::runtime_error("Invalid package name: " + package);
+        author = info[0];
+        libary = info[1];
+    }
+    else
+    {
+        const auto &[author_, libary_] = get_author_libary(package);
+        author = author_;
+        libary = libary_;
+    }
+    if (args.hasConfig("version") && !args.getConfigs().at("version").empty())
+        this->version = args.getConfigs().at("version")[0];
+}
+
+int UninstallCmd::run()
+{
+    auto cup_dir = get_user_dir() / ".cup";
+    auto package_dir = cup_dir / author / libary;
+    if (this->version.has_value())
+    {
+        package_dir /= "v" + *this->version;
+        if (fs::exists(package_dir))
+            fs::remove_all(package_dir);
+        else
+            LOG_INFO("Package @" + author + "/" + libary + " is not installed.");
+    }
+    if (!fs::exists(package_dir))
+    {
+        LOG_INFO("Package @" + author + "/" + libary + " is not installed.");
+        return 0;
+    }
+    LOG_WARN("Are you sure to uninstall all versions of package @" + author + "/" + libary + "? (y/N)");
+    std::string input;
+    std::getline(std::cin, input);
+    if (input == "y" || input == "Y")
+    {
+        fs::remove_all(package_dir);
+        LOG_INFO("Package @" + author + "/" + libary + " is uninstalled.");
+    }
     return 0;
 }
 

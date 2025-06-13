@@ -68,7 +68,19 @@ class InstallCmd
     std::string author;
     std::string libary;
     std::optional<std::string> version;
+
 public:
     InstallCmd(const SysArgs &args);
+    int run();
+};
+
+class UninstallCmd
+{
+    std::string author;
+    std::string libary;
+    std::optional<std::string> version;
+
+public:
+    UninstallCmd(const SysArgs &args);
     int run();
 };

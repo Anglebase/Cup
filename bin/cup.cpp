@@ -120,6 +120,11 @@ int main(int argc, char **argv)
              InstallCmd installCmd(args);
              return installCmd.run();
          }},
+        {"uninstall", [&]()
+         {
+             UninstallCmd uninstallCmd(args);
+             return uninstallCmd.run();
+         }},
         {"version", [&]()
          {
              std::cout << "Cup version " << _VER_X << "." << _VER_Y << "." << _VER_Z << std::endl;
