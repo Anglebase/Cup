@@ -217,6 +217,7 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
     const char *SHARED = "shared";
     auto project_dir = path.is_relative() ? this->info.project_dir / path : path;
     Config config(project_dir);
+
     if (!config.config->build.generator.empty() && config.config->build.generator != this->cmake_gen)
     {
         LOG_WARN("Generator of dependency \"" +
@@ -224,6 +225,23 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
                  "\" is different from the root project. ");
         LOG_DEBUG("This may result in the inability to build.");
     }
+
+    // 循环依赖检查：入栈
+    auto iter = std::find_if(this->stack.begin(), this->stack.end(),
+                             [&](const std::string &name)
+                             { return name == config.config->name; });
+    if (iter == this->stack.end())
+        this->stack.push_back(config.config->name);
+    else
+    {
+        std::ostringstream oss;
+        for (auto it = iter; it != this->stack.end(); ++it)
+        {
+            oss << *it << " -> ";
+        }
+        throw std::runtime_error("Circular dependency detected: " + oss.str());
+    }
+    // 递归生成依赖构建脚本
     for (const auto &[name, cup] : config.config->dependencies)
     {
         if (this->build_depends.find(std::string(name)) == this->build_depends.end())
@@ -232,6 +250,8 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
             this->build_depends.insert(std::string(name));
         }
     }
+    // 循环依赖检查：出栈
+
     auto src_files = fs::exists(project_dir / "src")
                          ? find_all_source(project_dir / "src")
                          : std::vector<fs::path>{};
