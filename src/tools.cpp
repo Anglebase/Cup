@@ -301,6 +301,30 @@ int ListCmd::run()
         for (const auto &[name, version] : dependencies)
             std::cout << "    " << name << " v" << version << std::endl;
     }
+    else if (this->option == "installed")
+    {
+        LOG_MSG("Installed packages:");
+        auto cup_dir = get_user_dir() / ".cup";
+        for (const auto &author_dir : fs::directory_iterator(cup_dir))
+        {
+            if (!author_dir.is_directory())
+                continue;
+            const auto &author = author_dir.path().filename().string();
+            for (const auto &libary_dir : fs::directory_iterator(author_dir))
+            {
+                if (!libary_dir.is_directory())
+                    continue;
+                const auto &libary = libary_dir.path().filename().string();
+                for (const auto &tag_dir : fs::directory_iterator(libary_dir))
+                {
+                    if (!tag_dir.is_directory())
+                        continue;
+                    const auto &version = tag_dir.path().filename().string();
+                    std::cout << "    @" << author << "/" << libary << "\t" << version << std::endl;
+                }
+            }
+        }
+    }
     return 0;
 }
 
