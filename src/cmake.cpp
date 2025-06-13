@@ -2,6 +2,8 @@
 #include "utils.h"
 #include <unordered_set>
 #include <sstream>
+#include <fstream>
+#include "command.h"
 using namespace cmake;
 
 std::string visual_to_string(cmake::Visual visual)
@@ -361,6 +363,36 @@ void cmake::Generator::write_to(std::ofstream &f) const
 {
     for (const auto &command : this->commands)
         f << command << std::endl;
+}
+
+bool cmake_valid()
+{
+    Command cmk("cmake");
+    cmk.arg("-version");
+    auto cache = get_user_dir() / ".cup" / "cache";
+    cmk.set_stdout(cache);
+    cmk.set_stderr(cache);
+    auto result = cmk.execute();
+    if (result != 0)
+        throw std::runtime_error("CMake not installed or not in PATH.");
+    std::ifstream ifs(cache);
+    std::string line;
+    while (std::getline(ifs, line))
+    {
+        if (line.starts_with("cmake version"))
+        {
+            auto version = line.substr(14);
+            auto xyz = split(version, ".");
+            if (xyz.size() != 3)
+                throw std::runtime_error("Invalid cmake version: " + version);
+            int major = std::stoi(xyz[0]);
+            int minor = std::stoi(xyz[1]);
+            if (major < 3 || (major == 3 && minor < 10))
+                throw std::runtime_error("CMake version too low: " + version);
+            return true;
+        }
+    }
+    throw std::runtime_error("Invalid cmake version.");
 }
 
 cmake::Execute::Execute()
