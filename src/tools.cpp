@@ -1,6 +1,7 @@
 #include "tools.h"
 #include "build.h"
 #include <fstream>
+#include "git.h"
 
 NewCmd::NewCmd(const SysArgs &args)
     : at(std::nullopt), target(std::nullopt)
@@ -297,6 +298,41 @@ int ListCmd::run()
         for (const auto &[name, version] : dependencies)
             std::cout << "    " << name << " v" << version << std::endl;
     }
+    return 0;
+}
+
+InstallCmd::InstallCmd(const SysArgs &args)
+{
+    if (args.getArguments().size() <= 1)
+        throw std::runtime_error("No package name provided.");
+    auto package = args.getArguments()[1];
+    if (package.starts_with("@"))
+    {
+        auto package_ = package.substr(1);
+        auto info = split(package_, "/");
+        if (info.size() != 2)
+            throw std::runtime_error("Invalid package name: " + package);
+        auto author = info[0];
+        auto libary = info[1];
+        this->url = "https://github.com/" + author + "/" + libary + ".git";
+    }
+    else
+    {
+        this->url = package;
+    }
+}
+
+int InstallCmd::run()
+{
+    auto git = Git{};
+    if (!this->version)
+    {
+        auto tags = git.get_tags(this->url);
+        if (tags.empty())
+            throw std::runtime_error("No tags found in repository: " + this->url);
+        this->version = tags.back().substr(1);
+    }
+    git.download(this->url, "v" + *this->version);
     return 0;
 }
 

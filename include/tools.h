@@ -61,3 +61,14 @@ public:
     ListCmd(const SysArgs &args);
     int run();
 };
+
+class InstallCmd
+{
+    std::string url;
+    std::string author;
+    std::string libary;
+    std::optional<std::string> version;
+public:
+    InstallCmd(const SysArgs &args);
+    int run();
+};
