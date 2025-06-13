@@ -398,9 +398,46 @@ struct Qt
     std::vector<std::string> flags;
 };
 
+struct Link
+{
+    std::vector<std::string> libs;
+    std::vector<fs::path> paths;
+};
+
+template <>
+struct Deserde<Link>
+{
+    static inline Link from(const toml::node &node)
+    {
+        auto table = require(node.as_table());
+        Link link;
+
+        link.libs = option<std::vector<std::string>>(table.get("libs"))
+                        .value_or(std::vector<std::string>{});
+        link.paths = option<std::vector<fs::path>>(table.get("paths"))
+                         .value_or(std::vector<fs::path>{});
+
+        return link;
+    }
+    static inline std::optional<Link> try_from(const toml::node &node) noexcept
+    {
+        auto table = node.as_table();
+        if (!table)
+            return std::nullopt;
+        Link link;
+
+        link.libs = option<std::vector<std::string>>(table->get("libs"))
+                        .value_or(std::vector<std::string>{});
+        link.paths = option<std::vector<fs::path>>(table->get("paths"))
+                         .value_or(std::vector<fs::path>{});
+
+        return link;
+    }
+};
+
 struct GeneratorInfo
 {
-    std::map<std::string, fs::path> link;
+    Link link;
     Options options;
     std::vector<std::string> define;
 };
@@ -412,8 +449,8 @@ struct Deserde<GeneratorInfo>
     {
         auto table = require(node.as_table());
         GeneratorInfo generator;
-        generator.link = option<std::map<std::string, fs::path>>(table.get("link"))
-                             .value_or(std::map<std::string, fs::path>{});
+        generator.link = option<Link>(table.get("link"))
+                             .value_or(Link{});
         generator.options = option<Options>(table.get("options")).value_or(Options{});
         generator.define = option<std::vector<std::string>>(table.get("define"))
                                .value_or(std::vector<std::string>{});
@@ -426,8 +463,8 @@ struct Deserde<GeneratorInfo>
         if (!table)
             return std::nullopt;
         GeneratorInfo generator;
-        generator.link = option<std::map<std::string, fs::path>>(table->get("link"))
-                             .value_or(std::map<std::string, fs::path>{});
+        generator.link = option<Link>(table->get("link"))
+                             .value_or(Link{});
         generator.options = option<Options>(table->get("options")).value_or(Options{});
         generator.define = option<std::vector<std::string>>(table->get("define"))
                                .value_or(std::vector<std::string>{});
@@ -480,7 +517,7 @@ struct ConfigInfo
     std::vector<std::string> authors;
     std::string license;
     BuildSettings build;
-    std::map<std::string, fs::path> link;
+    Link link;
     std::map<std::string, Dependency> dependencies;
     std::map<std::string, GeneratorSettings> generators;
 
@@ -506,8 +543,8 @@ struct Deserde<ConfigInfo>
                                   .value_or(std::vector<std::string>{});
         config_info.license = option<std::string>(table.get("license")).value_or("");
         config_info.build = require<BuildSettings>(table.get("build"));
-        config_info.link = option<std::map<std::string, fs::path>>(table.get("link"))
-                               .value_or(std::map<std::string, fs::path>{});
+        config_info.link = option<Link>(table.get("link"))
+                               .value_or(Link{});
         config_info.dependencies = option<std::map<std::string, Dependency>>(table.get("dependencies"))
                                        .value_or(std::map<std::string, Dependency>{});
         config_info.generators = option<std::map<std::string, GeneratorSettings>>(table.get("generator"))
@@ -535,8 +572,8 @@ struct Deserde<ConfigInfo>
         if (!build)
             return std::nullopt;
         config_info.build = *build;
-        config_info.link = option<std::map<std::string, fs::path>>(table->get("link"))
-                               .value_or(std::map<std::string, fs::path>{});
+        config_info.link = option<Link>(table->get("link"))
+                               .value_or(Link{});
         config_info.dependencies = option<std::map<std::string, Dependency>>(table->get("dependencies"))
                                        .value_or(std::map<std::string, Dependency>{});
         config_info.generators = option<std::map<std::string, GeneratorSettings>>(table->get("generator"))

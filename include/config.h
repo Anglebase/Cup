@@ -46,8 +46,10 @@ std::ostream &operator<<(std::ostream &os, const ConfigInfo &config)
     for (auto &include : config.build.include)
         os << "  -I " << include << std::endl;
     os << "link: " << std::endl;
-    for (auto &link : config.link)
-        os << "  -l " << link.first << " -> " << link.second << std::endl;
+    for (auto &lib : config.link.libs)
+        os << "  -l " << lib << std::endl;
+    for (auto &path : config.link.paths)
+        os << "  -L " << path << std::endl;
     os << "dependencies: " << std::endl;
     for (auto &dependency : config.dependencies)
         os << "  - " << dependency.first << " -> " << dependency.second.path.value_or(fs::path()) << std::endl;

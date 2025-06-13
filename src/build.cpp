@@ -65,18 +65,8 @@ void generate_generator(const std::string &item, const ConfigInfo &config,
             gen.target_compile_options(item, cmake::Visual::Private, gener_info.options.compile);
             gen.target_link_options(item, link_visual, gener_info.options.link);
             gen.target_compile_definitions(item, cmake::Visual::Private, gener_info.define);
-            std::vector<std::string> libs;
-            std::vector<fs::path> lib_paths;
-            for (const auto &[lib, path] : gener_info.link)
-            {
-                if (path.is_absolute())
-                    lib_paths.push_back(path.string());
-                else
-                    lib_paths.push_back(info.project_dir / path);
-                libs.push_back(lib);
-            }
-            gen.target_link_directories(item, link_visual, lib_paths);
-            gen.target_link_libraries(item, link_visual, libs);
+            gen.target_link_directories(item, link_visual, gener_info.link.paths);
+            gen.target_link_libraries(item, link_visual, gener_info.link.libs);
         };
         if (gener == cmake_gen)
         {
@@ -181,21 +171,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                 item, std::nullopt,
                 replace_finally_name(main_file.parent_path(), "bin", "target", this->info.target_dir));
             config_gen(item, BINARY);
-            std::vector<fs::path> libs_dir;
-            std::vector<std::string> libs;
-            for (const auto &[name, dir] : this->config.link)
-            {
-                libs.push_back(std::string(name));
-                libs_dir.push_back(dir);
-            }
-            for (const auto &[name, cup] : this->config.dependencies)
-            {
-                MD5 lhash(cup.path->is_relative() ? this->info.project_dir / *cup.path : *cup.path);
-                const auto lib_name = std::string(name) + "_" + lhash.toStr();
-                libs.push_back(lib_name);
-            }
-            gen.target_link_libraries(item, cmake::Visual::Public, libs);
-            gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
+            gen.target_link_libraries(item, cmake::Visual::Private, this->config.link.libs);
+            gen.target_link_directories(item, cmake::Visual::Private, this->config.link.paths);
         }
     }
     else if (this->config.build.target == STATIC || this->config.build.target == SHARED)
@@ -210,21 +187,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             src_files);
         gen.set_target_output_name(item, this->config.name);
         config_gen(item, this->config.build.target);
-        std::vector<fs::path> libs_dir;
-        std::vector<std::string> libs;
-        for (const auto &[name, dir] : this->config.link)
-        {
-            libs.push_back(std::string(name));
-            libs_dir.push_back(dir);
-        }
-        for (const auto &[name, cup] : this->config.dependencies)
-        {
-            MD5 lhash(cup.path->is_relative() ? this->info.project_dir / *cup.path : *cup.path);
-            const auto lib_name = std::string(name) + "_" + lhash.toStr();
-            libs.push_back(lib_name);
-        }
-        gen.target_link_libraries(item, cmake::Visual::Public, libs);
-        gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
+        gen.target_link_libraries(item, cmake::Visual::Public, this->config.link.libs);
+        gen.target_link_directories(item, cmake::Visual::Public, this->config.link.paths);
         for (auto &main_file : main_files)
         {
             auto main_hash = MD5(main_file);
@@ -324,21 +288,8 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
             gen.target_link_options(item, cmake::Visual::Private, config.config->build.release.options.link);
             gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.release.define);
         }
-        std::vector<fs::path> libs_dir;
-        std::vector<std::string> libs;
-        for (const auto &[name, dir] : config.config->link)
-        {
-            libs.push_back(std::string(name));
-            libs_dir.push_back(dir);
-        }
-        for (const auto &[name, cup] : config.config->dependencies)
-        {
-            MD5 lhash(cup.path->is_relative() ? project_dir / *cup.path : *cup.path);
-            const auto lib_name = std::string(name) + "_" + lhash.toStr();
-            libs.push_back(lib_name);
-        }
-        gen.target_link_libraries(item, cmake::Visual::Public, libs);
-        gen.target_link_directories(item, cmake::Visual::Public, libs_dir);
+        gen.target_link_libraries(item, cmake::Visual::Public, config.config->link.libs);
+        gen.target_link_directories(item, cmake::Visual::Public, config.config->link.paths);
         generate_generator(item, *config.config, this->info, gen, this->cmake_gen, BINARY);
     }
     else
