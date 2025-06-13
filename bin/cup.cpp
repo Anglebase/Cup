@@ -39,6 +39,7 @@ Commands:
         source file containing the main function relative to the bin directory. 
         options can include:
             -r or -release      Runs the Release build.
+            -auto               Automatic download without installed dependencies.
             --dir <path>        Specifies the project's path.
             --build <path>      Specifies the build directory's path.
             --args <args...>    Specifies arguments to pass to the executable.

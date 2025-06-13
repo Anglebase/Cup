@@ -36,6 +36,7 @@ Cup 的基本命令格式为 `cup <command> [args...]`
 + `cup build [build target] [options...]`
 构建项目，`build target`指定构建的目标，若未指定，则构建所有的目标，该项应指定包含主函数的源文件相对于`bin`目录的路径，`options`可以包含以下选项：
     + `-r` `-release` 指定项目以 Relase 模式构建
+    + `-auto` 指定构建项目时若检索到未在本地安装的依赖项，Cup将自动安装依赖项
     + `--dir <path>` 指定项目所在的路径
     + `--build <path>` 指定构建目录的生成路径
 
