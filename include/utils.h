@@ -75,3 +75,18 @@ inline fs::path replace_finally_name(const fs::path &path, const std::string &fr
     }
     return result.lexically_normal();
 }
+
+inline fs::path get_user_dir()
+{
+    static auto root = std::getenv(
+#ifdef _WIN32
+        "USERPROFILE"
+#else
+        "HOME"
+#endif
+    );
+    if (!root)
+        throw std::runtime_error("Can't get user directory");
+    static auto dir = fs::path(root);
+    return dir;
+}
