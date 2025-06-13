@@ -103,6 +103,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         this->cmake_gen = "Unix Makefiles";
 #endif
     }
+    this->stack.push_back(this->config.name);
     for (const auto &[name, cup] : this->config.dependencies)
     {
         if (this->build_depends.find(std::string(name)) == this->build_depends.end())
@@ -111,6 +112,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             this->build_depends.insert(std::string(name));
         }
     }
+    this->stack.pop_back();
+
     auto src_files = fs::exists(this->info.project_dir / "src")
                          ? find_all_source(this->info.project_dir / "src")
                          : std::vector<fs::path>{};
@@ -173,6 +176,17 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             config_gen(item, BINARY);
             gen.target_link_libraries(item, cmake::Visual::Private, this->config.link.libs);
             gen.target_link_directories(item, cmake::Visual::Private, this->config.link.paths);
+            std::vector<std::string> libs;
+            for (const auto &[name, cup] : this->config.dependencies)
+            {
+                auto path = cup.path->is_relative() ? this->info.project_dir / *cup.path : *cup.path;
+                MD5 lhash(path);
+                const auto lib_name = std::string(name) + "_" + lhash.toStr();
+                auto src = path / "src";
+                if (fs::exists(src) && !fs::is_empty(src))
+                    libs.push_back(lib_name);
+            }
+            gen.target_link_libraries(item, cmake::Visual::Private, libs);
         }
     }
     else if (this->config.build.target == STATIC || this->config.build.target == SHARED)
@@ -189,6 +203,17 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         config_gen(item, this->config.build.target);
         gen.target_link_libraries(item, cmake::Visual::Public, this->config.link.libs);
         gen.target_link_directories(item, cmake::Visual::Public, this->config.link.paths);
+        std::vector<std::string> libs;
+        for (const auto &[name, cup] : this->config.dependencies)
+        {
+            auto path = cup.path->is_relative() ? this->info.project_dir / *cup.path : *cup.path;
+            MD5 lhash(path);
+            const auto lib_name = std::string(name) + "_" + lhash.toStr();
+            auto src = path / "src";
+            if (fs::exists(src) && !fs::is_empty(src))
+                libs.push_back(lib_name);
+        }
+        gen.target_link_libraries(item, cmake::Visual::Private, libs);
         for (auto &main_file : main_files)
         {
             auto main_hash = MD5(main_file);
@@ -251,6 +276,7 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
         }
     }
     // 循环依赖检查：出栈
+    this->stack.pop_back();
 
     auto src_files = fs::exists(project_dir / "src")
                          ? find_all_source(project_dir / "src")
@@ -266,6 +292,11 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
     {
         MD5 hash(project_dir);
         auto item = config.config->name + "_" + hash.toStr();
+        if (src_files.empty() && config.config->build.target == STATIC)
+        {
+            LOG_INFO("Dependency \"", config.config->name, "\" is a header-only library.");
+            return;
+        }
         if (src_files.empty())
             throw std::runtime_error("No source files found in dependency \"" + config.config->name + "\".");
         gen.add_library(
