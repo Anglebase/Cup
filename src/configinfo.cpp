@@ -49,11 +49,26 @@ fs::path Dependency::get_path() const
         return *this->path;
     if (!this->git)
         throw std::runtime_error("Invalid dependency '" + name + "'.");
+    std::string url;
+    if (this->git->starts_with("@"))
+    {
+        auto package_ = this->git->substr(1);
+        auto info = split(package_, "/");
+        if (info.size() != 2)
+            throw std::runtime_error("Invalid package name: " + *this->git);
+        auto author = info[0];
+        auto libary = info[1];
+        url = "https://github.com/" + author + "/" + libary + ".git";
+    }
+    else
+    {
+        url = *this->git;
+    }
     auto git = Git{};
     std::string tag;
     if (!this->version)
     {
-        auto tags = git.get_tags(*this->git);
+        auto tags = git.get_tags(url);
         if (tags.empty())
             throw std::runtime_error("Cannot find any tags for dependency '" + name + "'.");
         tag = tags.back();
@@ -62,7 +77,7 @@ fs::path Dependency::get_path() const
     {
         tag = "v" + *this->version;
     }
-    const auto &[author, library] = get_author_libary(*this->git);
+    const auto &[author, library] = get_author_libary(url);
     const auto cup_dir = get_user_dir() / ".cup";
     const auto dir = cup_dir / author / library / tag;
     if (fs::exists(dir))
@@ -70,8 +85,8 @@ fs::path Dependency::get_path() const
     if (BuildCmd::auto_download)
     {
         LOG_MSG("Installing dependency '" + name + "' from git repository '" +
-                *this->git + "' with tag '" + tag + "'.");
-        git.download(*this->git, tag);
+                url + "' with tag '" + tag + "'.");
+        git.download(url, tag);
         LOG_MSG("Dependency '" + name + "' installed.");
     }
     else
