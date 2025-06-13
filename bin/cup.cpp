@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <functional>
 #include "tools.h"
+#include "utils.h"
 
 const char *HELP_INFO = R"(Usage:
     cup <command> [args...]
@@ -53,6 +54,7 @@ Commands:
 int main(int argc, char **argv)
 {
     const auto args = SysArgs(argc, argv);
+
 #ifdef _DEBUG
     std::cout << "Arguments: ";
     for (const auto &arg : args.getArguments())
@@ -71,6 +73,10 @@ int main(int argc, char **argv)
         std::cout << std::endl;
     }
 #endif
+    const auto cup_cache = get_user_dir() / ".cup";
+    if (!fs::exists(cup_cache))
+        fs::create_directories(cup_cache);
+
     if (args.getArguments().empty())
     {
         LOG_DEBUG("Help| Error: {No Cmd}");
