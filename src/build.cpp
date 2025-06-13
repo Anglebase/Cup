@@ -236,7 +236,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
 
 void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen)
 {
-    const fs::path path = root_cup.path.value();
+    const fs::path path = root_cup.get_path();
     const char *BINARY = "binary";
     const char *STATIC = "static";
     const char *SHARED = "shared";

@@ -40,3 +40,10 @@ ConfigInfo::ConfigInfo(const Config &config)
             throw std::runtime_error("Connot finc dependency '" + name + "' because it has no path.");
     }
 }
+
+fs::path Dependency::get_path() const
+{
+    if (this->path.has_value())
+        return *this->path;
+    return fs::path();
+}

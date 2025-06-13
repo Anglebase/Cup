@@ -361,6 +361,8 @@ struct Dependency
     std::optional<std::string> git;
     std::optional<std::string> version;
     std::vector<std::string> features;
+
+    fs::path get_path() const;
 };
 
 template <>
