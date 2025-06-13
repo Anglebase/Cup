@@ -270,7 +270,7 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
         LOG_WARN("Generator of dependency \"" +
                  config.config->name +
                  "\" is different from the root project. ");
-        LOG_DEBUG("This may result in the inability to build.");
+        LOG_WARN("This may result in the inability to build.");
     }
 
     // 循环依赖检查：入栈
@@ -283,9 +283,8 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
     {
         std::ostringstream oss;
         for (auto it = iter; it != this->stack.end(); ++it)
-        {
             oss << *it << " -> ";
-        }
+        oss << *iter;
         throw std::runtime_error("Circular dependency detected: " + oss.str());
     }
     // 递归生成依赖构建脚本
