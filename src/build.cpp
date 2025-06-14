@@ -182,9 +182,10 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                 gen.target_link_libraries(item, cmake::Visual::Private, libs);
             }
         };
+        MD5 hash(this->info.project_dir);
         this->tasks.push_back(
             {
-                this->config.name,
+                this->config.name + "_" + hash.toStr(),
                 Task{
                     .version = this->config.version,
                     .func = task,
@@ -219,8 +220,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             for (auto &main_file : main_files)
             {
                 auto raw_path = main_file;
-                const auto raw_name = raw_path.replace_extension().filename().string();
                 MD5 hash(raw_path.lexically_normal());
+                const auto raw_name = raw_path.replace_extension().filename().string();
                 const auto demo = raw_name + "_" + hash.toStr();
                 gen.add_executable(demo, {main_file});
                 gen.set_target_output_name(demo, raw_name);
