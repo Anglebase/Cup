@@ -67,6 +67,7 @@ namespace cmake
         void else_();
         void endif_();
         void add_prefix_path(const fs::path &path);
+        void include(const fs::path &path);
 
     public:
         std::string generator() const;

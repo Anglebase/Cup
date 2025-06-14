@@ -163,8 +163,9 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             {
                 auto source = src_files;
                 auto raw_path = main_file;
-                const auto raw_name = raw_path.replace_extension().filename().string();
                 MD5 hash(raw_path.lexically_normal());
+                const auto raw_name = raw_path.replace_extension().filename().string();
+                LOG_INFO("Generating target: ", raw_path);
                 const auto item = raw_name + "_" + hash.toStr();
                 source.push_back(main_file);
                 gen.add_executable(item, source);
@@ -407,10 +408,41 @@ void Build::generate_build(std::ofstream &ofs)
         generator.set_system_name(this->config.build.system.name.value());
     if (this->config.build.system.processor.has_value())
         generator.set_system_processor(this->config.build.system.processor.value());
+
+    if (this->config.build.toolchain.cc.has_value())
+        generator.set_c_compiler(this->config.build.toolchain.cc.value());
+    if (this->config.build.toolchain.cxx.has_value())
+        generator.set_cxx_compiler(this->config.build.toolchain.cxx.value());
+    if (this->config.build.toolchain.ld.has_value())
+        generator.set_linker(this->config.build.toolchain.ld.value());
+    if (this->config.build.toolchain.asm_.has_value())
+    {
+        generator.set_asm_compiler(this->config.build.toolchain.asm_.value());
+        generator.set("CMAKE_TRY_COMPILE_TARGET_TYPE", "STATIC_LIBRARY");
+    }
+    if (this->config.build.suffix.has_value())
+        generator.set_executable_suffix(this->config.build.suffix.value());
+
+    if (!this->config.build.flags.c.empty())
+        generator.set("CMAKE_C_FLAGS", '"' + join(this->config.build.flags.c, " ") + '"');
+    if (!this->config.build.flags.cxx.empty())
+        generator.set("CMAKE_CXX_FLAGS", '"' + join(this->config.build.flags.cxx, " ") + '"');
+    if (!this->config.build.flags.asm_.empty())
+        generator.set("CMAKE_ASM_FLAGS", '"' + join(this->config.build.flags.asm_, " ") + '"');
+    if (!this->config.build.flags.ld_c.empty())
+        generator.set("CMAKE_C_LINK_FLAGS", '"' + join(this->config.build.flags.ld_c, " ") + '"');
+    if (!this->config.build.flags.ld_cxx.empty())
+        generator.set("CMAKE_CXX_LINK_FLAGS", '"' + join(this->config.build.flags.ld_cxx, " ") + '"');
+
+    if (this->config.build.toolchain.ref.has_value())
+        generator.include(this->config.build.toolchain.ref.value());
+
     generator.project(this->config.name);
     generator.set_execute_output_path(this->info.target_dir);
     generator.set_library_output_path(this->info.build_dir / "lib");
 
+    if (this->config.build.toolchain.asm_.has_value() || this->config.build.asm_)
+        generator.enable_language("ASM");
     if (this->info.type == BuildType::Debug)
         generator.add_defines({"DEBUG", "_DEBUG"});
     else
@@ -428,20 +460,6 @@ void Build::generate_build(std::ofstream &ofs)
         generator.add_complie_options({"-O2"});
     generator.endif_();
 
-    if (this->config.build.toolchain.cc.has_value())
-        generator.set_c_compiler(this->config.build.toolchain.cc.value());
-    if (this->config.build.toolchain.cxx.has_value())
-        generator.set_cxx_compiler(this->config.build.toolchain.cxx.value());
-    if (this->config.build.toolchain.ld.has_value())
-        generator.set_linker(this->config.build.toolchain.ld.value());
-    if (this->config.build.toolchain.asm_.has_value())
-    {
-        generator.enable_language("ASM");
-        generator.set_asm_compiler(this->config.build.toolchain.asm_.value());
-    }
-    if (this->config.build.suffix.has_value())
-        generator.set_executable_suffix(this->config.build.suffix.value());
-
     if (this->config.qt.has_value() && this->config.qt->path.has_value())
         generator.add_prefix_path(*this->config.qt->path);
     if (this->config.qt.has_value())
@@ -451,17 +469,6 @@ void Build::generate_build(std::ofstream &ofs)
             generator.set("CMAKE_" + flag, "ON");
         generator.find_package(qt.version, qt.modules);
     }
-
-    if (!this->config.build.flags.c.empty())
-        generator.set("CMAKE_C_FLAGS", '"' + join(this->config.build.flags.c, " ") + '"');
-    if (!this->config.build.flags.cxx.empty())
-        generator.set("CMAKE_CXX_FLAGS", '"' + join(this->config.build.flags.cxx, " ") + '"');
-    if (!this->config.build.flags.asm_.empty())
-        generator.set("CMAKE_ASM_FLAGS", '"' + join(this->config.build.flags.asm_, " ") + '"');
-    if (!this->config.build.flags.ld_c.empty())
-        generator.set("CMAKE_C_LINK_FLAGS", '"' + join(this->config.build.flags.ld_c, " ") + '"');
-    if (!this->config.build.flags.ld_cxx.empty())
-        generator.set("CMAKE_CXX_LINK_FLAGS", '"' + join(this->config.build.flags.ld_cxx, " ") + '"');
 
     this->generate_cmake_root(generator);
 
@@ -479,8 +486,8 @@ int Build::build()
     cmake::Execute make;
     make.source(this->info.build_dir);
     make.build_dir(this->info.build_dir / cmake_build);
-    if (!this->config.build.generator.empty())
-        make.generator(this->config.build.generator);
+    if (this->cmake_gen.has_value())
+        make.generator(this->cmake_gen.value());
     LOG_DEBUG("Build command: ", make.as_command());
     int res = 0;
     if ((res = system(make.as_command().c_str())) != 0)
@@ -493,8 +500,9 @@ int Build::build()
     if (this->info.build_target.has_value())
     {
         auto target = this->info.build_target.value();
-        const auto item = target.filename().replace_extension().string();
         MD5 hash(target.lexically_normal());
+        LOG_INFO("Build target: ", target);
+        const auto item = target.replace_extension().filename().string();
         const auto demo = item + "_" + hash.toStr();
         bud.target(demo);
     }

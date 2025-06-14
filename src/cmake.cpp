@@ -351,6 +351,11 @@ void cmake::Generator::add_prefix_path(const fs::path &path)
               "${CMAKE_PREFIX_PATH};" + replace_all((path).lexically_normal().string(), "\\", "/"));
 }
 
+void cmake::Generator::include(const fs::path &path)
+{
+    this->commands.push_back("include(" + replace_all(path.string(), "\\", "/") + ")");
+}
+
 std::string cmake::Generator::generator() const
 {
     std::ostringstream oss;

@@ -114,6 +114,7 @@ struct ToolChain
     std::optional<std::string> cxx;
     std::optional<std::string> asm_;
     std::optional<std::string> ld;
+    std::optional<fs::path> ref;
 };
 
 template <>
@@ -128,6 +129,7 @@ struct Deserde<ToolChain>
         tool_chain.cxx = option<std::string>(table.get("cxx"));
         tool_chain.asm_ = option<std::string>(table.get("asm"));
         tool_chain.ld = option<std::string>(table.get("ld"));
+        tool_chain.ref = option<fs::path>(table.get("ref"));
 
         return tool_chain;
     }
@@ -142,6 +144,7 @@ struct Deserde<ToolChain>
         tool_chain.cxx = option<std::string>(table->get("cxx"));
         tool_chain.asm_ = option<std::string>(table->get("asm"));
         tool_chain.ld = option<std::string>(table->get("ld"));
+        tool_chain.ref = option<fs::path>(table->get("ref"));
 
         return tool_chain;
     }
@@ -286,6 +289,7 @@ struct BuildSettings
     Flags flags;
     ModeSettings debug;
     ModeSettings release;
+    bool asm_;
 };
 
 template <>
@@ -317,6 +321,7 @@ struct Deserde<BuildSettings>
         build_settings.flags = option<Flags>(table.get("flags")).value_or(Flags{});
         build_settings.debug = option<ModeSettings>(table.get("debug")).value_or(ModeSettings{});
         build_settings.release = option<ModeSettings>(table.get("release")).value_or(ModeSettings{});
+        build_settings.asm_ = option<bool>(table.get("asm")).value_or(false);
 
         return build_settings;
     }
@@ -350,6 +355,7 @@ struct Deserde<BuildSettings>
         build_settings.flags = option<Flags>(table->get("flags")).value_or(Flags{});
         build_settings.debug = option<ModeSettings>(table->get("debug")).value_or(ModeSettings{});
         build_settings.release = option<ModeSettings>(table->get("release")).value_or(ModeSettings{});
+        build_settings.asm_ = option<bool>(table->get("asm")).value_or(false);
 
         return build_settings;
     }
