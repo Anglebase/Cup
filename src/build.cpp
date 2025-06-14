@@ -218,7 +218,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                 if (fs::exists(src) && !fs::is_empty(src))
                     libs.push_back(lib_name);
             }
-            gen.target_link_libraries(item, cmake::Visual::Private, libs);
+            gen.target_link_libraries(item, cmake::Visual::Public, libs);
             for (auto &main_file : main_files)
             {
                 auto raw_path = main_file;
@@ -346,6 +346,16 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
             }
             gen.target_link_libraries(item, cmake::Visual::Public, config.config->link.libs);
             gen.target_link_directories(item, cmake::Visual::Public, config.config->link.paths);
+            std::vector<std::string> libs;
+            for (const auto &[name, cup] : config.config->dependencies)
+            {
+                auto path = cup.path->is_relative() ? project_dir / *cup.path : *cup.path;
+                const auto lib_name = std::string(name);
+                auto src = path / "src";
+                if (fs::exists(src) && !fs::is_empty(src))
+                    libs.push_back(lib_name);
+            }
+            gen.target_link_libraries(item, cmake::Visual::Public, libs);
             generate_generator(item, *config.config, this->info, gen, this->cmake_gen, config.config->build.target);
         };
         auto iter = std::find_if(
