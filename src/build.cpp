@@ -338,18 +338,18 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
             if (this->info.type == BuildType::Debug)
             {
                 gen.target_compile_options(item, cmake::Visual::Private, config.config->build.debug.options.compile);
-                gen.target_link_options(item, cmake::Visual::Private, config.config->build.debug.options.link);
+                gen.target_link_options(item, cmake::Visual::Public, config.config->build.debug.options.link);
                 gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.debug.define);
             }
             else if (this->info.type == BuildType::Release)
             {
                 gen.target_compile_options(item, cmake::Visual::Private, config.config->build.release.options.compile);
-                gen.target_link_options(item, cmake::Visual::Private, config.config->build.release.options.link);
+                gen.target_link_options(item, cmake::Visual::Public, config.config->build.release.options.link);
                 gen.target_compile_definitions(item, cmake::Visual::Private, config.config->build.release.define);
             }
             gen.target_link_libraries(item, cmake::Visual::Public, config.config->link.libs);
             gen.target_link_directories(item, cmake::Visual::Public, config.config->link.paths);
-            generate_generator(item, *config.config, this->info, gen, this->cmake_gen, BINARY);
+            generate_generator(item, *config.config, this->info, gen, this->cmake_gen, config.config->build.target);
         };
         auto iter = std::find_if(
             this->tasks.begin(), this->tasks.end(),
