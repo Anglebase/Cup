@@ -1,5 +1,5 @@
 #include "build.h"
-// #include "md5.h"
+#include "md5.h"
 #include <thread>
 #include <string_view>
 #include <algorithm>
@@ -164,7 +164,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                 auto source = src_files;
                 auto raw_path = main_file;
                 const auto raw_name = raw_path.replace_extension().filename().string();
-                const auto item = raw_name;
+                MD5 hash(raw_path.lexically_normal());
+                const auto item = raw_name + "_" + hash.toStr();
                 source.push_back(main_file);
                 gen.add_executable(item, source);
                 gen.set_target_output_name(item, raw_name);
@@ -218,7 +219,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             {
                 auto raw_path = main_file;
                 const auto raw_name = raw_path.replace_extension().filename().string();
-                const auto demo = raw_name;
+                MD5 hash(raw_path.lexically_normal());
+                const auto demo = raw_name + "_" + hash.toStr();
                 gen.add_executable(demo, {main_file});
                 gen.set_target_output_name(demo, raw_name);
                 gen.target_link_libraries(demo, cmake::Visual::Public, {item});
@@ -492,7 +494,9 @@ int Build::build()
     {
         auto target = this->info.build_target.value();
         const auto item = target.filename().replace_extension().string();
-        bud.target(item);
+        MD5 hash(target.lexically_normal());
+        const auto demo = item + "_" + hash.toStr();
+        bud.target(demo);
     }
     bud.jobs(this->config.build.jobs == 0 ? std::max(std::thread::hardware_concurrency(), 1u) : this->config.build.jobs);
     LOG_DEBUG("Build command: ", bud.as_command());
