@@ -406,9 +406,13 @@ int UninstallCmd::run()
     {
         package_dir /= "v" + *this->version;
         if (fs::exists(package_dir))
+        {
             fs::remove_all(package_dir);
+            LOG_INFO("Package @" + author + "/" + libary + " is uninstalled.");
+        }
         else
             LOG_INFO("Package @" + author + "/" + libary + " is not installed.");
+        return 0;
     }
     if (!fs::exists(package_dir))
     {
