@@ -402,6 +402,7 @@ bool cmake_valid()
 
 cmake::Execute::Execute()
 {
+    static bool valid = cmake_valid();
     this->commands.push_back("cmake");
 }
 
