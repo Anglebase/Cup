@@ -354,12 +354,19 @@ InstallCmd::InstallCmd(const SysArgs &args)
 int InstallCmd::run()
 {
     auto git = Git{};
+    auto tags = git.get_tags(this->url);
+    if (tags.empty())
+        throw std::runtime_error("No tags found in repository: " + this->url);
     if (!this->version)
     {
-        auto tags = git.get_tags(this->url);
-        if (tags.empty())
-            throw std::runtime_error("No tags found in repository: " + this->url);
         this->version = tags.back().substr(1);
+        LOG_MSG("Not specified version, use latest version: ", *this->version);
+    }
+    else
+    {
+        LOG_DEBUG("Specified version: ", *this->version);
+        if (std::find(tags.begin(), tags.end(), "v" + *this->version) == tags.end())
+            throw std::runtime_error("Connot find version: " + *this->version);
     }
     LOG_MSG("Installing package: ", this->url, " v", *this->version);
     git.download(this->url, "v" + *this->version);
