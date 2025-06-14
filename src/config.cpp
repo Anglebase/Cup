@@ -11,12 +11,11 @@ Config::Config(const fs::path &project)
     this->table_ = toml::parse(ifs);
     this->path = cup_toml;
     Dollar::root = project;
-    this->config = new ConfigInfo(*this);
+    this->config = std::shared_ptr<ConfigInfo>{new ConfigInfo(*this)};
 }
 
 Config::~Config()
 {
-    delete this->config;
 }
 
 fs::path parser_env(const std::string &str, const fs::path &root)

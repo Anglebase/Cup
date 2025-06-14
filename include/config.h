@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <variant>
 #include <unordered_map>
+#include <memory>
 namespace fs = std::filesystem;
 
 struct ConfigInfo;
@@ -22,7 +23,7 @@ public:
 public:
     Config(const fs::path &project);
     ~Config();
-    ConfigInfo *config;
+    std::shared_ptr<ConfigInfo> config;
 };
 
 #ifdef DEBUG_CONFIG
