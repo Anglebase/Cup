@@ -411,7 +411,7 @@ int UninstallCmd::run()
             LOG_INFO("Package @" + author + "/" + libary + " is uninstalled.");
         }
         else
-            LOG_INFO("Package @" + author + "/" + libary + " is not installed.");
+            LOG_INFO("Package @" + author + "/" + libary + " v" + *this->version + " is not installed.");
         return 0;
     }
     if (!fs::exists(package_dir))

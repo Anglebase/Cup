@@ -86,7 +86,7 @@ fs::path Dependency::get_path() const
     }
     else
     {
-        throw std::runtime_error("Cannot find dependency '" + name + "'.");
+        throw std::runtime_error("Cannot find dependency '" + name + " " + tag + "'.");
     }
     return dir;
 }
