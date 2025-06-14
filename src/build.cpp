@@ -152,7 +152,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.target_link_options(item, link_visual, this->config.build.release.options.link);
             gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.release.define);
         }
-        generate_generator(item, this->config, this->info, gen, this->cmake_gen, BINARY);
+        generate_generator(item, this->config, this->info, gen, this->cmake_gen, type);
     };
     LOG_DEBUG("Target:", this->info.target_dir);
     if (this->config.build.target == BINARY)
@@ -174,12 +174,12 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                     item, std::nullopt,
                     replace_finally_name(main_file.parent_path(), "bin", "target", this->info.target_dir));
                 config_gen(item, BINARY, gen);
-                gen.target_link_libraries(item, cmake::Visual::Private, this->config.link.libs);
-                gen.target_link_directories(item, cmake::Visual::Private, this->config.link.paths);
+                gen.target_link_libraries(item, cmake::Visual::Public, this->config.link.libs);
+                gen.target_link_directories(item, cmake::Visual::Public, this->config.link.paths);
                 std::vector<std::string> libs;
                 for (const auto &[name, cup] : this->config.dependencies)
                     libs.push_back(name);
-                gen.target_link_libraries(item, cmake::Visual::Private, libs);
+                gen.target_link_libraries(item, cmake::Visual::Public, libs);
             }
         };
         MD5 hash(this->info.project_dir);
@@ -197,6 +197,8 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         auto task = [=, this](cmake::Generator &gen)
         {
             auto item = this->config.name;
+            if (src_files.empty())
+                throw std::runtime_error("No source files found in dependency \"" + this->config.name + "\".");
             gen.add_library(
                 item,
                 this->config.build.target == STATIC
@@ -300,11 +302,6 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
         auto task_func = [=, this](cmake::Generator &gen)
         {
             auto item = config.config->name;
-            if (src_files.empty() && config.config->build.target == STATIC)
-            {
-                LOG_INFO("Dependency \"", config.config->name, "\" is a header-only library.");
-                return;
-            }
             if (src_files.empty())
                 throw std::runtime_error("No source files found in dependency \"" + config.config->name + "\".");
             gen.add_library(
