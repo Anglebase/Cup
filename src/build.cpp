@@ -165,7 +165,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                 auto hash = MD5(main_file);
                 auto raw_path = main_file;
                 const auto raw_name = raw_path.replace_extension().filename().string();
-                const auto item = raw_name + "_" + hash.toStr();
+                const auto item = raw_name;
                 source.push_back(main_file);
                 gen.add_executable(item, source);
                 gen.set_target_output_name(item, raw_name);
@@ -177,16 +177,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                 gen.target_link_directories(item, cmake::Visual::Private, this->config.link.paths);
                 std::vector<std::string> libs;
                 for (const auto &[name, cup] : this->config.dependencies)
-                {
-                    auto path = cup.get_path().is_relative()
-                                    ? this->info.project_dir / cup.get_path()
-                                    : cup.get_path();
-                    MD5 lhash(path);
-                    const auto lib_name = std::string(name) + "_" + lhash.toStr();
-                    auto src = path / "src";
-                    if (fs::exists(src) && !fs::is_empty(src))
-                        libs.push_back(lib_name);
-                }
+                    libs.push_back(name);
                 gen.target_link_libraries(item, cmake::Visual::Private, libs);
             }
         };
@@ -204,7 +195,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
         auto task = [=, this](cmake::Generator &gen)
         {
             MD5 hash(this->info.project_dir);
-            auto item = this->config.name + "_" + hash.toStr();
+            auto item = this->config.name;
             gen.add_library(
                 item,
                 this->config.build.target == STATIC
@@ -309,7 +300,7 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
         auto task_func = [=, this](cmake::Generator &gen)
         {
             MD5 hash(project_dir);
-            auto item = config.config->name + "_" + hash.toStr();
+            auto item = config.config->name;
             if (src_files.empty() && config.config->build.target == STATIC)
             {
                 LOG_INFO("Dependency \"", config.config->name, "\" is a header-only library.");
@@ -506,7 +497,7 @@ int Build::build()
     {
         auto target = this->info.build_target.value();
         MD5 hash(target);
-        const auto item = target.filename().replace_extension().string() + "_" + hash.toStr();
+        const auto item = target.filename().replace_extension().string();
         bud.target(item);
     }
     bud.jobs(this->config.build.jobs == 0 ? std::max(std::thread::hardware_concurrency(), 1u) : this->config.build.jobs);
