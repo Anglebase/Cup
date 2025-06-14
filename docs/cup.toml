@@ -230,13 +230,8 @@ ref = "path/to/toolchain.cmake" # 指定 CMake 工具链文件
 [link]
 # 此表是可选的
 # 此表用于列出外部链接库依赖项
-# 格式为:
-#    <name> = <path>
-# 其中，<name> 为链接库名称，<path> 为链接库所在路径
-# 如果路径为空字符串，则表示链接库为系统库
-# 路径可以以 $env:<ENV> 开头，其中 ENV 是环境变量名，它将作为该路径的根目录
-name = "path/to/lib" # 外部链接库
-# ...
+libs = [""] # 链接库列表
+paths = [""] # 链接库搜索路径列表
 
 [dependencies]
 # 此表是可选的
@@ -277,7 +272,7 @@ Qt6 = { path = 'C:\Qt\6.9.0\mingw_64\lib\cmake\Qt6', features = [
 # 此表是可选的
 # 此表用于指定特定生成器的配置
 # <GENERATOR> 可以为 build.generator 的任意有效值
-link = { name = "path" }                  # 此项与 [link] 相同，用于指定链接器路径
+link = { libs = [""], paths = [""] }      # 此项与 [link] 相同，用于指定链接器路径
 options = { compile = [""], link = [""] } # 此项与 [build.options] 相同，用于指定编译选项和链接选项
 define = [""]                             # 此项与 build.define 相同，用于指定全局宏定义
 
