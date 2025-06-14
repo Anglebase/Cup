@@ -34,7 +34,6 @@ class Build
 {
     BuildInfo info;
     ConfigInfo config;
-    std::unordered_set<std::string> build_depends;
     std::optional<std::string> cmake_gen;
     std::vector<std::string> stack;
 

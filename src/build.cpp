@@ -107,11 +107,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
     this->stack.push_back(this->config.name);
     for (const auto &[name, cup] : this->config.dependencies)
     {
-        if (this->build_depends.find(std::string(name)) == this->build_depends.end())
-        {
-            this->generate_cmake_sub(cup, gen);
-            this->build_depends.insert(std::string(name));
-        }
+        this->generate_cmake_sub(cup, gen);
     }
     this->stack.pop_back();
 
@@ -182,7 +178,9 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                 std::vector<std::string> libs;
                 for (const auto &[name, cup] : this->config.dependencies)
                 {
-                    auto path = cup.path->is_relative() ? this->info.project_dir / *cup.path : *cup.path;
+                    auto path = cup.get_path().is_relative()
+                                    ? this->info.project_dir / cup.get_path()
+                                    : cup.get_path();
                     MD5 lhash(path);
                     const auto lib_name = std::string(name) + "_" + lhash.toStr();
                     auto src = path / "src";
@@ -291,11 +289,7 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
     // 递归生成依赖构建脚本
     for (const auto &[name, cup] : config.config->dependencies)
     {
-        if (this->build_depends.find(std::string(name)) == this->build_depends.end())
-        {
-            this->generate_cmake_sub(cup, gen);
-            this->build_depends.insert(std::string(name));
-        }
+        this->generate_cmake_sub(cup, gen);
     }
     // 循环依赖检查：出栈
     this->stack.pop_back();
@@ -388,35 +382,29 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
         else
         {
             auto &[name, task] = *iter;
-            if (task.version != config.config->version)
+            if (task.version == config.config->version)
             {
-                if (task.version.x != config.config->version.x)
-                {
-                    std::stringstream oss;
-                    oss << "Dependency '" << config.config->name << "' has incompatible dependency versions " << task.version << " and " << config.config->version << ".";
-                    throw std::runtime_error(oss.str());
-                }
-                LOG_WARN("Dependency '", config.config->name, "' has inconsistent dependency versions ",
-                         task.version, " and ", config.config->version, ".");
-                if ((task.version.y < config.config->version.y) ||
-                    (task.version.y == config.config->version.y &&
-                     task.version.z < config.config->version.z))
-                {
-                    task.version = config.config->version;
-                    task.func = task_func;
-                }
+                return;
             }
-            else
+
+            if (task.version.x != config.config->version.x)
             {
-                this->tasks.push_back(
-                    {
-                        config.config->name,
-                        Task{
-                            .version = config.config->version,
-                            .func = task_func,
-                        },
-                    });
+                std::stringstream oss;
+                oss << "Dependency '" << config.config->name << "' has incompatible dependency versions "
+                    << task.version << " and " << config.config->version << ".";
+                throw std::runtime_error(oss.str());
             }
+            LOG_WARN("Dependency '", config.config->name, "' has inconsistent dependency versions ",
+                     task.version, " and ", config.config->version, ".");
+            if ((task.version.y < config.config->version.y) ||
+                (task.version.y == config.config->version.y &&
+                 task.version.z < config.config->version.z))
+            {
+                task.version = config.config->version;
+                auto f = std::function(task_func);
+                task.func.swap(f);
+            }
+            LOG_WARN("Use version ", task.version, " for dependency '", config.config->name, "'.");
         }
     }
     else
