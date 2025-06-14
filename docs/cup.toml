@@ -168,6 +168,10 @@ suffix = ".elf" # 指定输出文件后缀名
 # 此配置项是可选的
 # 此项通常用于嵌入式项目的输出文件后缀名指定
 
+asm = true # 是否启用汇编器
+# 此配置项是可选的(此项仅为试用性功能)
+# 对于当工具链由build.toolchain.ref引用的CMake文件时启用汇编器
+
 [build.debug]
 # 此表是可选的
 # 此表下的配置项仅在 cup 以 debug 模式构建时生效
@@ -220,6 +224,9 @@ cc = "arm-none-eabi-gcc"  # 指定 C 编译器
 cxx = "arm-none-eabi-g++" # 指定 C++ 编译器
 asm = "arm-none-eabi-gcc" # 指定汇编器
 ld = "arm-none-eabi-g++"  # 指定链接器
+
+ref = "path/to/toolchain.cmake" # 指定 CMake 工具链文件
+# 此配置项是可选的(此项仅为试用性功能)
 
 [link]
 # 此表是可选的
