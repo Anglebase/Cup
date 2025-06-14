@@ -466,7 +466,7 @@ void Build::generate_build(std::ofstream &ofs)
     if (this->config.build.suffix.has_value())
         generator.set_executable_suffix(this->config.build.suffix.value());
 
-    if (this->config.qt.has_value())
+    if (this->config.qt.has_value() && this->config.qt->path.has_value())
         generator.add_prefix_path(*this->config.qt->path);
     if (this->config.qt.has_value())
     {
