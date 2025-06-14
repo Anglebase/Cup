@@ -36,11 +36,6 @@ ConfigInfo::ConfigInfo(const Config &config)
     }
     if (iter != this->dependencies.end())
         this->dependencies.erase(iter);
-    for (auto &[name, dependency] : this->dependencies)
-    {
-        if (!dependency.path.has_value())
-            throw std::runtime_error("Connot finc dependency '" + name + "' because it has no path.");
-    }
 }
 
 fs::path Dependency::get_path() const
