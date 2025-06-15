@@ -24,10 +24,11 @@ license = "MIT" #* 项目许可证
 [build]
 target = "binary" #! 项目类型
 # 此配置项必须存在
-# 该配置项的可选值为：binary, static, shared
+# 该配置项的可选值为：binary, static, shared, header
 # binary：生成可执行文件
 # static：生成静态库
 # shared：生成动态库
+# header：仅头文件库
 generator = "MinGW Makefiles" # 指定CMake生成器
 # 此配置项是可选的
 # 若未指定，则由CMake自动确认；否则使用指定的CMake生成器
