@@ -5,6 +5,11 @@
 #include <algorithm>
 #include "tools.h"
 
+const char *BINARY = "binary";
+const char *STATIC = "static";
+const char *SHARED = "shared";
+const char *HEADER = "header";
+
 std::vector<fs::path> find_all_source(const fs::path &root)
 {
     const std::unordered_set<std::string> ext = {".c", ".cxx", ".cc", ".cpp", ".c++", ".s"};
@@ -89,9 +94,6 @@ void generate_generator(const std::string &item, const ConfigInfo &config,
 
 void Build::generate_cmake_root(cmake::Generator &gen)
 {
-    const char *BINARY = "binary";
-    const char *STATIC = "static";
-    const char *SHARED = "shared";
     if (!this->config.build.generator.empty())
         this->cmake_gen = this->config.build.generator;
     else
@@ -244,6 +246,35 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                 },
             });
     }
+    else if (this->config.build.target == HEADER)
+    {
+        auto task = [=, this](cmake::Generator &gen)
+        {
+            gen.include_directories({(this->info.project_dir / "include").lexically_normal()});
+            for (auto &main_file : main_files)
+            {
+                auto raw_path = main_file;
+                MD5 hash(raw_path.lexically_normal());
+                const auto raw_name = raw_path.replace_extension().filename().string();
+                const auto demo = raw_name + "_" + hash.toStr();
+                gen.add_executable(demo, {main_file});
+                gen.set_target_output_name(demo, raw_name);
+                gen.set_target_output_directory(
+                    demo, std::nullopt,
+                    replace_finally_name(main_file.parent_path(), "bin", "target", this->info.target_dir));
+                gen.set_target_c_standard(demo, this->config.build.stdc);
+                gen.set_target_cxx_standard(demo, this->config.build.stdcxx);
+            }
+        };
+        this->tasks.push_back(
+            {
+                this->config.name,
+                Task{
+                    .version = this->config.version,
+                    .func = task,
+                },
+            });
+    }
     else
         throw std::runtime_error("Unknown target type: '" + this->config.build.target + "'");
 }
@@ -357,6 +388,58 @@ void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen
             }
             gen.target_link_libraries(item, cmake::Visual::Public, libs);
             generate_generator(item, *config.config, this->info, gen, this->cmake_gen, config.config->build.target);
+        };
+        auto iter = std::find_if(
+            this->tasks.begin(), this->tasks.end(),
+            [&](const auto &pair)
+            {
+                const auto &[name, task] = pair;
+                return name == config.config->name;
+            });
+        if (iter == this->tasks.end())
+        {
+            this->tasks.push_back(
+                {
+                    config.config->name,
+                    Task{
+                        .version = config.config->version,
+                        .func = task_func,
+                    },
+                });
+        }
+        else
+        {
+            auto &[name, task] = *iter;
+            if (task.version == config.config->version)
+            {
+                return;
+            }
+
+            if (task.version.x != config.config->version.x)
+            {
+                std::stringstream oss;
+                oss << "Dependency '" << config.config->name << "' has incompatible dependency versions "
+                    << task.version << " and " << config.config->version << ".";
+                throw std::runtime_error(oss.str());
+            }
+            LOG_WARN("Dependency '", config.config->name, "' has inconsistent dependency versions ",
+                     task.version, " and ", config.config->version, ".");
+            if ((task.version.y < config.config->version.y) ||
+                (task.version.y == config.config->version.y &&
+                 task.version.z < config.config->version.z))
+            {
+                task.version = config.config->version;
+                auto f = std::function(task_func);
+                task.func.swap(f);
+            }
+            LOG_WARN("Use version ", task.version, " for dependency '", config.config->name, "'.");
+        }
+    }
+    else if (config.config->build.target == HEADER)
+    {
+        auto task_func = [=, this](cmake::Generator &gen)
+        {
+            gen.include_directories({(project_dir / "include").lexically_normal()});
         };
         auto iter = std::find_if(
             this->tasks.begin(), this->tasks.end(),
