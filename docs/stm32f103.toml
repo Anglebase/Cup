@@ -35,7 +35,7 @@ asm = ["-x", "assembler-with-cpp", "-MMD", "-MP"]
 ld_c = [
     "-mcpu=cortex-m3",
     "-T",
-    "$root:STM32F103XX_FLASH.ld",
+    "${root}STM32F103XX_FLASH.ld",
     "--specs=nano.specs",
     "-Wl,-Map=demo.map -Wl,--gc-sections",
     "-Wl,--start-group -lc -lm -Wl,--end-group",
@@ -44,7 +44,7 @@ ld_c = [
 ld_cxx = [
     "-mcpu=cortex-m3",
     "-T",
-    "$root:STM32F103XX_FLASH.ld",
+    "${root}STM32F103XX_FLASH.ld",
     "--specs=nano.specs",
     "-Wl,-Map=demo.map -Wl,--gc-sections",
     "-Wl,--start-group -lc -lm -Wl,--end-group",
