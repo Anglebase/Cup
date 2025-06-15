@@ -26,8 +26,12 @@ std::vector<fs::path> find_all_source(const fs::path &root)
     for (const auto &entry : fs::recursive_directory_iterator(root))
     {
         auto file_ext = entry.path().extension().string();
-        if (entry.is_regular_file() && ext.find(file_ext) != ext.end())
+        if (entry.is_regular_file())
+        {
             result.push_back(entry.path().lexically_normal());
+            if (ext.find(file_ext) == ext.end())
+                LOG_WARN(entry.path().string(), "may not a source file.");
+        }
     }
     return result;
 }
