@@ -18,7 +18,7 @@ std::string Dollar::dollar(const std::string &raw)
             "${root}",
             [&](const std::string &str)
             {
-                auto subdir = str.substr(6);
+                auto subdir = str.substr(7);
                 auto not_1st_slash = subdir.find_first_not_of('/');
                 auto not_1st_backslash = subdir.find_first_not_of('\\');
                 auto vaild = std::min(subdir.length(), std::max(not_1st_slash, not_1st_backslash));
@@ -31,7 +31,7 @@ std::string Dollar::dollar(const std::string &raw)
             "${env:",
             [&](const std::string &str)
             {
-                auto subdir = str.substr(5);
+                auto subdir = str.substr(6);
                 auto end = subdir.find_first_of('}');
                 if (end == std::string::npos)
                     throw std::runtime_error("Invalid replacement sequence: " + str);
