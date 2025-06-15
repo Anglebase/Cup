@@ -299,46 +299,61 @@ int ListCmd::run()
     if (project_dir.is_relative())
         project_dir = fs::current_path() / project_dir;
     project_dir = project_dir.lexically_normal();
-    if (this->option == "include")
-    {
-        LOG_INFO("Include directories:");
-        std::unordered_set<std::string> includes;
-        load_all_includes(includes, project_dir);
-        for (const auto &include : includes)
-            std::cout << "    " << include << std::endl;
-    }
-    else if (this->option == "deps")
-    {
-        LOG_INFO("Dependencies:");
-        std::unordered_map<std::string, Version> dependencies;
-        load_all_dependecies(dependencies, project_dir);
-        for (const auto &[name, version] : dependencies)
-            std::cout << "    " << name << " v" << version << std::endl;
-    }
-    else if (this->option == "installed")
-    {
-        LOG_MSG("Installed packages:");
-        auto cup_dir = get_user_dir() / ".cup";
-        for (const auto &author_dir : fs::directory_iterator(cup_dir))
+
+    std::unordered_map<std::string, std::function<void()>> handlers{
         {
-            if (!author_dir.is_directory())
-                continue;
-            const auto &author = author_dir.path().filename().string();
-            for (const auto &libary_dir : fs::directory_iterator(author_dir))
+            "include",
+            [&]
             {
-                if (!libary_dir.is_directory())
-                    continue;
-                const auto &libary = libary_dir.path().filename().string();
-                for (const auto &tag_dir : fs::directory_iterator(libary_dir))
+                LOG_INFO("Include directories:");
+                std::unordered_set<std::string> includes;
+                load_all_includes(includes, project_dir);
+                for (const auto &include : includes)
+                    std::cout << "    " << include << std::endl;
+            },
+        },
+        {
+            "deps",
+            [&]
+            {
+                LOG_INFO("Dependencies:");
+                std::unordered_map<std::string, Version> dependencies;
+                load_all_dependecies(dependencies, project_dir);
+                for (const auto &[name, version] : dependencies)
+                    std::cout << "    " << name << " v" << version << std::endl;
+            },
+        },
+        {
+            "installed",
+            [&]
+            {
+                LOG_MSG("Installed packages:");
+                auto cup_dir = get_user_dir() / ".cup";
+                for (const auto &author_dir : fs::directory_iterator(cup_dir))
                 {
-                    if (!tag_dir.is_directory())
+                    if (!author_dir.is_directory())
                         continue;
-                    const auto &version = tag_dir.path().filename().string();
-                    std::cout << "    @" << author << "/" << libary << "\t" << version << std::endl;
+                    const auto &author = author_dir.path().filename().string();
+                    for (const auto &libary_dir : fs::directory_iterator(author_dir))
+                    {
+                        if (!libary_dir.is_directory())
+                            continue;
+                        const auto &libary = libary_dir.path().filename().string();
+                        for (const auto &tag_dir : fs::directory_iterator(libary_dir))
+                        {
+                            if (!tag_dir.is_directory())
+                                continue;
+                            const auto &version = tag_dir.path().filename().string();
+                            std::cout << "    @" << author << "/" << libary << "\t" << version << std::endl;
+                        }
+                    }
                 }
-            }
-        }
-    }
+            },
+        },
+    };
+    if (handlers.find(this->option) == handlers.end())
+        throw std::runtime_error("Invalid option: " + this->option);
+    handlers[this->option]();
     return 0;
 }
 
