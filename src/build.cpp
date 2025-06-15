@@ -155,6 +155,18 @@ void Build::generate_cmake_root(cmake::Generator &gen)
             gen.target_compile_definitions(item, cmake::Visual::Private, this->config.build.release.define);
         }
         generate_generator(item, this->config, this->info, gen, this->cmake_gen, type);
+        gen.target_link_libraries(item, cmake::Visual::Public, this->config.link.libs);
+        gen.target_link_directories(item, cmake::Visual::Public, this->config.link.paths);
+        std::vector<std::string> libs;
+        for (const auto &[name, cup] : this->config.dependencies)
+        {
+            const fs::path path = cup.get_path();
+            auto project_dir = path.is_relative() ? this->info.project_dir / path : path;
+            Config config(project_dir);
+            if (config.config->build.target != HEADER)
+                libs.push_back(name);
+        }
+        gen.target_link_libraries(item, cmake::Visual::Public, libs);
     };
     LOG_DEBUG("Target:", this->info.target_dir);
     if (this->config.build.target == BINARY)
@@ -176,12 +188,6 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                     item, std::nullopt,
                     replace_finally_name(main_file.parent_path(), "bin", "target", this->info.target_dir));
                 config_gen(item, BINARY, gen);
-                gen.target_link_libraries(item, cmake::Visual::Public, this->config.link.libs);
-                gen.target_link_directories(item, cmake::Visual::Public, this->config.link.paths);
-                std::vector<std::string> libs;
-                for (const auto &[name, cup] : this->config.dependencies)
-                    libs.push_back(name);
-                gen.target_link_libraries(item, cmake::Visual::Public, libs);
             }
         };
         MD5 hash(this->info.project_dir);
@@ -209,18 +215,6 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                 src_files);
             gen.set_target_output_name(item, this->config.name);
             config_gen(item, this->config.build.target, gen);
-            gen.target_link_libraries(item, cmake::Visual::Public, this->config.link.libs);
-            gen.target_link_directories(item, cmake::Visual::Public, this->config.link.paths);
-            std::vector<std::string> libs;
-            for (const auto &[name, cup] : this->config.dependencies)
-            {
-                auto path = cup.path->is_relative() ? this->info.project_dir / *cup.path : *cup.path;
-                const auto lib_name = std::string(name);
-                auto src = path / "src";
-                if (fs::exists(src) && !fs::is_empty(src))
-                    libs.push_back(lib_name);
-            }
-            gen.target_link_libraries(item, cmake::Visual::Public, libs);
             for (auto &main_file : main_files)
             {
                 auto raw_path = main_file;
@@ -282,9 +276,6 @@ void Build::generate_cmake_root(cmake::Generator &gen)
 void Build::generate_cmake_sub(const Dependency &root_cup, cmake::Generator &gen)
 {
     const fs::path path = root_cup.get_path();
-    const char *BINARY = "binary";
-    const char *STATIC = "static";
-    const char *SHARED = "shared";
     auto project_dir = path.is_relative() ? this->info.project_dir / path : path;
     Config config(project_dir);
 
