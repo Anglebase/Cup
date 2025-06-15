@@ -9,4 +9,4 @@ jobs = 0
 # generator = "MinGW Makefiles"
 
 [dependencies]
-tomlpp = { git = "@Anglebase/tomlpp", version = "0.1.0" }
+tomlpp = { git = "@Anglebase/tomlpp", version = "3.4.0" }

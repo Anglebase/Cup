@@ -15,13 +15,13 @@ Command &Command::arg(const std::string &arg)
 
 Command &Command::set_stdout(const fs::path &stdout_)
 {
-    this->stdout_ = stdout_;
+    this->stdout_ = stdout_.lexically_normal();
     return *this;
 }
 
 Command &Command::set_stderr(const fs::path &stderr_)
 {
-    this->stderr_ = stderr_;
+    this->stderr_ = stderr_.lexically_normal();
     return *this;
 }
 
@@ -29,8 +29,10 @@ int Command::execute()
 {
     if (this->stdout_)
         this->args.push_back("1>\"" + this->stdout_->string() + "\"");
-    if (this->stderr_)
+    if (this->stderr_ && this->stderr_ != this->stdout_)
         this->args.push_back("2>\"" + this->stderr_->string() + "\"");
+    else if (this->stderr_)
+        this->args.push_back("2>&1");
     auto cmd = join(this->args, " ");
     LOG_DEBUG("Run: ", cmd);
     auto result = system(cmd.c_str());

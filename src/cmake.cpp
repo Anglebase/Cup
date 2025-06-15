@@ -374,7 +374,7 @@ bool cmake_valid()
 {
     Command cmk("cmake");
     cmk.arg("-version");
-    auto cache = get_user_dir() / ".cup" / "cache";
+    auto cache = get_user_dir() / ".cup" / ".cache";
     cmk.set_stdout(cache);
     cmk.set_stderr(cache);
     auto result = cmk.execute();

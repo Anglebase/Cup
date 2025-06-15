@@ -15,7 +15,7 @@ std::string Dollar::dollar(const std::string &raw)
     using GotoTable = const std::unordered_map<std::string_view, Branch>;
     static const GotoTable gotoTable = {
         {
-            "$root:",
+            "${root}",
             [&](const std::string &str)
             {
                 auto subdir = str.substr(6);
@@ -28,18 +28,18 @@ std::string Dollar::dollar(const std::string &raw)
             },
         },
         {
-            "$env:",
+            "${env:",
             [&](const std::string &str)
             {
                 auto subdir = str.substr(5);
-                auto first_slash = subdir.find_first_of('/');
-                auto first_backslash = subdir.find_first_of('\\');
-                auto vaild = std::min(first_slash, first_backslash);
-                auto env_var = subdir.substr(0, vaild);
+                auto end = subdir.find_first_of('}');
+                if (end == std::string::npos)
+                    throw std::runtime_error("Invalid replacement sequence: " + str);
+                auto env_var = subdir.substr(0, end);
                 auto env_value = std::getenv(env_var.c_str());
                 if (!env_value)
                     throw std::runtime_error("Environment variable not found: " + env_var);
-                auto subpath = subdir.substr(vaild);
+                auto subpath = subdir.substr(end + 1);
                 auto dir = fs::path(env_value) / subpath;
                 return dir.lexically_normal().string();
             },
