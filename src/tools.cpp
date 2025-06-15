@@ -274,17 +274,36 @@ Version compare(Version a, Version b)
     return a;
 }
 
-void load_all_dependecies(std::unordered_map<std::string, Version> &dependencies, const fs::path &root)
+struct CupInfo
+{
+    std::string name;
+    Version version;
+    std::string target;
+};
+
+void load_all_dependecies(std::vector<CupInfo> &dependencies, const fs::path &root)
 {
     Config config(root);
-    if (dependencies.find(config.config->name) == dependencies.end())
-        dependencies[config.config->name] = config.config->version;
+    auto iter = std::find_if(
+        dependencies.begin(), dependencies.end(),
+        [&](const CupInfo &info)
+        {
+            return info.name == config.config->name;
+        });
+    if (iter == dependencies.end())
+    {
+        dependencies.push_back(CupInfo{
+            .name = config.config->name,
+            .version = config.config->version,
+            .target = config.config->build.target,
+        });
+    }
     else
     {
-        auto result = compare(dependencies[config.config->name], config.config->version);
+        auto result = compare(iter->version, config.config->version);
         if (result == config.config->version)
             return;
-        dependencies[config.config->name] = result;
+        iter->version = result;
     }
     for (const auto &[name, path] : config.config->dependencies)
     {
@@ -318,10 +337,25 @@ int ListCmd::run()
             [&]
             {
                 LOG_INFO("Dependencies:");
-                std::unordered_map<std::string, Version> dependencies;
+                std::vector<CupInfo> dependencies;
                 load_all_dependecies(dependencies, project_dir);
-                for (const auto &[name, version] : dependencies)
-                    std::cout << "    " << name << " v" << version << std::endl;
+                auto max_name_size = 0, max_version_size = 0, max_target_size = 0;
+                for (const auto &[name, version, target] : dependencies)
+                {
+                    max_name_size = std::max(max_name_size, (int)name.size());
+                    std::ostringstream oss;
+                    oss << version;
+                    max_version_size = std::max(max_version_size, (int)oss.str().size());
+                    max_target_size = std::max(max_target_size, (int)target.size());
+                }
+                for (const auto &[name, version, target] : dependencies)
+                {
+                    std::ostringstream oss;
+                    oss << version;
+                    std::cout << std::setw(max_name_size) << name << "    v" << std::left
+                              << std::setw(max_version_size + 1) << oss.str() << "    ["
+                              << std::setw(max_target_size) << target << "]" << std::endl;
+                }
             },
         },
         {
