@@ -235,6 +235,7 @@ int NewCmd::run()
 }
 
 ListCmd::ListCmd(const SysArgs &args)
+    : args(args)
 {
     if (args.hasConfig("dir") && !args.getConfigs().at("dir").empty())
         this->at = args.getConfigs().at("dir")[0];
@@ -347,6 +348,30 @@ int ListCmd::run()
                             std::cout << "    @" << author << "/" << libary << "\t" << version << std::endl;
                         }
                     }
+                }
+            },
+        },
+        {
+            "tags",
+            [&]
+            {
+                if (!this->args.hasConfig("git") || this->args.getConfigs().at("git").empty())
+                    throw std::runtime_error("No git repository provided.");
+                auto package = this->args.getConfigs().at("git")[0];
+                if (package.starts_with("@"))
+                {
+                    auto package_ = package.substr(1);
+                    auto info = split(package_, "/");
+                    if (info.size() != 2)
+                        throw std::runtime_error("Invalid package name: " + package);
+                    package = "https://github.com/" + info[0] + "/" + info[1] + ".git";
+                }
+                LOG_INFO("Tags of package: ", package);
+                auto git = Git{};
+                auto tags = git.get_tags(package);
+                for (auto i = 0; i < tags.size(); i++)
+                {
+                    std::cout << "    " << tags[i] << "\t" << (i == tags.size() - 1 ? "latest" : "") << std::endl;
                 }
             },
         },
