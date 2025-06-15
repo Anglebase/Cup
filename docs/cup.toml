@@ -228,6 +228,12 @@ ld = "arm-none-eabi-g++"  # 指定链接器
 ref = "path/to/toolchain.cmake" # 指定 CMake 工具链文件
 # 此配置项是可选的(此项仅为试用性功能)
 
+[build.export]
+compile_commands = ""
+# 此配置指定生成 compile_commands.json 文件路径
+# 若未启用此项，则不会生成 compile_commands.json 文件
+# 若指定路径为空字符串，则会将 compile_commands.json 文件生成在 build/cmake/ 下
+
 [link]
 # 此表是可选的
 # 此表用于列出外部链接库依赖项

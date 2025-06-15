@@ -519,6 +519,13 @@ void Build::generate_build(std::ofstream &ofs)
     if (this->config.build.toolchain.ref.has_value())
         generator.include(this->config.build.toolchain.ref.value());
 
+    if (this->config.build.export_.has_value())
+    {
+        auto export_ = this->config.build.export_.value();
+        if (export_.compile_commands.has_value())
+            generator.set("CMAKE_EXPORT_COMPILE_COMMANDS", "ON");
+    }
+
     generator.project(this->config.name);
     generator.set_execute_output_path(this->info.target_dir);
     generator.set_library_output_path(this->info.build_dir / "lib");
@@ -597,6 +604,25 @@ int Build::build()
     if ((res = system(bud.as_command().c_str())) != 0)
     {
         throw std::runtime_error("Build failed with error code: " + std::to_string(res));
+    }
+
+    if (this->config.build.export_.has_value())
+    {
+        auto export_ = this->config.build.export_.value();
+        if (export_.compile_commands.has_value())
+        {
+            auto dir = *export_.compile_commands;
+            if (!dir.empty())
+            {
+                auto path = dir.is_relative() ? this->info.project_dir / dir : dir;
+                if (!fs::exists(path))
+                    fs::create_directories(path);
+                fs::copy_file(
+                    this->info.build_dir / cmake_build / "compile_commands.json",
+                    path / "compile_commands.json",
+                    fs::copy_options::overwrite_existing);
+            }
+        }
     }
     return 0;
 }

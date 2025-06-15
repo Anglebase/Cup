@@ -273,6 +273,32 @@ struct Deserde<ModeSettings>
     }
 };
 
+struct Export
+{
+    std::optional<fs::path> compile_commands;
+};
+
+template <>
+struct Deserde<Export>
+{
+    static inline Export from(const toml::node &node)
+    {
+        auto table = require(node.as_table());
+        Export export_;
+        export_.compile_commands = option<fs::path>(table.get("compile_commands"));
+        return export_;
+    }
+    static inline std::optional<Export> try_from(const toml::node &node) noexcept
+    {
+        auto table = node.as_table();
+        if (!table)
+            return std::nullopt;
+        Export export_;
+        export_.compile_commands = option<fs::path>(table->get("compile_commands"));
+        return export_;
+    }
+};
+
 struct BuildSettings
 {
     std::string target;
@@ -290,6 +316,7 @@ struct BuildSettings
     ModeSettings debug;
     ModeSettings release;
     bool asm_;
+    std::optional<Export> export_;
 };
 
 template <>
@@ -322,6 +349,7 @@ struct Deserde<BuildSettings>
         build_settings.debug = option<ModeSettings>(table.get("debug")).value_or(ModeSettings{});
         build_settings.release = option<ModeSettings>(table.get("release")).value_or(ModeSettings{});
         build_settings.asm_ = option<bool>(table.get("asm")).value_or(false);
+        build_settings.export_ = option<Export>(table.get("export"));
 
         return build_settings;
     }
@@ -356,6 +384,7 @@ struct Deserde<BuildSettings>
         build_settings.debug = option<ModeSettings>(table->get("debug")).value_or(ModeSettings{});
         build_settings.release = option<ModeSettings>(table->get("release")).value_or(ModeSettings{});
         build_settings.asm_ = option<bool>(table->get("asm")).value_or(false);
+        build_settings.export_ = option<Export>(table->get("export"));
 
         return build_settings;
     }
