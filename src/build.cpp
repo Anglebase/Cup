@@ -12,7 +12,16 @@ const char *HEADER = "header";
 
 std::vector<fs::path> find_all_source(const fs::path &root)
 {
-    const std::unordered_set<std::string> ext = {".c", ".cxx", ".cc", ".cpp", ".c++", ".s"};
+    const std::unordered_set<std::string> ext = {
+        ".c",
+        ".cxx",
+        ".cc",
+        ".cpp",
+        ".c++",
+        ".s",
+        ".ui",
+        ".qrc",
+    };
     std::vector<fs::path> result;
     for (const auto &entry : fs::recursive_directory_iterator(root))
     {
