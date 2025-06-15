@@ -8,7 +8,9 @@ bool git_valid()
 {
     Command git("git");
     git.arg("--version");
-    git.set_stdout(get_user_dir() / ".cup" / ".cache");
+    const auto cache = get_user_dir() / ".cup" / ".cache";
+    git.set_stdout(cache);
+    git.set_stderr(cache);
     return git.execute() == 0;
 }
 
