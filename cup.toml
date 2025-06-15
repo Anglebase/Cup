@@ -5,6 +5,8 @@ license = "GPL-2.0"
 [build]
 stdcxx = 20
 target = "binary"
-include = ["$root:/package/header-only"]
 jobs = 0
 # generator = "MinGW Makefiles"
+
+[dependencies]
+tomlpp = { git = "@Anglebase/tomlpp", version = "0.1.0" }

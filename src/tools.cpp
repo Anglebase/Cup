@@ -115,7 +115,9 @@ int NewCmd::run()
     auto project_path = fs::current_path() / this->name;
     if (fs::exists(project_path))
         throw std::runtime_error("Project already exists: " + project_path.string());
-    std::vector<std::string> sub_dir = {"include", "src", "bin"};
+    std::vector<std::string> sub_dir = {"include", "bin"};
+    if (this->target != "header")
+        sub_dir.push_back("src");
     for (auto &dir : sub_dir)
         fs::create_directories(project_path / dir);
     LOG_INFO("Generator template project...");
@@ -191,6 +193,28 @@ int NewCmd::run()
         lib_cpp << "    std::cout << \"" << this->name << "() called!\" << std::endl;" << std::endl;
         lib_cpp << "}" << std::endl;
         lib_cpp.close();
+
+        std::ofstream main_cpp(project_path / "bin" / (this->name + ".cpp"));
+        main_cpp << "#include \"" << this->name << ".h\"" << std::endl
+                 << std::endl;
+        main_cpp << "int main() {" << std::endl;
+        main_cpp << "    " << this->name << "();" << std::endl;
+        main_cpp << "    return 0;" << std::endl;
+        main_cpp << "}" << std::endl;
+        main_cpp.close();
+    }
+    else if (target == "header")
+    {
+        std::ofstream lib_h(project_path / "include" / (this->name + ".h"));
+        lib_h << "#pragma once" << std::endl
+              << std::endl;
+        lib_h << "#include <iostream>" << std::endl
+              << std::endl;
+        lib_h << "inline void " << this->name << "()" << std::endl;
+        lib_h << "{" << std::endl;
+        lib_h << "    std::cout << \"" << this->name << "() called!\" << std::endl;" << std::endl;
+        lib_h << "}" << std::endl;
+        lib_h.close();
 
         std::ofstream main_cpp(project_path / "bin" / (this->name + ".cpp"));
         main_cpp << "#include \"" << this->name << ".h\"" << std::endl

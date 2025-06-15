@@ -95,6 +95,11 @@ int main(int argc, char **argv)
     if (!fs::exists(cup_cache))
         fs::create_directories(cup_cache);
 
+    if (args.hasConfig("version") || args.hasFlag("version"))
+    {
+        std::cout << "Cup version " << _VER_X << "." << _VER_Y << "." << _VER_Z << std::endl;
+        return 0;
+    }
     if (args.getArguments().empty())
     {
         LOG_DEBUG("Help| Error: {No Cmd}");
