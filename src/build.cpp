@@ -179,7 +179,7 @@ void Build::generate_cmake_root(cmake::Generator &gen)
                 auto raw_path = main_file;
                 MD5 hash(raw_path.lexically_normal());
                 const auto raw_name = raw_path.replace_extension().filename().string();
-                LOG_INFO("Generating target: ", raw_path);
+                LOG_DEBUG("Generating target: ", raw_path);
                 const auto item = raw_name + "_" + hash.toStr();
                 source.push_back(main_file);
                 gen.add_executable(item, source);
@@ -590,7 +590,7 @@ int Build::build()
     {
         auto target = this->info.build_target.value();
         MD5 hash(target.lexically_normal());
-        LOG_INFO("Build target: ", target);
+        LOG_DEBUG("Build target: ", target);
         const auto item = target.replace_extension().filename().string();
         const auto demo = item + "_" + hash.toStr();
         bud.target(demo);
