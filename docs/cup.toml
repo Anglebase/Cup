@@ -167,7 +167,7 @@ suffix = ".elf" # 指定输出文件后缀名
 # 此项通常用于嵌入式项目的输出文件后缀名指定
 
 asm = true # 是否启用汇编器
-# 此配置项是可选的(此项仅为试用性功能)
+# 此配置项是可选的(此项仅为试验性功能)
 # 对于当工具链由build.toolchain.ref引用的CMake文件时启用汇编器
 
 [build.debug]
@@ -224,7 +224,7 @@ asm = "arm-none-eabi-gcc" # 指定汇编器
 ld = "arm-none-eabi-g++"  # 指定链接器
 
 ref = "path/to/toolchain.cmake" # 指定 CMake 工具链文件
-# 此配置项是可选的(此项仅为试用性功能)
+# 此配置项是可选的(此项仅为试验性功能)
 
 [build.export]
 compile_commands = ""
@@ -254,7 +254,7 @@ paths = [""] # 链接库搜索路径列表
 name = { path = "path/to/dependency", features = ["UNICODE"] } # 依赖项的所在路径及特性宏
 # ...
 
-# 特殊依赖项
+# 特殊依赖项(试验性支持)
 # Qt<num> = { path = "path/to/qt", features = ["<modlue|flag>"] }
 # 其中，<num> 为 Qt 版本，<module|flag> 为 Qt 模块或编译指示标志，path 为 Qt 安装目录(如果已配置环境变量可省略)
 # flag 可取的值有：
