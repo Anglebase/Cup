@@ -57,6 +57,7 @@ class ListCmd
 {
     std::optional<fs::path> at;
     std::string option;
+    SysArgs args;
 
 public:
     ListCmd(const SysArgs &args);
