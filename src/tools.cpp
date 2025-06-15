@@ -208,6 +208,8 @@ int NewCmd::run()
         std::ofstream lib_h(project_path / "include" / (this->name + ".h"));
         lib_h << "#pragma once" << std::endl
               << std::endl;
+        lib_h << "#include <iostream>" << std::endl
+              << std::endl;
         lib_h << "inline void " << this->name << "()" << std::endl;
         lib_h << "{" << std::endl;
         lib_h << "    std::cout << \"" << this->name << "() called!\" << std::endl;" << std::endl;
@@ -217,7 +219,7 @@ int NewCmd::run()
         std::ofstream main_cpp(project_path / "bin" / (this->name + ".cpp"));
         main_cpp << "#include \"" << this->name << ".h\"" << std::endl
                  << std::endl;
-                 main_cpp << "int main() {" << std::endl;
+        main_cpp << "int main() {" << std::endl;
         main_cpp << "    " << this->name << "();" << std::endl;
         main_cpp << "    return 0;" << std::endl;
         main_cpp << "}" << std::endl;
