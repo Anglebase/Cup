@@ -621,6 +621,12 @@ int Build::build()
 
     if (this->config.build.export_.has_value())
     {
+        auto src_path = this->info.build_dir / cmake_build / "compile_commands.json";
+
+        if (!fs::exists(src_path)) {
+            return 0;
+        }
+        
         auto export_ = this->config.build.export_.value();
         if (export_.compile_commands.has_value())
         {
@@ -631,7 +637,7 @@ int Build::build()
                 if (!fs::exists(path))
                     fs::create_directories(path);
                 fs::copy_file(
-                    this->info.build_dir / cmake_build / "compile_commands.json",
+                    src_path,
                     path / "compile_commands.json",
                     fs::copy_options::overwrite_existing);
             }
