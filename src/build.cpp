@@ -623,10 +623,12 @@ int Build::build()
     {
         auto src_path = this->info.build_dir / cmake_build / "compile_commands.json";
 
-        if (!fs::exists(src_path)) {
+        if (!fs::exists(src_path))
+        {
+            LOG_WARN("Generator '", this->cmake_gen.value(), "' does not support export compile commands.");
             return 0;
         }
-        
+
         auto export_ = this->config.build.export_.value();
         if (export_.compile_commands.has_value())
         {
