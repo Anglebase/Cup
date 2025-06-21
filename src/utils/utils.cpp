@@ -1,0 +1,29 @@
+#include "utils/utils.h"
+
+std::vector<std::string> split(const std::string &str, const std::string &delimiter)
+{
+    std::vector<std::string> result;
+    size_t pos = 0, last = 0;
+    while ((pos = str.find(delimiter, pos)) != std::string::npos)
+    {
+        result.push_back(str.substr(last, pos - last));
+        last = pos + delimiter.length();
+        pos += delimiter.length();
+    }
+    result.push_back(str.substr(last));
+    return result;
+}
+
+std::string join(const std::vector<std::string> &strs, const std::string &delimiter)
+{
+    std::string result;
+    for (size_t i = 0; i < strs.size(); i++)
+    {
+        result += strs[i];
+        if (i != strs.size() - 1)
+        {
+            result += delimiter;
+        }
+    }
+    return result;
+}
