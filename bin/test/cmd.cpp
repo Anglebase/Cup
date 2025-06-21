@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include "cmd/cmd.h"
-
+using namespace cmd;
 int main()
 {
     Command cmd("ls");

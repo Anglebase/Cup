@@ -8,12 +8,15 @@
 
 namespace data
 {
+    /// @brief TOML 反序列化 trait
+    /// @tparam T 被反序列化的类型
     template <typename T>
     struct Deserializer
     {
         static inline T deserialize(const toml::node &v, const std::string &key = "");
     };
 
+    /// @brief 类型 T 是否可反序列化
     template <typename T>
     concept Deserializable = requires(const toml::node &v) {
         { Deserializer<T>::deserialize(v, "") } -> std::same_as<T>;
@@ -85,12 +88,24 @@ namespace data
     template <Deserializable T>
     using Optional = std::optional<T>;
 
+    /// @brief 要求必须反序列化一个 TOML 值
+    /// @tparam T 被反序列化到的类型
+    /// @param table TOML 表
+    /// @param key 表的键
+    /// @param value 反序列化得到的结果
+    /// @param key_desc 表的访问路径
     template <Deserializable T>
     void require(const toml::table &table, const std::string &key, T &value, const std::string &key_desc = "")
     {
         value = Deserializer<T>::deserialize(table.at(key), key_desc);
     }
 
+    /// @brief 要求可选反序列化一个 TOML 值
+    /// @tparam T 被反序列化到的类型
+    /// @param table TOML 表
+    /// @param key 表的键
+    /// @param value 反序列化得到的结果
+    /// @param key_desc 表的访问路径
     template <Deserializable T>
     void options(const toml::table &table, const std::string &key, Optional<T> &value, const std::string &key_desc = "")
     {

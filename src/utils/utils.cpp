@@ -1,4 +1,5 @@
 #include "utils/utils.h"
+#include <fstream>
 
 std::vector<std::string> split(const std::string &str, const std::string &delimiter)
 {
@@ -26,4 +27,16 @@ std::string join(const std::vector<std::string> &strs, const std::string &delimi
         }
     }
     return result;
+}
+
+std::string read_file(const fs::path &file_path)
+{
+    std::vector<std::string> lines;
+    std::ifstream file(file_path);
+    std::string line;
+    while (std::getline(file, line))
+    {
+        lines.push_back(line);
+    }
+    return join(lines, "\n");
 }
