@@ -1,0 +1,8 @@
+name = "cup2"
+version = "0.1.0"
+
+[build]
+target = "binary"
+
+[dependencies]
+tomlpp = { git = "@Anglebase/tomlpp" }

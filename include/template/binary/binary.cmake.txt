@@ -1,0 +1,45 @@
+R"(
+set(OUT_NAME ${%OUT_NAME%})
+set(SRC_FILES ${%SRC_FILES%})
+set(INC_DIRS ${%INC_DIRS%})
+set(MAIN_FILES ${%MAIN_FILES%})
+set(LINK_DIRS ${%LINK_DIRS%})
+set(LINK_LIBS ${%LINK_LIBS%})
+set(DEFINES ${%DEFINES%})
+set(COMPILER_OPTIONS ${%COMPILER_OPTIONS%})
+set(LINK_OPTIONS ${%LINK_OPTIONS%})
+set(BIN_OUT_DIR ${%BIN_OUT_DIR%})
+
+foreach(main_file ${MAIN_FILES})
+    get_filename_component(FILE_NAME ${main_file} NAME_WLE)
+    add_executable(${FILE_NAME} ${SRC_FILES} ${main_file})
+    target_include_directories(${FILE_NAME} PRIVATE ${INC_DIRS})
+    target_link_directories(${FILE_NAME} PRIVATE ${LINK_DIRS})
+    target_link_libraries(${FILE_NAME} PRIVATE ${LINK_LIBS})
+    target_compile_definitions(${FILE_NAME} PRIVATE ${DEFINES})
+    target_compile_options(${FILE_NAME} PRIVATE ${COMPILER_OPTIONS})
+    target_link_options(${FILE_NAME} PRIVATE ${LINK_OPTIONS})
+    if(${FILE_NAME} STREQUAL "main")
+        set_target_properties(${FILE_NAME} PROPERTIES
+            OUTPUT_NAME ${OUT_NAME}
+            RUNTIME_OUTPUT_DIRECTORY ${BIN_OUT_DIR})
+    else()
+        set_target_properties(${FILE_NAME} PROPERTIES
+            OUTPUT_NAME ${FILE_NAME}
+            RUNTIME_OUTPUT_DIRECTORY ${BIN_OUT_DIR})
+    endif()
+    unset(FILE_NAME)
+endforeach(main_file ${MAIN_FILES})
+
+
+unset(OUT_NAME)
+unset(SRC_FILES)
+unset(INC_DIRS)
+unset(MAIN_FILES)
+unset(LINK_DIRS)
+unset(LINK_LIBS)
+unset(DEFINES)
+unset(COMPILER_OPTIONS)
+unset(LINK_OPTIONS)
+unset(OUT_DIR)
+)"

@@ -1,0 +1,8 @@
+R"(#include "${%NAME%}/${%NAME%}.h"
+#include <iostream>
+
+extern "C" void ${%NAME%}()
+{
+    std::cout << "Hello ${%NAME%}!" << std::endl;
+}
+)"
