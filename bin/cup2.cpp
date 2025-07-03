@@ -75,6 +75,14 @@ int main(int argc, char **argv)
                 return uninstall.run();
             },
         },
+        {
+            "clean",
+            [&]()
+            {
+                auto clean = Clean(args);
+                return clean.run();
+            },
+        },
     };
     if (subcmd_goto_map.contains(args.getPositions()[0]))
     {
