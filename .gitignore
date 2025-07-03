@@ -1,4 +1,3 @@
 /build
-/.vscode
 /target
-/CMakeLists.txt
+/.vscode

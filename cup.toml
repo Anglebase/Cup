@@ -1,12 +1,8 @@
-name = "cup"
-version = "1.3.0"
-license = "GPL-2.0"
+name = "cup2"
+version = "0.1.0"
 
 [build]
-stdcxx = 20
 target = "binary"
-jobs = 0
-# generator = "MinGW Makefiles"
 
 [dependencies]
-tomlpp = { git = "@Anglebase/tomlpp", version = "3.4.0" }
+tomlpp = { git = "@Anglebase/tomlpp" }

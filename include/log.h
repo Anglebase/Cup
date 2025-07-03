@@ -1,26 +1,15 @@
 #pragma once
-
-#include <sstream>
 #include <iostream>
 
-inline void _log(const std::string &type, const std::string &log)
-{
-    std::cout << "[" << type << "] " << log << std::endl;
-}
+template <typename... Args>
+void log_print(Args &&...args) { (std::cout << ... << args) << std::endl; }
 
-template <class... Args>
-inline std::string format(Args... args)
-{
-    std::ostringstream oss;
-    (oss << ... << args);
-    return oss.str();
-}
 #ifdef _DEBUG
-#define LOG_DEBUG(...) _log("Debug", format(__VA_ARGS__)) // 调试级别信息输出
+#define LOG_DEBUG(...) log_print("\033[32m[DEBUG]", __VA_ARGS__, "\033[0m")
 #else
-#define LOG_DEBUG(...) // 调试级别信息输出
+#define LOG_DEBUG(...)
 #endif
-#define LOG_INFO(...) _log("Info", format(__VA_ARGS__))                          // 信息级别信息输出
-#define LOG_MSG(...) _log("Info", format("\033[32m", __VA_ARGS__, "\033[0m"))    // 高亮信息级别信息输出
-#define LOG_WARN(...) _log("Warn", format("\033[33m", __VA_ARGS__, "\033[0m"))   // 警告级别信息输出
-#define LOG_ERROR(...) _log("Error", format("\033[31m", __VA_ARGS__, "\033[0m")) // 错误级别信息输出
+
+#define LOG_INFO(...) log_print(__VA_ARGS__)
+#define LOG_WARN(...) log_print("\033[33m[WARN]", __VA_ARGS__, "\033[0m")
+#define LOG_ERROR(...) log_print("\033[31m[ERROR]", __VA_ARGS__, "\033[0m")

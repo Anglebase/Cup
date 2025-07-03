@@ -1,0 +1,4 @@
+R"(#pragma once
+
+void ${%NAME%}();
+)"
