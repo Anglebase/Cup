@@ -98,7 +98,7 @@ int main(int argc, char **argv)
     }
     else
     {
-        LOG_ERROR("Unknown subcommand: {}", args.getPositions()[0]);
+        LOG_ERROR("Unknown subcommand: ", args.getPositions()[0]);
         return 1;
     }
     return 0;
