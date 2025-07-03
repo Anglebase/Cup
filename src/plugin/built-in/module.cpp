@@ -162,7 +162,7 @@ std::string ModulePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
         },
         {
             "LIB_OUTDIR",
-            '"' + replace((Resource::target(ctx.current_dir) / "lib").string()) + '"',
+            '"' + replace((Resource::target(ctx.current_dir) / "module").string()) + '"',
         },
     };
     // Gernerate the cmake file content.
