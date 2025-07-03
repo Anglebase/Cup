@@ -23,6 +23,7 @@ struct CMakeContext
     mutable std::pair<int, int> cmake_version;
     fs::path current_dir;
     fs::path root_dir;
+    std::vector<std::string> features;
 
     void set_cmake_version(int major, int minor) const
     {

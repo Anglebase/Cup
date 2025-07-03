@@ -124,6 +124,7 @@ struct DependencyInfo
     fs::path path;
     std::string type;
     VersionInfo version;
+    std::vector<std::string> features;
 };
 
 void _get_all_dependencies(const data::Default &toml_config, std::vector<std::pair<std::string, DependencyInfo>> &dependencies)
@@ -140,6 +141,7 @@ void _get_all_dependencies(const data::Default &toml_config, std::vector<std::pa
             .path = path,
             .type = dep_config.project.type,
             .version = version,
+            .features = info.features.value_or(std::vector<std::string>{}),
         };
         _get_all_dependencies(dep_config, dependencies);
         decltype(dependencies.begin()) iter;
@@ -193,6 +195,7 @@ int Build::run()
         PluginLoader loader(info.type);
         context.project_name = name;
         context.current_dir = info.path;
+        context.features = info.features;
         cmake_content.push_back(loader->gen_cmake(context, true));
     }
     auto end_name = toml_config.project.name;

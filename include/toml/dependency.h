@@ -9,11 +9,13 @@ namespace data
         std::string version;
         std::optional<fs::path> path;
         std::optional<std::string> url;
+        std::optional<std::vector<std::string>> features;
     };
 
     TOML_DESERIALIZE(Dependency, {
         TOML_REQUIRE(version);
         TOML_OPTIONS(path);
         TOML_OPTIONS(url);
+        TOML_OPTIONS(features);
     });
 }
