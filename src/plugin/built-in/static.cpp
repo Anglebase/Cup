@@ -82,35 +82,6 @@ int StaticPlugin::run_new(const NewData &data)
     return 0;
 }
 
-void _find_all_src(const fs::path &dir, std::vector<fs::path> &src_files)
-{
-    for (const auto &entry : fs::directory_iterator(dir))
-    {
-        if (entry.is_directory())
-            _find_all_src(entry.path(), src_files);
-        else if (entry.is_regular_file())
-            src_files.push_back(entry.path());
-    }
-}
-
-std::vector<fs::path> find_all_src(const fs::path &src)
-{
-    std::vector<fs::path> src_files;
-    _find_all_src(src, src_files);
-    return src_files;
-}
-
-std::vector<fs::path> find_all_example_main(const fs::path &example)
-{
-    std::vector<fs::path> main_files;
-    if (!fs::exists(example))
-        return main_files;
-    for (const auto &entry : fs::directory_iterator(example))
-        if (entry.is_regular_file())
-            main_files.push_back(entry.path());
-    return main_files;
-}
-
 std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
 {
     // Parse cup.toml
