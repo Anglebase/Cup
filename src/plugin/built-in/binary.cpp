@@ -23,14 +23,8 @@ const std::unordered_map<std::string, std::string> BinaryPlugin::templates = {
     {
         "cup.toml",
 #include "template/cup.toml.txt"
-    }};
-
-Info BinaryPlugin::getInfo() const
-{
-    return Info{
-        .as_dependency = false,
-    };
-}
+    },
+};
 
 int BinaryPlugin::run_new(const NewData &data)
 {
@@ -116,8 +110,10 @@ std::vector<fs::path> get_main_files(const fs::path &src)
     return files;
 }
 
-std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx)
+std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
 {
+    if (is_dependency)
+        throw std::runtime_error("Project 'binary' cannot be used as a dependency.");
     // Parse the toml config file
     auto toml_config = data::Deserializer<data::Binary>::deserialize(
         toml::parse_file((ctx.root_dir / "cup.toml").string()));

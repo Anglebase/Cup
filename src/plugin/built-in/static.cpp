@@ -25,11 +25,6 @@ const std::unordered_map<std::string, std::string> StaticPlugin::templates = {
     },
 };
 
-Info StaticPlugin::getInfo() const
-{
-    return Info{};
-}
-
 int StaticPlugin::run_new(const NewData &data)
 {
 #ifdef _DEBUG
@@ -79,7 +74,7 @@ int StaticPlugin::run_new(const NewData &data)
     }
     return 0;
 }
-std::string StaticPlugin::gen_cmake(const CMakeContext &ctx)
+std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
 {
     return std::string();
 }

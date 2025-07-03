@@ -25,11 +25,6 @@ const std::unordered_map<std::string, std::string> SharedPlugin::templates = {
     },
 };
 
-Info SharedPlugin::getInfo() const
-{
-    return Info{};
-}
-
 int SharedPlugin::run_new(const NewData &data)
 {
 #ifdef _DEBUG
@@ -79,7 +74,7 @@ int SharedPlugin::run_new(const NewData &data)
     }
     return 0;
 }
-std::string SharedPlugin::gen_cmake(const CMakeContext &ctx)
+std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
 {
     return std::string();
 }

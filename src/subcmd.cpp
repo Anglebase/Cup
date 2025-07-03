@@ -191,21 +191,17 @@ int Build::run()
     {
         LOG_INFO("Generating cmake content for dependency ", name, " with type ", info.type);
         PluginLoader loader(info.type);
-        auto plugin_info = loader->getInfo();
-        if (!plugin_info.as_dependency)
-            throw std::runtime_error("Dependency '" + name + "' cannot be used as a dependency.");
         context.project_name = name;
         context.current_dir = info.path;
-        cmake_content.push_back(loader->gen_cmake(context));
+        cmake_content.push_back(loader->gen_cmake(context, true));
     }
     auto end_name = toml_config.project.name;
     auto end_type = toml_config.project.type;
     LOG_INFO("Generating cmake content for dependency ", end_name, " with type ", end_type);
     PluginLoader loader(end_type);
-    auto plugin_info = loader->getInfo();
     context.project_name = end_name;
     context.current_dir = this->root;
-    cmake_content.push_back(loader->gen_cmake(context));
+    cmake_content.push_back(loader->gen_cmake(context, false));
     // Write cmake content to file.
     {
         if (!fs::exists(Resource::build(this->root)))

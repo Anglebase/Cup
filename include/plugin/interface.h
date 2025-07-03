@@ -39,10 +39,9 @@ struct Info
 class IPlugin
 {
 public:
-    virtual Info getInfo() const = 0;
     virtual std::string getName() const = 0;
     virtual int run_new(const NewData &data) = 0;
-    virtual std::string gen_cmake(const CMakeContext &context) = 0;
+    virtual std::string gen_cmake(const CMakeContext &context, bool is_dependency) = 0;
 };
 
 #define EXPORT_PLUGIN(impl)                                    \
