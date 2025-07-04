@@ -194,7 +194,6 @@ int Build::run()
     auto toml_config = data::Deserializer<data::Default>::deserialize(
         toml::parse_file((this->root / "cup.toml").string()));
     // Get all dependencies.
-
     CMakeContext context{
         .name = toml_config.project.name,
         .cmake_version = {3, 10},
@@ -215,7 +214,7 @@ int Build::run()
     }
     auto end_name = toml_config.project.name;
     auto end_type = toml_config.project.type;
-    LOG_INFO("Generating cmake content for dependency ", end_name, " with type ", end_type);
+    LOG_INFO("Generating cmake content for ", end_name, " with type ", end_type);
     auto loader = PluginLoader(end_type);
     context.name = end_name;
     context.current_dir = this->root;
@@ -236,10 +235,23 @@ int Build::run()
         {
             ofs << "set(CMAKE_EXPORT_COMPILE_COMMANDS ON)\n";
         }
+        if (this->is_release)
+        {
+            ofs <<
+#include "template/release.cmake.txt"
+                << std::endl;
+        }
+        else
+        {
+            ofs <<
+#include "template/debug.cmake.txt"
+                << std::endl;
+        }
         for (const auto &content : cmake_content)
             ofs << content << "\n";
     }
 
+    LOG_MSG("Building...");
     {
         cmd::CMake cmake;
         cmake.source(Resource::build(this->root));
@@ -299,6 +311,7 @@ int Build::run()
             fs::copy_file(from, to, fs::copy_options::overwrite_existing);
         }
     }
+    LOG_MSG("Build finished.");
     return 0;
 }
 
@@ -413,8 +426,10 @@ int Clean::run()
     if (!fs::exists(cup_toml))
         throw std::runtime_error("The directory '" + this->root.string() + "' is not a cup project.");
     auto build_dir = this->root / "target" / "build";
+    LOG_INFO("Cleaning build directory...");
     if (fs::exists(build_dir))
         fs::remove_all(build_dir);
+    LOG_INFO("Finished...");
     return 0;
 }
 
@@ -444,11 +459,11 @@ int Run::run()
         path = this->root / path;
     path = path.lexically_normal();
     auto cmd = path.string() + " " + this->args;
-    LOG_INFO("Running: ", path.string());
+    LOG_MSG("# Running: ", path.string());
     ret = std::system(cmd.c_str());
     if (ret)
-        LOG_WARN("Exit Code: ", ret);
+        LOG_WARN("# Exit Code: ", ret);
     else
-        LOG_INFO("Exit Code: ", ret);
+        LOG_MSG("# Exit Code: ", ret);
     return 0;
 }

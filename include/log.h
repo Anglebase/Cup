@@ -13,3 +13,4 @@ void log_print(Args &&...args) { (std::cout << ... << args) << std::endl; }
 #define LOG_INFO(...) log_print(__VA_ARGS__)
 #define LOG_WARN(...) log_print("\033[33m[WARN]", __VA_ARGS__, "\033[0m")
 #define LOG_ERROR(...) log_print("\033[31m[ERROR]", __VA_ARGS__, "\033[0m")
+#define LOG_MSG(...) log_print("\033[32m", __VA_ARGS__, "\033[0m")
