@@ -3,6 +3,8 @@
 #include "cmd/args.h"
 #include <unordered_map>
 #include <filesystem>
+#include <memory>
+#include "plugin/loader.h"
 namespace fs = std::filesystem;
 
 class SubCommand
@@ -35,11 +37,24 @@ public:
 
 class Build : public SubCommand
 {
-    fs::path root;
+protected:
     bool is_release{false};
+    fs::path root;
+    std::shared_ptr<PluginLoader> loader;
+    std::optional<std::string> target;
+    std::optional<std::string> command;
 
 public:
     Build(const cmd::Args &args);
+    int run() override;
+};
+
+class Run : public Build
+{
+    std::string args;
+
+public:
+    Run(const cmd::Args &args);
     int run() override;
 };
 

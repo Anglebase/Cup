@@ -38,12 +38,11 @@ int ModulePlugin::run_new(const NewData &data)
     std::cout << "ModulePlugin::run_new: " << data.name << " " << data.type << std::endl;
 #endif
     const auto project_dir = data.root / data.name;
-    const std::unordered_set<std::string> dirs{"export", "include", "src"};
+    const std::unordered_set<std::string> dirs{"include", "src"};
     for (const auto &dir : dirs)
         fs::create_directories(project_dir / dir);
     const auto cup_toml = project_dir / "cup.toml";
-    const auto export_dir = project_dir / "export" / data.name;
-    fs::create_directories(export_dir);
+    const auto include_dir = project_dir / "include";
     const auto source_dir = project_dir / "src";
     {
         std::ofstream ofs(cup_toml);
@@ -56,7 +55,7 @@ int ModulePlugin::run_new(const NewData &data)
         ofs << file_template.getContent();
     }
     {
-        std::ofstream ofs(export_dir / (data.name + ".h"));
+        std::ofstream ofs(include_dir / (data.name + ".h"));
         auto upper_name = data.name;
         std::transform(upper_name.begin(), upper_name.end(), upper_name.begin(), ::toupper);
         auto file_template = FileTemplate(
@@ -171,4 +170,13 @@ std::string ModulePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
         replacements);
     ctx.set_cmake_version(3, 10);
     return file_template.getContent();
+}
+
+fs::path ModulePlugin::run_project(const RunProjectData &data)
+{
+    return fs::path();
+}
+std::optional<std::string> ModulePlugin::get_target(const RunProjectData &data) const
+{
+    return std::optional<std::string>();
 }

@@ -222,3 +222,22 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
     ctx.set_cmake_version(3, 10);
     return file_template.getContent();
 }
+
+fs::path BinaryPlugin::run_project(const RunProjectData &data)
+{
+    auto path = Resource::bin(data.root) / data.command.value_or(data.name);
+#ifdef _WIN32
+    path.replace_extension(".exe");
+#else
+    path.replace_extension("");
+#endif
+    if (!fs::exists(path))
+        path = path.parent_path() / (data.is_debug ? "Debug" : "Release") / path.filename();
+    return path;
+}
+std::optional<std::string> BinaryPlugin::get_target(const RunProjectData &data) const
+{
+    return data.command
+               ? fs::path(data.command.value()).stem().string()
+               : std::optional<std::string>{};
+}

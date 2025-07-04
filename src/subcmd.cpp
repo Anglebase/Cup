@@ -101,6 +101,8 @@ Build::Build(const cmd::Args &args) : SubCommand(args)
     if (this->root.is_relative())
         this->root = fs::current_path() / this->root;
     this->is_release = args.has_flag("release") || args.has_flag("r");
+    if (args.getPositions().size() >= 2)
+        this->command = args.getPositions()[1];
 }
 
 using VersionInfo = std::tuple<int, int, int>;
@@ -214,10 +216,10 @@ int Build::run()
     auto end_name = toml_config.project.name;
     auto end_type = toml_config.project.type;
     LOG_INFO("Generating cmake content for dependency ", end_name, " with type ", end_type);
-    PluginLoader loader(end_type);
+    this->loader = std::make_shared<PluginLoader>(end_type);
     context.project_name = end_name;
     context.current_dir = this->root;
-    cmake_content.push_back(loader->gen_cmake(context, false));
+    cmake_content.push_back((*loader)->gen_cmake(context, false));
     // Write cmake content to file.
     {
         if (!fs::exists(Resource::build(this->root)))
@@ -261,6 +263,14 @@ int Build::run()
         cmd::CMake cmake;
         cmake.build(Resource::cmake(this->root));
         cmake.config(this->is_release);
+        auto target = (*loader)->get_target(RunProjectData{
+            .command = this->command,
+            .root = this->root,
+            .name = toml_config.project.name,
+            .is_debug = !this->is_release,
+        });
+        if (target)
+            cmake.target(*target);
         if (std::system(cmake.as_command().c_str()))
             throw std::runtime_error("Failed to build project.");
     }
@@ -405,5 +415,40 @@ int Clean::run()
     auto build_dir = this->root / "target" / "build";
     if (fs::exists(build_dir))
         fs::remove_all(build_dir);
+    return 0;
+}
+
+Run::Run(const cmd::Args &args) : Build(args)
+{
+    if (args.has_config("args"))
+        this->args = join(args.getConfig().at("args"), " ");
+}
+
+int Run::run()
+{
+    auto toml_config = data::Deserializer<data::Default>::deserialize(
+        toml::parse_file((this->root / "cup.toml").string()));
+    RunProjectData data{
+        .command = this->command,
+        .root = this->root,
+        .name = toml_config.project.name,
+        .is_debug = !this->is_release,
+    };
+    auto loader = PluginLoader(toml_config.project.type);
+    this->target = loader->get_target(data);
+    auto ret = Build::run();
+    if (ret)
+        return ret;
+    auto path = (*this->loader)->run_project(data);
+    if (path.is_relative())
+        path = this->root / path;
+    path = path.lexically_normal();
+    auto cmd = path.string() + " " + this->args;
+    LOG_INFO("Running: ", path.string());
+    ret = std::system(cmd.c_str());
+    if (ret)
+        LOG_WARN("Exit Code: ", ret);
+    else
+        LOG_INFO("Exit Code: ", ret);
     return 0;
 }

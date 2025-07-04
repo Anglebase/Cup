@@ -32,6 +32,14 @@ struct CMakeContext
     }
 };
 
+struct RunProjectData
+{
+    std::optional<std::string> command;
+    fs::path root;
+    std::string name;
+    bool is_debug = true;
+};
+
 struct Info
 {
     bool as_dependency = true;
@@ -40,9 +48,34 @@ struct Info
 class IPlugin
 {
 public:
+    /// @brief This interface should return the registered name of the plugin.
+    /// @return Name of the plugin.
     virtual std::string getName() const = 0;
+    /// @brief This interface should implement the generation logic of the template sample project.
+    /// @param data Context data.
+    /// @return Exit code.
+    /// @note This function will be called when cup executes `cup new <name> --type <your plugin>` 
+    ///       and directly returns the value as program exit code. In the absence of any exceptions,
+    ///       it should be zero.
     virtual int run_new(const NewData &data) = 0;
+    /// @brief This interface should implement the generation logic of the CMakeLists.txt.
+    /// @param context Context data.
+    /// @param is_dependency Indicate whether it is used as a dependency when calling the generation of CMake logic.
+    /// @return CMakeLists.txt content.
     virtual std::string gen_cmake(const CMakeContext &context, bool is_dependency) = 0;
+    /// @brief This function should return the absolute path of the executable file to be executed.
+    /// @param data Context data.
+    /// @return Absolute path of a valid executable file.
+    /// @note When executing an executable program through the cup run command, 
+    ///        this function is called and should return the absolute path of a valid executable file.
+    virtual fs::path run_project(const RunProjectData &data) = 0;
+    /// @brief This function should return the name of the CMake instance.
+    /// @param data Context data.
+    /// @return Name of the CMake instance.
+    /// @note When the build target is specified through the cup run command, 
+    ///       cup calls this function to obtain the instance name of the build target in CMake, 
+    ///       which is passed as the --target option parameter of the cmake command-line tool. 
+    virtual std::optional<std::string> get_target(const RunProjectData &data) const = 0;
 };
 
 #define EXPORT_PLUGIN(impl)                                    \
@@ -51,8 +84,6 @@ public:
         IPlugin *createPlugin() { return new impl(); }         \
         void destroyPlugin(IPlugin *plugin) { delete plugin; } \
     }
-
-
 
 inline void _find_all_src(const fs::path &dir, std::vector<fs::path> &src_files)
 {

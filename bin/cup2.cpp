@@ -83,6 +83,14 @@ int main(int argc, char **argv)
                 return clean.run();
             },
         },
+        {
+            "run",
+            [&]()
+            {
+                auto run = Run(args);
+                return run.run();
+            },
+        },
     };
     if (subcmd_goto_map.contains(args.getPositions()[0]))
     {

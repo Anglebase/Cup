@@ -176,3 +176,12 @@ std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
     ctx.set_cmake_version(3, 10);
     return file_template.getContent();
 }
+
+fs::path StaticPlugin::run_project(const RunProjectData &data)
+{
+    return fs::path();
+}
+std::optional<std::string> StaticPlugin::get_target(const RunProjectData &data) const
+{
+    return std::optional<std::string>();
+}
