@@ -167,6 +167,22 @@ std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
             "LIB_OUTDIR",
             '"' + replace((Resource::target(ctx.current_dir) / "lib").string()) + '"',
         },
+        {
+            "EXAMPLE_INC",
+            toml_config.examples && toml_config.examples->includes
+                ? join(toml_config.examples->includes->begin(), toml_config.examples->includes->end(), " ",
+                       [](const fs::path &p)
+                       { return '"' + replace(p.string()) + '"'; })
+                : "",
+        },
+        {
+            "EXAMPLE_DEF",
+            toml_config.examples && toml_config.examples->defines
+                ? join(toml_config.examples->defines->begin(), toml_config.examples->defines->end(), " ",
+                       [](const std::string &p)
+                       { return "-D" + p; })
+                : "",
+        },
     };
     // Gernerate the cmake file content.
     auto file_template = FileTemplate(

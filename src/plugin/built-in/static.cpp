@@ -116,7 +116,7 @@ std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
         for (const auto &lib : *toml_config.build->link_libs)
             libs.push_back(lib);
     // Find all example main files
-    auto example_mains = find_all_example_main(ctx.current_dir / "example");
+    auto example_mains = find_all_example_main(ctx.current_dir / "examples");
     // Replace placeholders in CMakeLists.txt
     std::unordered_map<std::string, std::string> replacements = {
         {
@@ -167,6 +167,22 @@ std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
         {
             "LIB_OUTDIR",
             '"' + replace((Resource::target(ctx.current_dir) / "lib").string()) + '"',
+        },
+        {
+            "EXAMPLE_INC",
+            toml_config.examples && toml_config.examples->includes
+                ? join(toml_config.examples->includes->begin(), toml_config.examples->includes->end(), " ",
+                       [](const fs::path &p)
+                       { return '"' + replace(p.string()) + '"'; })
+                : "",
+        },
+        {
+            "EXAMPLE_DEF",
+            toml_config.examples && toml_config.examples->defines
+                ? join(toml_config.examples->defines->begin(), toml_config.examples->defines->end(), " ",
+                       [](const std::string &p)
+                       { return "-D" + p; })
+                : "",
         },
     };
     // Gernerate the cmake file content.

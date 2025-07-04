@@ -10,6 +10,8 @@ set(AS_DEP ${%AS_DEP%})
 set(EXAMPLE_MAINS ${%EXAMPLE_MAINS%})
 set(EXAMPLE_OUTDIR ${%EXAMPLE_OUTDIR%})
 set(LIB_OUTDIR ${%LIB_OUTDIR%})
+set(EXAMPLE_INC ${%EXAMPLE_INC%})
+set(EXAMPLE_DEF ${%EXAMPLE_DEF%})
 
 add_library(${OUT_NAME} STATIC ${%SOURCES%})
 target_include_directories(${OUT_NAME} PUBLIC ${%EXPORT_INC%})
@@ -27,6 +29,8 @@ if (NOT AS_DEP)
         get_filename_component(FILE_NAME ${EXAMPLE_MAIN} NAME_WLE)
         add_executable(${FILE_NAME} ${EXAMPLE_MAIN})
         target_link_libraries(${FILE_NAME} PRIVATE ${OUT_NAME})
+        target_include_directories(${FILE_NAME} PRIVATE ${%EXAMPLE_INC%})
+        target_compile_definitions(${FILE_NAME} PRIVATE ${%EXAMPLE_DEF%})
         set_target_properties(${FILE_NAME} PROPERTIES 
             OUTPUT_NAME ${FILE_NAME}
             RUNTIME_OUTPUT_DIRECTORY ${EXAMPLE_OUTDIR})
