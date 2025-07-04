@@ -40,7 +40,6 @@ class Build : public SubCommand
 protected:
     bool is_release{false};
     fs::path root;
-    std::shared_ptr<PluginLoader> loader;
     std::optional<std::string> target;
     std::optional<std::string> command;
 

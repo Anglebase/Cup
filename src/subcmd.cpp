@@ -216,10 +216,10 @@ int Build::run()
     auto end_name = toml_config.project.name;
     auto end_type = toml_config.project.type;
     LOG_INFO("Generating cmake content for dependency ", end_name, " with type ", end_type);
-    this->loader = std::make_shared<PluginLoader>(end_type);
+    auto loader = PluginLoader(end_type);
     context.project_name = end_name;
     context.current_dir = this->root;
-    cmake_content.push_back((*loader)->gen_cmake(context, false));
+    cmake_content.push_back(loader->gen_cmake(context, false));
     // Write cmake content to file.
     {
         if (!fs::exists(Resource::build(this->root)))
@@ -263,7 +263,7 @@ int Build::run()
         cmd::CMake cmake;
         cmake.build(Resource::cmake(this->root));
         cmake.config(this->is_release);
-        auto target = (*loader)->get_target(RunProjectData{
+        auto target = loader->get_target(RunProjectData{
             .command = this->command,
             .root = this->root,
             .name = toml_config.project.name,
@@ -439,7 +439,7 @@ int Run::run()
     auto ret = Build::run();
     if (ret)
         return ret;
-    auto path = (*this->loader)->run_project(data);
+    auto path = loader->run_project(data);
     if (path.is_relative())
         path = this->root / path;
     path = path.lexically_normal();
