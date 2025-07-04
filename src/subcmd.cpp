@@ -354,7 +354,7 @@ int List::run()
             },
         },
         {
-            "installed",
+            "packages",
             []()
             {
                 if (!fs::exists(Resource::packages()) || fs::is_empty(Resource::packages()))
