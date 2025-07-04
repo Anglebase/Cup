@@ -111,7 +111,7 @@ VersionInfo parse_version(const std::string &version)
     return {std::stoi(parts[0]), std::stoi(parts[1]), std::stoi(parts[2])};
 }
 
-std::pair<fs::path, std::string> get_path(const data::Dependency &dep, const std::optional<std::string> &version)
+std::pair<fs::path, std::string> get_path(const data::Dependency &dep)
 {
     if (dep.path && dep.url)
         std::runtime_error("Both 'path' and 'url' are specified.");
@@ -119,14 +119,14 @@ std::pair<fs::path, std::string> get_path(const data::Dependency &dep, const std
     {
         auto toml_config = data::Deserializer<data::Default>::deserialize(
             toml::parse_file((dep.path.value() / "cup.toml").string()));
-        if (version && toml_config.project.version != version.value())
+        if (dep.version && toml_config.project.version != dep.version.value())
             LOG_WARN("Dependency version is not consistent with the version in 'cup.toml'.");
         return {dep.path.value(), toml_config.project.version};
     }
     else if (dep.url)
     {
         auto url = dep.url.value();
-        return Resource::repo_dir(url, version);
+        return Resource::repo_dir(url, dep.version);
     }
     else
         throw std::runtime_error("Neither 'path' nor 'url' is specified.");
@@ -144,7 +144,7 @@ void _get_all_dependencies(const data::Default &toml_config, std::vector<std::pa
 {
     for (const auto &[name, info] : toml_config.dependencies.value_or(std::map<std::string, data::Dependency>{}))
     {
-        auto [path, version] = get_path(info, info.version);
+        auto [path, version] = get_path(info);
         if (!fs::exists(path))
             throw std::runtime_error("Dependency '" + name + "' not found.");
         auto dep_config = data::Deserializer<data::Default>::deserialize(
@@ -267,10 +267,21 @@ int List::run()
     return 0;
 }
 
-Install::Install(const cmd::Args &args) : SubCommand(args) {}
+Install::Install(const cmd::Args &args) : SubCommand(args)
+{
+    if (args.getPositions().size() < 2)
+        throw std::runtime_error("Dependency url not specified.");
+    this->url = args.getPositions()[1];
+    if (args.has_config("version") && args.getConfig().at("version").size() > 0)
+        this->version = args.getConfig().at("version")[0];
+}
 
 int Install::run()
 {
+    get_path(data::Dependency{
+        .version = this->version,
+        .url = this->url,
+    });
     return 0;
 }
 

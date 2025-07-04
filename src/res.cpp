@@ -111,11 +111,11 @@ std::pair<fs::path, std::string> Resource::repo_dir(const std::string &url, cons
         tag = tags.back();
         LOG_INFO("Latest tag of repository ", repo_url, " is ", tag);
     }
-    auto repo_dir = Resource::packages() / (author + "/" + repo_name + "-v" + tag);
+    auto repo_dir = Resource::packages() / (author + "/" + repo_name + "-" + tag);
     if (!fs::exists(repo_dir))
     {
         LOG_INFO("Cloning repository ", repo_url);
         git.clone(repo_url, repo_dir, tag);
     }
-    return {Resource::packages() / (author + "/" + repo_name + "-v" + tag), tag.substr(1)};
+    return {Resource::packages() / (author + "/" + repo_name + "-" + tag), tag.substr(1)};
 }

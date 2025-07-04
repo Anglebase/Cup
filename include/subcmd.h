@@ -59,6 +59,9 @@ public:
 
 class Install : public SubCommand
 {
+    std::string url;
+    std::optional<std::string> version;
+
 public:
     Install(const cmd::Args &args);
     int run() override;
