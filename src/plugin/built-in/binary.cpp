@@ -18,7 +18,7 @@ const std::unordered_map<std::string, std::string> BinaryPlugin::templates = {
     },
     {
         "binary.cmake",
-#include "template/binary/binary.cmake.txt"
+#include "template/binary/binary.cmake"
     },
     {
         "cup.toml",

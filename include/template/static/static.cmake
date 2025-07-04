@@ -1,4 +1,4 @@
-R"(
+R"( #"
 set(OUT_NAME ${%OUT_NAME%})
 set(SOURCES ${%SOURCES%})
 set(DEFINES ${%DEFINES%})
@@ -44,4 +44,4 @@ unset(AS_DEP)
 unset(EXAMPLE_MAINS)
 unset(EXAMPLE_OUTDIR)
 unset(LIB_OUTDIR)
-)"
+# )"

@@ -28,7 +28,7 @@ const std::unordered_map<std::string, std::string> StaticPlugin::templates = {
     },
     {
         "static.cmake",
-#include "template/static/static.cmake.txt"
+#include "template/static/static.cmake"
     },
 };
 

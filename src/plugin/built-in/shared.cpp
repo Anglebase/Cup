@@ -28,7 +28,7 @@ const std::unordered_map<std::string, std::string> SharedPlugin::templates = {
     },
     {
         "shared.cmake",
-#include "template/shared/shared.cmake.txt"
+#include "template/shared/shared.cmake"
     },
 };
 

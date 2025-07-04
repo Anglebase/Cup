@@ -28,7 +28,7 @@ const std::unordered_map<std::string, std::string> ModulePlugin::templates = {
     },
     {
         "module.cmake",
-#include "template/module/module.cmake.txt"
+#include "template/module/module.cmake"
     },
 };
 
