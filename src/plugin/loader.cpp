@@ -45,17 +45,11 @@ PluginLoader::PluginLoader(const std::string &type)
                       ))
                         .lexically_normal();
         if (!fs::exists(path))
-            throw std::runtime_error("Failed to find plugin '" + type +
-                                     "' at: " + path.parent_path().string());
+            throw std::runtime_error("Plugin '" + type + "' not installed.");
         if (!DLL_LOAD(this->dll, path.string()))
-            throw std::runtime_error("Failed to load plugin '" + type +
-                                     "' at: " + path.string());
-        if (!DLL_GET_FUNC(this->dll, createPlugin))
-            throw std::runtime_error("Failed to get 'createPlugin' function from plugin '" +
-                                     type + "'");
-        if (!DLL_GET_FUNC(this->dll, destroyPlugin))
-            throw std::runtime_error("Failed to get 'destroyPlugin' function from plugin '" +
-                                     type + "'");
+            throw std::runtime_error("Plugin '" + type + "' failed to load.");
+        if (!DLL_GET_FUNC(this->dll, createPlugin) || !DLL_GET_FUNC(this->dll, destroyPlugin))
+            throw std::runtime_error("Plugin '" + type + "' not a valid plugin.");
         this->plugin = this->createPlugin();
     }
     else
