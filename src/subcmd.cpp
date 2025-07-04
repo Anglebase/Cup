@@ -228,6 +228,12 @@ int Build::run()
         auto [major, minor] = context.cmake_version;
         ofs << "cmake_minimum_required(VERSION " << major << "." << minor << ")\n";
         ofs << "project(" << context.project_name << ")\n";
+        if (toml_config.build.has_value() &&
+            toml_config.build->export_data.has_value() &&
+            toml_config.build->export_data->compile_commands.has_value())
+        {
+            ofs << "set(CMAKE_EXPORT_COMPILE_COMMANDS ON)\n";
+        }
         for (const auto &content : cmake_content)
             ofs << content << "\n";
     }
@@ -257,6 +263,31 @@ int Build::run()
         cmake.config(this->is_release);
         if (std::system(cmake.as_command().c_str()))
             throw std::runtime_error("Failed to build project.");
+    }
+    if (toml_config.build.has_value() &&
+        toml_config.build->export_data.has_value() &&
+        toml_config.build->export_data->compile_commands.has_value())
+    {
+        auto compile_commands = toml_config.build->export_data->compile_commands.value();
+        auto from = Resource::cmake(this->root) / "compile_commands.json";
+        if (!fs::exists(from))
+        {
+            LOG_WARN("Generator \"", toml_config.build->generator.value_or(
+#ifdef _WIN32
+                                         "Visual Studio 17 2022"
+#else
+                                         "Unix Makefiles"
+#endif
+                                         ),
+                     "\" does not support compile_commands.json.");
+        }
+        if (!compile_commands.empty() && fs::exists(from))
+        {
+            if (compile_commands.is_relative())
+                compile_commands = this->root / compile_commands;
+            auto to = compile_commands / "compile_commands.json";
+            fs::copy_file(from, to, fs::copy_options::overwrite_existing);
+        }
     }
     return 0;
 }
