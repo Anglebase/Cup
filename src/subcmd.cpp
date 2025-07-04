@@ -316,7 +316,10 @@ int Build::run()
         {
             if (compile_commands.is_relative())
                 compile_commands = this->root / compile_commands;
+            compile_commands = compile_commands.lexically_normal();
             auto to = compile_commands / "compile_commands.json";
+            if (!fs::exists(compile_commands))
+                throw std::runtime_error("The directory '" + compile_commands.string() + "' does not exist.");
             fs::copy_file(from, to, fs::copy_options::overwrite_existing);
         }
     }
