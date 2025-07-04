@@ -52,6 +52,8 @@ public:
 
 class List : public SubCommand
 {
+    std::string option;
+
 public:
     List(const cmd::Args &args);
     int run() override;
@@ -69,6 +71,9 @@ public:
 
 class Uninstall : public SubCommand
 {
+    std::string url;
+    std::string version;
+
 public:
     Uninstall(const cmd::Args &args);
     int run() override;

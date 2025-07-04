@@ -8,6 +8,7 @@
 #include <tuple>
 #include "cmd/cmake.h"
 #include "cmd/git.h"
+#include <functional>
 
 New::New(const cmd::Args &args) : SubCommand(args)
 {
@@ -111,7 +112,7 @@ VersionInfo parse_version(const std::string &version)
     return {std::stoi(parts[0]), std::stoi(parts[1]), std::stoi(parts[2])};
 }
 
-std::pair<fs::path, std::string> get_path(const data::Dependency &dep)
+std::pair<fs::path, std::string> get_path(const data::Dependency &dep, bool download = true)
 {
     if (dep.path && dep.url)
         std::runtime_error("Both 'path' and 'url' are specified.");
@@ -126,7 +127,7 @@ std::pair<fs::path, std::string> get_path(const data::Dependency &dep)
     else if (dep.url)
     {
         auto url = dep.url.value();
-        return Resource::repo_dir(url, dep.version);
+        return Resource::repo_dir(url, dep.version, download);
     }
     else
         throw std::runtime_error("Neither 'path' nor 'url' is specified.");
@@ -260,11 +261,53 @@ int Build::run()
     return 0;
 }
 
-List::List(const cmd::Args &args) : SubCommand(args) {}
+List::List(const cmd::Args &args) : SubCommand(args)
+{
+    if (args.getPositions().size() < 2)
+        throw std::runtime_error("No option specified.");
+    this->option = args.getPositions()[1];
+}
 
 int List::run()
 {
-    return 0;
+    std::unordered_map<std::string, std::function<int(void)>> options = {
+        {
+            "plugins",
+            []()
+            {
+                LOG_INFO("Installed plugins:");
+                std::cout << "\t- " << "binary*" << std::endl;
+                std::cout << "\t- " << "static*" << std::endl;
+                std::cout << "\t- " << "shared*" << std::endl;
+                std::cout << "\t- " << "module*" << std::endl;
+                if (fs::exists(Resource::plugins()))
+                    for (const auto &entry : fs::directory_iterator(Resource::plugins()))
+                        if (entry.is_regular_file())
+                            std::cout << "\t- " << entry.path().stem().string() << std::endl;
+                return 0;
+            },
+        },
+        {
+            "installed",
+            []()
+            {
+                if (!fs::exists(Resource::packages()) || fs::is_empty(Resource::packages()))
+                {
+                    LOG_INFO("No packages have been installed yet.");
+                    return 0;
+                }
+                LOG_INFO("Installed packages:");
+                for (const auto &entry : fs::directory_iterator(Resource::packages()))
+                    if (entry.is_directory())
+                        std::cout << entry.path().filename().string() << std::endl;
+                return 0;
+            },
+        },
+    };
+    if (options.contains(this->option))
+        return options.at(this->option)();
+    else
+        throw std::runtime_error("Invalid option.");
 }
 
 Install::Install(const cmd::Args &args) : SubCommand(args)
@@ -285,10 +328,31 @@ int Install::run()
     return 0;
 }
 
-Uninstall::Uninstall(const cmd::Args &args) : SubCommand(args) {}
+Uninstall::Uninstall(const cmd::Args &args) : SubCommand(args)
+{
+    if (args.getPositions().size() < 2)
+        throw std::runtime_error("Dependency url not specified.");
+    this->url = args.getPositions()[1];
+    if (args.has_config("version") && args.getConfig().at("version").size() > 0)
+        this->version = args.getConfig().at("version")[0];
+    else
+        throw std::runtime_error("Dependency version not specified.");
+}
 
 int Uninstall::run()
 {
+    auto [path, _] = get_path(data::Dependency{
+                                  .version = this->version,
+                                  .url = this->url,
+                              },
+                              false);
+    if (!fs::exists(path))
+        throw std::runtime_error(
+            "There is no package with the name " +
+            this->url + " and version " + this->version +
+            " in the installed package.");
+    fs::remove_all(path);
+    LOG_INFO("Uninstalled package ", this->url, " with version ", this->version);
     return 0;
 }
 

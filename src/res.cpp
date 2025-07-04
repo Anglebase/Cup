@@ -82,7 +82,8 @@ fs::path Resource::build(const fs::path &root)
     return target(root) / "build";
 }
 
-std::pair<fs::path, std::string> Resource::repo_dir(const std::string &url, const std::optional<std::string> &version)
+std::pair<fs::path, std::string> Resource::repo_dir(const std::string &url,
+     const std::optional<std::string> &version, bool download)
 {
     cmd::Git git;
     std::string repo_url;
@@ -111,11 +112,11 @@ std::pair<fs::path, std::string> Resource::repo_dir(const std::string &url, cons
         tag = tags.back();
         LOG_INFO("Latest tag of repository ", repo_url, " is ", tag);
     }
-    auto repo_dir = Resource::packages() / (author + "/" + repo_name + "-" + tag);
-    if (!fs::exists(repo_dir))
+    auto repo_dir = Resource::packages() / (author + "-" + repo_name + "-" + tag);
+    if (!fs::exists(repo_dir) && download)
     {
         LOG_INFO("Cloning repository ", repo_url);
         git.clone(repo_url, repo_dir, tag);
     }
-    return {Resource::packages() / (author + "/" + repo_name + "-" + tag), tag.substr(1)};
+    return {Resource::packages() / (author + "-" + repo_name + "-" + tag), tag.substr(1)};
 }
