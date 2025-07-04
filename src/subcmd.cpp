@@ -7,6 +7,7 @@
 #include "utils/utils.h"
 #include <tuple>
 #include "cmd/cmake.h"
+#include "cmd/git.h"
 
 New::New(const cmd::Args &args) : SubCommand(args)
 {
@@ -101,22 +102,34 @@ Build::Build(const cmd::Args &args) : SubCommand(args)
     this->is_release = args.has_flag("release") || args.has_flag("r");
 }
 
-fs::path get_path(const data::Dependency &dep, const std::string &version)
-{
-    if (dep.path)
-        return dep.path.value();
-    if (dep.url)
-        throw std::runtime_error("Not implemented.");
-    return fs::path();
-}
 using VersionInfo = std::tuple<int, int, int>;
-
 VersionInfo parse_version(const std::string &version)
 {
     auto parts = split(version, ".");
     if (parts.size() != 3)
         throw std::runtime_error("version '" + version + "' is not a valid version string.");
     return {std::stoi(parts[0]), std::stoi(parts[1]), std::stoi(parts[2])};
+}
+
+std::pair<fs::path, std::string> get_path(const data::Dependency &dep, const std::optional<std::string> &version)
+{
+    if (dep.path && dep.url)
+        std::runtime_error("Both 'path' and 'url' are specified.");
+    if (dep.path)
+    {
+        auto toml_config = data::Deserializer<data::Default>::deserialize(
+            toml::parse_file((dep.path.value() / "cup.toml").string()));
+        if (version && toml_config.project.version != version.value())
+            LOG_WARN("Dependency version is not consistent with the version in 'cup.toml'.");
+        return {dep.path.value(), toml_config.project.version};
+    }
+    else if (dep.url)
+    {
+        auto url = dep.url.value();
+        return Resource::repo_dir(url, version);
+    }
+    else
+        throw std::runtime_error("Neither 'path' nor 'url' is specified.");
 }
 
 struct DependencyInfo
@@ -131,16 +144,15 @@ void _get_all_dependencies(const data::Default &toml_config, std::vector<std::pa
 {
     for (const auto &[name, info] : toml_config.dependencies.value_or(std::map<std::string, data::Dependency>{}))
     {
-        auto path = get_path(info, info.version);
+        auto [path, version] = get_path(info, info.version);
         if (!fs::exists(path))
             throw std::runtime_error("Dependency '" + name + "' not found.");
-        auto version = parse_version(info.version);
         auto dep_config = data::Deserializer<data::Default>::deserialize(
             toml::parse_file((path / "cup.toml").string()));
         auto dep_info = DependencyInfo{
             .path = path,
             .type = dep_config.project.type,
-            .version = version,
+            .version = parse_version(version),
             .features = info.features.value_or(std::vector<std::string>{}),
         };
         _get_all_dependencies(dep_config, dependencies);

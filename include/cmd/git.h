@@ -10,6 +10,7 @@ namespace cmd
     public:
         Git();
 
-        void clone(const std::string& url, const std::string& dir,const std::string& tag);
+        std::vector<std::string> get_tags(const std::string& url);
+        void clone(const std::string& url, const fs::path& dir,const std::string& tag);
     };
 }
