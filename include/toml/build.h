@@ -25,6 +25,6 @@ namespace data
         TOML_OPTIONS(link_libs);
         TOML_OPTIONS(compiler_options);
         TOML_OPTIONS(link_options);
-        TOML_OPTIONS(export_data);
+        options(table, "export", result.export_data, key);
     });
 }

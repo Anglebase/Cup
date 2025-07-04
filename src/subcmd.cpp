@@ -259,7 +259,7 @@ int Build::run()
     }
     {
         cmd::CMake cmake;
-        cmake.build(Resource::build(this->root) / "cmake");
+        cmake.build(Resource::cmake(this->root));
         cmake.config(this->is_release);
         if (std::system(cmake.as_command().c_str()))
             throw std::runtime_error("Failed to build project.");
@@ -272,14 +272,14 @@ int Build::run()
         auto from = Resource::cmake(this->root) / "compile_commands.json";
         if (!fs::exists(from))
         {
-            LOG_WARN("Generator \"", toml_config.build->generator.value_or(
+            auto gen = toml_config.build->generator.value_or(
 #ifdef _WIN32
-                                         "Visual Studio 17 2022"
+                "Visual Studio 17 2022"
 #else
-                                         "Unix Makefiles"
+                "Unix Makefiles"
 #endif
-                                         ),
-                     "\" does not support compile_commands.json.");
+            );
+            LOG_WARN("Generator \"", gen, "\" does not support compile_commands.json.");
         }
         if (!compile_commands.empty() && fs::exists(from))
         {

@@ -64,7 +64,7 @@ fs::path Resource::target(const fs::path &root)
 
 fs::path Resource::cmake(const fs::path &root)
 {
-    return target(root) / "cmake";
+    return build(root) / "cmake";
 }
 
 fs::path Resource::lib(const fs::path &root)
