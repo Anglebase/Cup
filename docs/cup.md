@@ -16,6 +16,7 @@ Overview of sub commands:
 ### `new`
 The command format for this sub command is:
 +   `cup new <project-name> [--type <project-type>] [--dir <project-dir>]`
+
 Among them:
 + `project-name`Indicate the project name, which can only consist of uppercase and lowercase letters, numbers, and underscores.
 + `project-type`Indicate the project type, which is used to indicate which builder plugin should be called when the project executes other commands. By default, it is`binary`
@@ -24,6 +25,7 @@ Among them:
 ### `build`
 The command format for this sub command is:
 +   `cup build [-r|--release] [--dir <project-dir>]`
+
 Among them:
 + `-r|--release`Indicate the type of build, if this parameter is specified, the type of build is`release`. Otherwise, it is`debug`
 + `project-dir`Indicate the directory where the project is located, which by default is the current command execution directory.
@@ -31,6 +33,7 @@ Among them:
 ### `run`
 The command format for this sub command is:
 +   `cup run [target] [-r|--release] [--dir <project-dir>]`
+
 Among them:
 + `target`Indicate the target to be run, this option can be empty. How to interpret this option as defined by the implementation of the builder plugin.
 + `-r|--release`Indicate the type of build, if this parameter is specified, the type of build is`release`. Otherwise, it is`debug`
@@ -39,12 +42,14 @@ Among them:
 ### `clean`
 The command format for this sub command is:
 +   `cup clean [--dir <project-dir>]`
+
 Among them:
 + `project-dir`Indicate the directory where the project is located, which by default is the current command execution directory.
 
 ### `install`
 The command format for this sub command is:
 +   `cup install <package-url> [--version <package-version>]`
+
 Among them:
 + `package-url`Indicate the URL of the package to be installed locally, allowing the use of shorthand `@<user>/<repo>` for Github projects.
 + `package-version`Indicate the version of the package to be installed, and if not specified, automatically obtain the latest version for installation.
@@ -52,6 +57,7 @@ Among them:
 ### `uninstall`
 The command format for this sub command is:
 +   `cup uninstall <package-url> --version <package-version>`
+
 Among them:
 + `package-url`Indicate the URL of the package to be uninstalled, allowing the use of shorthand `@<user>/<repo>` for Github projects.
 + `package-version`Indicate the version of the package to be uninstalled.
@@ -59,6 +65,7 @@ Among them:
 ### `list`
 The command format for this sub command is:
 +   `cup list <info-type>`
+
 The value of `info type` can be:
 + `plugins`Indicate to list all installed plugins.
 + `packages`Indicate to list all installed packages.
@@ -66,6 +73,7 @@ The value of `info type` can be:
 ## `help`
 The command format for this sub command is:
 +   `cup help <subcommand>`
+
 Among them, `subcommand` indicate the subcommands to display help information. If this parameter is omitted, an overview of the help information for all subcommands will be displayed.
 
 ## Configuration
@@ -120,7 +128,8 @@ compile_commands = "compile_commands.json"
 [dependencies]
 name = { path = "path/to/package", version = "1.0.0", url="https://github.com/user/repo", features = ["feature1", "feature2"] }
 # Add dependencies
-# Among them:
+# 
+Among them:
 # The `name` indicates the name of the dependency item, which is interpreted by Cup as the name referenced in the `link_ibraries` of the build target in CMake
 # `path` indicates that the dependency item is a local project path
 # `version` indicates the version of the dependency item
