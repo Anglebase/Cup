@@ -114,17 +114,23 @@ VersionInfo parse_version(const std::string &version)
     return {std::stoi(parts[0]), std::stoi(parts[1]), std::stoi(parts[2])};
 }
 
-std::pair<fs::path, std::string> get_path(const data::Dependency &dep, bool download = true)
+std::pair<fs::path, std::string> get_path(
+    const data::Dependency &dep, bool download = true,
+    const std::optional<fs::path> &root = std::nullopt)
 {
     if (dep.path && dep.url)
         std::runtime_error("Both 'path' and 'url' are specified.");
     if (dep.path)
     {
+        auto path = *dep.path;
+        if (path.is_relative() && root.has_value())
+            path = *root / path;
+        path.lexically_normal();
         auto toml_config = data::Deserializer<data::Default>::deserialize(
-            toml::parse_file((dep.path.value() / "cup.toml").string()));
+            toml::parse_file((path / "cup.toml").string()));
         if (dep.version && toml_config.project.version != dep.version.value())
             LOG_WARN("Dependency version is not consistent with the version in 'cup.toml'.");
-        return {dep.path.value(), toml_config.project.version};
+        return {path, toml_config.project.version};
     }
     else if (dep.url)
     {
@@ -143,11 +149,13 @@ struct DependencyInfo
     std::vector<std::string> features;
 };
 
-void _get_all_dependencies(const data::Default &toml_config, std::vector<std::pair<std::string, DependencyInfo>> &dependencies)
+void _get_all_dependencies(
+    const data::Default &toml_config, std::vector<std::pair<std::string, DependencyInfo>> &dependencies,
+    const std::optional<fs::path> &root = std::nullopt)
 {
     for (const auto &[name, info] : toml_config.dependencies.value_or(std::map<std::string, data::Dependency>{}))
     {
-        auto [path, version] = get_path(info);
+        auto [path, version] = get_path(info, true, root);
         if (!fs::exists(path))
             throw std::runtime_error("Dependency '" + name + "' not found.");
         auto dep_config = data::Deserializer<data::Default>::deserialize(
@@ -158,7 +166,7 @@ void _get_all_dependencies(const data::Default &toml_config, std::vector<std::pa
             .version = parse_version(version),
             .features = info.features.value_or(std::vector<std::string>{}),
         };
-        _get_all_dependencies(dep_config, dependencies);
+        _get_all_dependencies(dep_config, dependencies, path);
         decltype(dependencies.begin()) iter;
         if ((iter = std::find_if(dependencies.begin(), dependencies.end(), [&](const auto &item)
                                  { return item.first == name; })) != dependencies.end())
@@ -181,10 +189,11 @@ void _get_all_dependencies(const data::Default &toml_config, std::vector<std::pa
     }
 }
 
-std::vector<std::pair<std::string, DependencyInfo>> get_all_dependencies(const data::Default &toml_config)
+std::vector<std::pair<std::string, DependencyInfo>> get_all_dependencies(const data::Default &toml_config,
+                                                                         const std::optional<fs::path> &root = std::nullopt)
 {
     std::vector<std::pair<std::string, DependencyInfo>> dependencies;
-    _get_all_dependencies(toml_config, dependencies);
+    _get_all_dependencies(toml_config, dependencies, root);
     return dependencies;
 }
 
@@ -201,7 +210,7 @@ int Build::run()
         .root_dir = this->root,
     };
     // Generate cmake content.
-    auto dependencies = get_all_dependencies(toml_config);
+    auto dependencies = get_all_dependencies(toml_config, this->root);
     std::vector<std::string> cmake_content;
     for (const auto &[name, info] : dependencies)
     {
