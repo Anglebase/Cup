@@ -19,7 +19,7 @@ struct NewData
 /// @note All of the paths are absolute paths.
 struct CMakeContext
 {
-    std::string project_name;
+    std::string name;
     mutable std::pair<int, int> cmake_version;
     fs::path current_dir;
     fs::path root_dir;

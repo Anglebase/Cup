@@ -120,7 +120,7 @@ std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
     std::unordered_map<std::string, std::string> replacements = {
         {
             "OUT_NAME",
-            ctx.project_name,
+            ctx.name,
         },
         {
             "SOURCES",

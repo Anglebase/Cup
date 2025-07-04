@@ -214,7 +214,12 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
         {
             "BIN_OUT_DIR",
             '"' + replace((Resource::target(ctx.root_dir) / "bin").lexically_normal().string()) + '"',
-        }};
+        },
+        {
+            "UNIQUE_SUFFIX",
+            ctx.name,
+        },
+    };
     // Gernerate the cmake file content.
     auto file_template = FileTemplate(
         templates.at("binary.cmake"),

@@ -1,4 +1,5 @@
-R"(
+R"( # Generate by binary"
+set(UNIQUE_SUFFIX ${%UNIQUE_SUFFIX%})
 set(OUT_NAME ${%OUT_NAME%})
 set(SRC_FILES ${%SRC_FILES%})
 set(INC_DIRS ${%INC_DIRS%})
@@ -12,6 +13,8 @@ set(BIN_OUT_DIR ${%BIN_OUT_DIR%})
 
 foreach(main_file ${MAIN_FILES})
     get_filename_component(FILE_NAME ${main_file} NAME_WLE)
+    set(ONAME ${FILE_NAME})
+    set(FILE_NAME ${FILE_NAME}_${UNIQUE_SUFFIX})
     add_executable(${FILE_NAME} ${SRC_FILES} ${main_file})
     target_include_directories(${FILE_NAME} PRIVATE ${INC_DIRS})
     target_link_directories(${FILE_NAME} PRIVATE ${LINK_DIRS})
@@ -19,16 +22,17 @@ foreach(main_file ${MAIN_FILES})
     target_compile_definitions(${FILE_NAME} PRIVATE ${DEFINES})
     target_compile_options(${FILE_NAME} PRIVATE ${COMPILER_OPTIONS})
     target_link_options(${FILE_NAME} PRIVATE ${LINK_OPTIONS})
-    if(${FILE_NAME} STREQUAL "main")
+    if(${ONAME} STREQUAL "main")
         set_target_properties(${FILE_NAME} PROPERTIES
             OUTPUT_NAME ${OUT_NAME}
             RUNTIME_OUTPUT_DIRECTORY ${BIN_OUT_DIR})
     else()
         set_target_properties(${FILE_NAME} PROPERTIES
-            OUTPUT_NAME ${FILE_NAME}
+            OUTPUT_NAME ${ONAME}
             RUNTIME_OUTPUT_DIRECTORY ${BIN_OUT_DIR})
     endif()
     unset(FILE_NAME)
+    unset(ONAME)
 endforeach(main_file ${MAIN_FILES})
 
 
@@ -42,4 +46,4 @@ unset(DEFINES)
 unset(COMPILER_OPTIONS)
 unset(LINK_OPTIONS)
 unset(OUT_DIR)
-)"
+# Generate by binary)"
