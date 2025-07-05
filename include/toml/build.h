@@ -14,6 +14,8 @@ namespace data
         std::optional<std::vector<std::string>> link_libs;
         std::optional<std::vector<std::string>> compiler_options;
         std::optional<std::vector<std::string>> link_options;
+        std::optional<Integer> stdc;
+        std::optional<Integer> stdcxx;
         std::optional<Export> export_data;
     };
 
@@ -25,6 +27,8 @@ namespace data
         TOML_OPTIONS(link_libs);
         TOML_OPTIONS(compiler_options);
         TOML_OPTIONS(link_options);
+        TOML_OPTIONS(stdc);
+        TOML_OPTIONS(stdcxx);
         options(table, "export", result.export_data, key);
     });
 }
