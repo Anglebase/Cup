@@ -10,8 +10,11 @@ namespace fs = std::filesystem;
 
 struct NewData
 {
+    // The project name parsed from command-line parameters.
     std::string name;
+    // The project type parsed from command-line parameters.
     std::string type;
+    // The execution root directory parsed from command-line parameters.
     fs::path root;
 };
 
@@ -19,10 +22,20 @@ struct NewData
 /// @note All of the paths are absolute paths.
 struct CMakeContext
 {
+    // The project name parsed from the configuration file.
     std::string name;
+    // The required version of CMake for the project.
+    // Modify this value through member function `set_cmake_version`.
     mutable std::pair<int, int> cmake_version;
+    // The path where the project is located.
     fs::path current_dir;
+    // The path where the constructed project is located.
+    // For non dependent items, it has the same value as `current_dir`.
+    // For dependencies, it indicates the root project that depends on this package,
+    // which is the path where the project being built is located.
     fs::path root_dir;
+    // Feature macros from the dependency table in the configuration file.
+    // Plugins can decide how to interpret them themselves.
     std::vector<std::string> features;
 
     void set_cmake_version(int major, int minor) const
@@ -34,15 +47,15 @@ struct CMakeContext
 
 struct RunProjectData
 {
+    // The execution target from the command function parameter, which is `cmd` in `cup run <cmd>`.
+    // Plugins can decide how to interpret them themselves.
     std::optional<std::string> command;
+    // The directory where the project is located.
     fs::path root;
+    // The name of the project.
     std::string name;
+    // Indicate the current build mode.
     bool is_debug = true;
-};
-
-struct Info
-{
-    bool as_dependency = true;
 };
 
 class IPlugin
