@@ -58,7 +58,9 @@ int BinaryPlugin::run_new(const NewData &data)
 
 std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
 {
-    auto [name, _, current_dir, root_dir, features] = ctx;
+    if(is_dependency)
+        throw std::runtime_error("'binary' project cannot be a dependency.");
+    auto [name, _, current_dir, root_dir, _] = ctx;
     auto project = current_dir;
     auto src = project / "src";
     auto include = project / "include";
