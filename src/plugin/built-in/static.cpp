@@ -100,7 +100,10 @@ std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
                 "DEFINES",
                 config.build && config.build->defines
                     ? join(*config.build->defines, " ", [](const std::string &d)
-                           { return "-D" + d; })
+                           { return "-D" + d; }) +
+                          " " +
+                          join(features, " ", [](const std::string &f)
+                               { return "-D" + f; })
                     : "",
             },
             {
