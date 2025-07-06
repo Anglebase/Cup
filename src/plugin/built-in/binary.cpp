@@ -69,139 +69,151 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
     return FileTemplate{
 #include "template/binary/binary.cmake"
         ,
-        {
-            {
-                "MAIN_FILE",
-                [&]
-                {
-                    if (!fs::exists(src))
-                        throw std::runtime_error("Cannot find 'src' directory.");
-                    for (const auto &entry : fs::directory_iterator(src))
-                        if (entry.is_regular_file() && entry.path().stem() == "main")
-                            return '"' + replace(entry.path().string()) + '"';
-                    throw std::runtime_error("Cannot find main file in 'src' directory.");
-                }(),
-            },
-            {
-                "SOURCES",
-                [&]
-                {
-                    if (!fs::exists(src))
-                        throw std::runtime_error("Cannot find 'src' directory.");
-                    std::vector<fs::path> sources;
-                    this->_get_source_files(src, sources);
-                    auto last = std::remove_if(sources.begin(), sources.end(), [&](const fs::path &p)
-                                               { return p.stem() == "main" && fs::equivalent(p.parent_path(), src); });
-                    sources.erase(last, sources.end());
-                    return join(sources, " ", [](const fs::path &p)
-                                { return '"' + replace(p.string()) + '"'; });
-                }(),
-            },
-            {
-                "UNIQUE_SUFFIX",
-                replace(config.project.version, ".", "_"),
-            },
-            {
-                "TARGET_NAME",
-                name,
-            },
-            {
-                "INCLUDE_DIRS",
-                '"' + replace(include.string()) + '"' +
-                    (config.build &&
-                             config.build->includes
-                         ? join(*config.build->includes, " ",
-                                [](const fs::path &p)
-                                { return '"' + replace(p.string()) + '"'; })
-                         : ""),
-            },
-            {
-                "LIBRARY_DIRS",
-                config.build && config.build->link_dirs
-                    ? join(*config.build->link_dirs, " ",
-                           [](const fs::path &s)
-                           { return '"' + replace(s.string()) + '"'; })
-                    : "",
-            },
-            {
-                "LIBRARIES",
-                config.build && config.build->link_libs
-                    ? join(*config.build->link_libs, " ")
-                    : "",
-            },
-            {
-                "DEFINES",
-                config.build && config.build->defines
-                    ? join(*config.build->defines, " ",
-                           [](const std::string &s)
-                           { return "-D" + s; })
-                    : "",
-            },
-            {
-                "COPTIONS",
-                config.build && config.build->compiler_options
-                    ? join(*config.build->compiler_options, " ",
-                           [](const std::string &s)
-                           { return '"' + s + '"'; })
-                    : "",
-            },
-            {
-                "LOPTIONS",
-                config.build && config.build->link_options
-                    ? join(*config.build->link_options, " ",
-                           [](const std::string &s)
-                           { return '"' + s + '"'; })
-                    : "",
-            },
-            {
-                "MAIN_OUTDIR",
-                '"' + replace(Resource::bin(project).string()) + '"',
-            },
-            {
-                "STDC",
-                config.build && config.build->stdc ? std::to_string(*config.build->stdc) : "",
-            },
-            {
-                "STDCPP",
-                config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : "",
-            },
-            {
-                "BIN_MAIN_FILES",
-                [&]
-                {
-                    if (!fs::exists(src / "bin"))
-                        return std::string();
-                    std::vector<fs::path> files;
-                    for (const auto &entry : fs::directory_iterator(src / "bin"))
-                        if (entry.is_regular_file())
-                            files.push_back(entry.path());
-                    return join(files, " ", [](const fs::path &p)
-                                { return '"' + replace(p.string()) + '"'; });
-                }(),
-            },
-            {
-                "TEST_MAIN_FILES",
-                [&]
-                {
-                    if (!fs::exists(project / "tests"))
-                        return std::string();
-                    std::vector<fs::path> files;
-                    for (const auto &entry : fs::directory_iterator(project / "tests"))
-                        if (entry.is_regular_file())
-                            files.push_back(entry.path());
-                    return join(files, " ", [](const fs::path &p)
-                                { return '"' + replace(p.string()) + '"'; });
-                }(),
-            },
-            {
-                "BIN_OUTDIR",
-                '"' + replace((Resource::bin(project) / "bin").string()) + '"',
-            },
-            {
-                "TEST_OUTDIR",
-                '"' + replace((Resource::bin(project) / "test").string()) + '"',
-            },
-        },
+        {{
+             "MAIN_FILE",
+             [&]
+             {
+                 if (!fs::exists(src))
+                     throw std::runtime_error("Cannot find 'src' directory.");
+                 for (const auto &entry : fs::directory_iterator(src))
+                     if (entry.is_regular_file() && entry.path().stem() == "main")
+                         return '"' + replace(entry.path().string()) + '"';
+                 throw std::runtime_error("Cannot find main file in 'src' directory.");
+             }(),
+         },
+         {
+             "SOURCES",
+             [&]
+             {
+                 if (!fs::exists(src))
+                     throw std::runtime_error("Cannot find 'src' directory.");
+                 std::vector<fs::path> sources;
+                 this->_get_source_files(src, sources);
+                 auto last = std::remove_if(sources.begin(), sources.end(), [&](const fs::path &p)
+                                            { return p.stem() == "main" && fs::equivalent(p.parent_path(), src); });
+                 sources.erase(last, sources.end());
+                 return join(sources, " ", [](const fs::path &p)
+                             { return '"' + replace(p.string()) + '"'; });
+             }(),
+         },
+         {
+             "UNIQUE_SUFFIX",
+             replace(config.project.version, ".", "_"),
+         },
+         {
+             "TARGET_NAME",
+             name,
+         },
+         {
+             "INCLUDE_DIRS",
+             '"' + replace(include.string()) + '"' +
+                 (config.build &&
+                          config.build->includes
+                      ? join(*config.build->includes, " ",
+                             [](const fs::path &p)
+                             { return '"' + replace(p.string()) + '"'; })
+                      : ""),
+         },
+         {
+             "LIBRARY_DIRS",
+             config.build && config.build->link_dirs
+                 ? join(*config.build->link_dirs, " ",
+                        [](const fs::path &s)
+                        { return '"' + replace(s.string()) + '"'; })
+                 : "",
+         },
+         {
+             "LIBRARIES",
+             config.build && config.build->link_libs
+                 ? join(*config.build->link_libs, " ")
+                 : "",
+         },
+         {
+             "DEFINES",
+             config.build && config.build->defines
+                 ? join(*config.build->defines, " ",
+                        [](const std::string &s)
+                        { return "-D" + s; })
+                 : "",
+         },
+         {
+             "COPTIONS",
+             config.build && config.build->compiler_options
+                 ? join(*config.build->compiler_options, " ",
+                        [](const std::string &s)
+                        { return '"' + s + '"'; })
+                 : "",
+         },
+         {
+             "LOPTIONS",
+             config.build && config.build->link_options
+                 ? join(*config.build->link_options, " ",
+                        [](const std::string &s)
+                        { return '"' + s + '"'; })
+                 : "",
+         },
+         {
+             "MAIN_OUTDIR",
+             '"' + replace(Resource::bin(project).string()) + '"',
+         },
+         {
+             "STDC",
+             config.build && config.build->stdc ? std::to_string(*config.build->stdc) : "",
+         },
+         {
+             "STDCPP",
+             config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : "",
+         },
+         {
+             "BIN_MAIN_FILES",
+             [&]
+             {
+                 if (!fs::exists(src / "bin"))
+                     return std::string();
+                 std::vector<fs::path> files;
+                 for (const auto &entry : fs::directory_iterator(src / "bin"))
+                     if (entry.is_regular_file())
+                         files.push_back(entry.path());
+                 return join(files, " ", [](const fs::path &p)
+                             { return '"' + replace(p.string()) + '"'; });
+             }(),
+         },
+         {
+             "TEST_MAIN_FILES",
+             [&]
+             {
+                 if (!fs::exists(project / "tests"))
+                     return std::string();
+                 std::vector<fs::path> files;
+                 for (const auto &entry : fs::directory_iterator(project / "tests"))
+                     if (entry.is_regular_file())
+                         files.push_back(entry.path());
+                 return join(files, " ", [](const fs::path &p)
+                             { return '"' + replace(p.string()) + '"'; });
+             }(),
+         },
+         {
+             "BIN_OUTDIR",
+             '"' + replace((Resource::bin(project) / "bin").string()) + '"',
+         },
+         {
+             "TEST_OUTDIR",
+             '"' + replace((Resource::bin(project) / "test").string()) + '"',
+         },
+         {
+             "TEST_INC",
+             config.tests && config.tests->includes
+                 ? join(*config.tests->includes, " ", [](const fs::path &p)
+                        { return '"' + replace(p.string()) + '"'; })
+                 : "",
+         },
+         {
+             "TEST_DEFINES",
+             config.tests && config.tests->defines
+                 ? join(*config.tests->defines, " ", [](const std::string &s)
+                        { return "-D" + s; })
+                 : "",
+         }},
     }
         .getContent();
 }

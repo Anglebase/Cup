@@ -17,6 +17,8 @@ set(BIN_MAIN_FILES ${%BIN_MAIN_FILES%})
 set(TEST_MAIN_FILES ${%TEST_MAIN_FILES%})
 set(BIN_OUTDIR ${%BIN_OUTDIR%})
 set(TEST_OUTDIR ${%TEST_OUTDIR%})
+set(TEST_INC ${%TEST_INC%})
+set(TEST_DEFINES ${%TEST_DEFINES%})
 
 add_executable(${UNIQUE_NAME} ${MAIN_FILE} ${SOURCES})
 target_include_directories(${UNIQUE_NAME} PRIVATE ${INCLUDE_DIRS})
@@ -81,6 +83,8 @@ foreach(TEST_MAIN_FILE ${TEST_MAIN_FILES})
     target_compile_definitions(${UNIQUE_TEST_NAME} PRIVATE ${DEFINES})
     target_compile_options(${UNIQUE_TEST_NAME} PRIVATE ${COPTIONS})
     target_link_options(${UNIQUE_TEST_NAME} PRIVATE ${LOPTIONS})
+    target_compile_definitions(${UNIQUE_TEST_NAME} PRIVATE ${TEST_DEFINES})
+    target_include_directories(${UNIQUE_TEST_NAME} PRIVATE ${TEST_INC})
     set_target_properties(${UNIQUE_TEST_NAME} PROPERTIES
         OUTPUT_NAME ${FILE_NAME}
         RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTDIR}
@@ -118,4 +122,6 @@ unset(BIN_MAIN_FILES)
 unset(TEST_MAIN_FILES)
 unset(BIN_OUTDIR)
 unset(TEST_OUTDIR)
+unset(TEST_INC)
+unset(TEST_DEFINES)
 #)"
