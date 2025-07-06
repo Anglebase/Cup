@@ -29,6 +29,7 @@ class Help : public SubCommand
 {
     static const std::unordered_map<std::string, std::string> help_info;
     std::string key;
+    cmd::Args args;
 
 public:
     Help(const cmd::Args &args);

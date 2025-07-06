@@ -8,7 +8,7 @@
 #include "res.h"
 #include "toml/default/module.h"
 
-std::string ModulePlugin::getName() const
+std::string ModulePlugin::getName(std::optional<std::string> &) const
 {
     return "module";
 }
@@ -32,7 +32,7 @@ const std::unordered_map<std::string, std::string> ModulePlugin::templates = {
     },
 };
 
-int ModulePlugin::run_new(const NewData &data)
+int ModulePlugin::run_new(const NewData &data, std::optional<std::string> &)
 {
 #ifdef _DEBUG
     std::cout << "ModulePlugin::run_new: " << data.name << " " << data.type << std::endl;
@@ -77,7 +77,7 @@ int ModulePlugin::run_new(const NewData &data)
     }
     return 0;
 }
-std::string ModulePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
+std::string ModulePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &)
 {
     // Parse cup.toml
     auto toml_config = data::Deserializer<data::Static>::deserialize(
@@ -172,11 +172,16 @@ std::string ModulePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
     return file_template.getContent();
 }
 
-fs::path ModulePlugin::run_project(const RunProjectData &data)
+fs::path ModulePlugin::run_project(const RunProjectData &data, std::optional<std::string> &)
 {
     return fs::path();
 }
-std::optional<std::string> ModulePlugin::get_target(const RunProjectData &data) const
+std::optional<std::string> ModulePlugin::get_target(const RunProjectData &data, std::optional<std::string> &) const
 {
     return std::optional<std::string>();
+}
+
+int ModulePlugin::show_help(const cmd::Args &command, std::optional<std::string> &) const
+{
+    return 0;
 }

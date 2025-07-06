@@ -104,6 +104,16 @@ int main(int argc, char **argv)
             return 1;
         }
     }
+    else if (args.getPositions()[0].starts_with("@"))
+    {
+        auto plugin_name = args.getPositions()[0].substr(1);
+        auto plugin = PluginLoader(plugin_name);
+        std::optional<std::string> error;
+        auto ret = plugin->execute(args, error);
+        if (error)
+            LOG_ERROR(*error);
+        return ret;
+    }
     else
     {
         LOG_ERROR("Unknown subcommand: ", args.getPositions()[0]);

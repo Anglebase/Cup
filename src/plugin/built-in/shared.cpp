@@ -8,7 +8,7 @@
 #include "res.h"
 #include "toml/default/shared.h"
 
-std::string SharedPlugin::getName() const
+std::string SharedPlugin::getName(std::optional<std::string> &) const
 {
     return "shared";
 }
@@ -32,7 +32,7 @@ const std::unordered_map<std::string, std::string> SharedPlugin::templates = {
     },
 };
 
-int SharedPlugin::run_new(const NewData &data)
+int SharedPlugin::run_new(const NewData &data, std::optional<std::string> &)
 {
 #ifdef _DEBUG
     std::cout << "SharedPlugin::run_new: " << data.name << " " << data.type << std::endl;
@@ -81,7 +81,7 @@ int SharedPlugin::run_new(const NewData &data)
     }
     return 0;
 }
-std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
+std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &)
 {
     // Parse cup.toml
     auto toml_config = data::Deserializer<data::Static>::deserialize(
@@ -192,11 +192,16 @@ std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
     return file_template.getContent();
 }
 
-fs::path SharedPlugin::run_project(const RunProjectData &data)
+fs::path SharedPlugin::run_project(const RunProjectData &data, std::optional<std::string> &)
 {
     return fs::path();
 }
-std::optional<std::string> SharedPlugin::get_target(const RunProjectData &data) const
+std::optional<std::string> SharedPlugin::get_target(const RunProjectData &data, std::optional<std::string> &) const
 {
     return std::optional<std::string>();
+}
+
+int SharedPlugin::show_help(const cmd::Args &command, std::optional<std::string> &) const
+{
+    return 0;
 }

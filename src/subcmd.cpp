@@ -41,23 +41,27 @@ int New::run()
 {
     auto plugin = PluginLoader(this->type);
     LOG_INFO("Creating new project ", this->name, " with type ", this->type);
-    LOG_INFO("Execute by ", plugin->getName());
+    std::optional<std::string> except = std::nullopt;
+    auto plugin_name = plugin->getName(except);
+    if (except)
+        throw std::runtime_error(*except);
+    LOG_INFO("Execute by ", plugin_name);
     const auto project_dir = this->root / this->name;
     LOG_DEBUG(project_dir);
     if (fs::exists(project_dir))
         throw std::runtime_error("The directory '" + this->name + "' already exists.");
-    try
-    {
-        return plugin->run_new({
-            .name = this->name,
-            .type = this->type,
-            .root = this->root,
-        });
-    }
-    catch (const std::exception &e)
+
+    except = std::nullopt;
+    auto result = plugin->run_new({
+                                      .name = this->name,
+                                      .type = this->type,
+                                      .root = this->root,
+                                  },
+                                  except);
+    if (except)
     {
         fs::remove_all(this->root / this->name);
-        throw e;
+        throw std::runtime_error(*except);
     }
 }
 const std::unordered_map<std::string, std::string> Help::help_info = {
@@ -99,7 +103,7 @@ const std::unordered_map<std::string, std::string> Help::help_info = {
     },
 };
 
-Help::Help(const cmd::Args &args) : SubCommand(args)
+Help::Help(const cmd::Args &args) : SubCommand(args), args(args)
 {
     if (args.getPositions().size() >= 2)
         this->key = args.getPositions()[1];
@@ -111,6 +115,15 @@ int Help::run()
 {
     if (Help::help_info.contains(this->key))
         std::cout << Help::help_info.at(this->key) << std::endl;
+    else if (this->key.starts_with("@"))
+    {
+        auto plugin_name = this->key.substr(1);
+        auto plugin = PluginLoader(plugin_name);
+        std::optional<std::string> except = std::nullopt;
+        plugin->show_help(this->args, except);
+        if (except)
+            throw std::runtime_error(*except);
+    }
     else
         throw std::runtime_error("No help information for '" + this->key + "'.");
     return 0;
@@ -244,6 +257,7 @@ int Build::run()
     // Generate cmake content.
     auto dependencies = get_all_dependencies(toml_config, this->root);
     std::vector<std::string> cmake_content;
+    std::optional<std::string> except = std::nullopt;
     for (const auto &[name, info] : dependencies)
     {
         LOG_INFO("Generating cmake content for dependency '", name, "' with type '", info.type, "'.");
@@ -251,7 +265,10 @@ int Build::run()
         context.name = name;
         context.current_dir = info.path;
         context.features = info.features;
-        cmake_content.push_back(loader->gen_cmake(context, true));
+        except = std::nullopt;
+        cmake_content.push_back(loader->gen_cmake(context, true, except));
+        if (except)
+            throw std::runtime_error(*except);
     }
     auto end_name = toml_config.project.name;
     auto end_type = toml_config.project.type;
@@ -259,7 +276,10 @@ int Build::run()
     auto loader = PluginLoader(end_type);
     context.name = end_name;
     context.current_dir = this->root;
-    cmake_content.push_back(loader->gen_cmake(context, false));
+    except = std::nullopt;
+    cmake_content.push_back(loader->gen_cmake(context, false, except));
+    if (except)
+        throw std::runtime_error(*except);
     // Write cmake content to file.
     {
         if (!fs::exists(Resource::build(this->root)))
@@ -316,12 +336,16 @@ int Build::run()
         cmd::CMake cmake;
         cmake.build(Resource::cmake(this->root));
         cmake.config(this->is_release);
+        std::optional<std::string> except = std::nullopt;
         auto target = loader->get_target(RunProjectData{
-            .command = this->command,
-            .root = this->root,
-            .name = toml_config.project.name,
-            .is_debug = !this->is_release,
-        });
+                                             .command = this->command,
+                                             .root = this->root,
+                                             .name = toml_config.project.name,
+                                             .is_debug = !this->is_release,
+                                         },
+                                         except);
+        if (except)
+            throw std::runtime_error(*except);
         if (target)
             cmake.target(*target);
         if (std::system(cmake.as_command().c_str()))
@@ -494,11 +518,17 @@ int Run::run()
         .is_debug = !this->is_release,
     };
     auto loader = PluginLoader(toml_config.project.type);
-    this->target = loader->get_target(data);
+    std::optional<std::string> except = std::nullopt;
+    this->target = loader->get_target(data, except);
+    if (except)
+        throw std::runtime_error(*except);
     auto ret = Build::run();
     if (ret)
         return ret;
-    auto path = loader->run_project(data);
+    except = std::nullopt;
+    auto path = loader->run_project(data, except);
+    if (except)
+        throw std::runtime_error(*except);
     if (path.is_relative())
         path = this->root / path;
     path = path.lexically_normal();

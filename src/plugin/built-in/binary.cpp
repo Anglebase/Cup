@@ -21,9 +21,9 @@ void BinaryPlugin::_get_source_files(const fs::path &dir, std::vector<fs::path> 
     }
 }
 
-std::string BinaryPlugin::getName() const { return "binary"; }
+std::string BinaryPlugin::getName(std::optional<std::string> &) const { return "binary"; }
 
-int BinaryPlugin::run_new(const NewData &data)
+int BinaryPlugin::run_new(const NewData &data, std::optional<std::string> &)
 {
     auto [name, type, root] = data;
     auto project = root / name;
@@ -56,9 +56,9 @@ int BinaryPlugin::run_new(const NewData &data)
     return 0;
 }
 
-std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
+std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &)
 {
-    if(is_dependency)
+    if (is_dependency)
         throw std::runtime_error("'binary' project cannot be a dependency.");
     auto [name, _1, current_dir, root_dir, _2] = ctx;
     auto project = current_dir;
@@ -206,7 +206,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
         .getContent();
 }
 
-fs::path BinaryPlugin::run_project(const RunProjectData &data)
+fs::path BinaryPlugin::run_project(const RunProjectData &data, std::optional<std::string> &)
 {
     auto [command, root, name, is_debug] = data;
     fs::path result = Resource::bin(root) / (command && command != "main" ? *command : name);
@@ -222,7 +222,7 @@ fs::path BinaryPlugin::run_project(const RunProjectData &data)
     return result;
 }
 
-std::optional<std::string> BinaryPlugin::get_target(const RunProjectData &data) const
+std::optional<std::string> BinaryPlugin::get_target(const RunProjectData &data, std::optional<std::string> &) const
 {
     auto config = data::Deserializer<data::Binary>::deserialize(
         toml::parse_file((data.root / "cup.toml").string()));
@@ -252,4 +252,12 @@ std::optional<std::string> BinaryPlugin::get_target(const RunProjectData &data) 
     {
         throw std::runtime_error("Invalid target: " + target);
     }
+}
+
+int BinaryPlugin::show_help(const cmd::Args &command, std::optional<std::string> &) const
+{
+    std::cout <<
+#include "template/help/built-in/binary.txt"
+        ;
+    return 0;
 }

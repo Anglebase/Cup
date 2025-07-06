@@ -8,7 +8,7 @@
 #include "template.h"
 #include "res.h"
 
-std::string StaticPlugin::getName() const
+std::string StaticPlugin::getName(std::optional<std::string> &) const
 {
     return "static";
 }
@@ -32,7 +32,7 @@ const std::unordered_map<std::string, std::string> StaticPlugin::templates = {
     },
 };
 
-int StaticPlugin::run_new(const NewData &data)
+int StaticPlugin::run_new(const NewData &data, std::optional<std::string> &)
 {
 #ifdef _DEBUG
     std::cout << "StaticPlugin::run_new: " << data.name << " " << data.type << std::endl;
@@ -82,7 +82,7 @@ int StaticPlugin::run_new(const NewData &data)
     return 0;
 }
 
-std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
+std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &)
 {
     // Parse cup.toml
     auto toml_config = data::Deserializer<data::Static>::deserialize(
@@ -193,11 +193,15 @@ std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
     return file_template.getContent();
 }
 
-fs::path StaticPlugin::run_project(const RunProjectData &data)
+fs::path StaticPlugin::run_project(const RunProjectData &data, std::optional<std::string> &)
 {
     return fs::path();
 }
-std::optional<std::string> StaticPlugin::get_target(const RunProjectData &data) const
+std::optional<std::string> StaticPlugin::get_target(const RunProjectData &data, std::optional<std::string> &) const
 {
     return std::optional<std::string>();
+}
+int StaticPlugin::show_help(const cmd::Args &command, std::optional<std::string> &) const
+{
+    return 0;
 }
