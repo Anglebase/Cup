@@ -211,6 +211,14 @@ std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
                            { return "-D" + d; })
                     : "",
             },
+            {
+                "DEPENDS",
+                config.dependencies
+                    ? join(*config.dependencies, " ",
+                           [](const std::pair<std::string, data::Dependency> &p)
+                           { return p.first; })
+                    : "",
+            },
         },
     }
         .getContent();

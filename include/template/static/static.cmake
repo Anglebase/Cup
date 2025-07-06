@@ -20,6 +20,7 @@ set(TEST_INC ${%TEST_INC%})
 set(TEST_DEFINES ${%TEST_DEFINES%})
 set(EXAMPLE_INC ${%EXAMPLE_INC%})
 set(EXAMPLE_DEFINES ${%EXAMPLE_DEFINES%})
+set(DEPENDS ${%DEPENDS%})
 
 add_library(${EXPORT_NAME} STATIC ${SOURCES})
 target_include_directories(${EXPORT_NAME} PRIVATE ${INCLUDE_DIR})
@@ -28,7 +29,7 @@ target_compile_definitions(${EXPORT_NAME} PRIVATE ${DEFINES})
 target_compile_options(${EXPORT_NAME} PRIVATE ${COPTIONS})
 target_link_options(${EXPORT_NAME} PUBLIC ${LOPTIONS})
 target_link_directories(${EXPORT_NAME} PUBLIC ${LINK_DIRS})
-target_link_libraries(${EXPORT_NAME} PUBLIC ${LINK_LIBS})
+target_link_libraries(${EXPORT_NAME} PUBLIC ${LINK_LIBS} ${DEPENDS})
 set_target_properties(
     ${EXPORT_NAME} PROPERTIES
     OUTPUT_NAME ${OUT_NAME}
@@ -91,4 +92,5 @@ unset(TEST_INC)
 unset(TEST_DEFINES)
 unset(EXAMPLE_INC)
 unset(EXAMPLE_DEFINES)
+unset(DEPENDS)
 #)"
