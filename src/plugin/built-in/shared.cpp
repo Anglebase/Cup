@@ -52,6 +52,11 @@ int SharedPlugin::run_new(const NewData &data, std::optional<std::string> &excep
                   {"TYPE", type},
               }}.getContent();
     }
+    {
+        auto gitignore = project / ".gitignore";
+        std::ofstream ofs(gitignore);
+        ofs << "/target" << std::endl;
+    }
     return 0;
 }
 
