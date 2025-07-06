@@ -18,6 +18,8 @@ set(EXAMPLE_DEFINES ${%EXAMPLE_DEFINES%})
 set(EXAMPLE_INCLUDE ${%EXAMPLE_INCLUDE%})
 set(TEST_OUT_DIR ${%TEST_OUT_DIR%})
 set(EXAMPLE_OUT_DIR ${%EXAMPLE_OUT_DIR%})
+set(STDC ${%STDC%})
+set(STDCPP ${%STDCPP%})
 
 add_library(${EXPORT_NAME} INTERFACE)
 target_include_directories(${EXPORT_NAME} INTERFACE ${INCLUDE_DIR})
@@ -38,6 +40,16 @@ if(NOT ${IS_DEP})
         set_target_properties(${UNIQUE} PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${TEST_OUT_DIR}
             OUTPUT_NAME ${FILE_NAME})
+        if(${STDC})
+            set_target_properties(${UNIQUE} PROPERTIES
+                C_STANDARD ${STDC}
+                C_STANDARD_REQUIRED ON)
+        endif(${STDC})
+        if(${STDCPP})
+            set_target_properties(${UNIQUE} PROPERTIES
+                CXX_STANDARD ${STDCPP}
+                CXX_STANDARD_REQUIRED ON)
+        endif(${STDCPP})
         unset(UNIQUE)
     endforeach(TEST_FILE ${TEST_FILES})
     
@@ -51,6 +63,16 @@ if(NOT ${IS_DEP})
         set_target_properties(${UNIQUE} PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${EXAMPLE_OUT_DIR}
             OUTPUT_NAME ${FILE_NAME})
+        if(${STDC})
+            set_target_properties(${UNIQUE} PROPERTIES
+                C_STANDARD ${STDC}
+                C_STANDARD_REQUIRED ON)
+        endif(${STDC})
+        if(${STDCPP})
+            set_target_properties(${UNIQUE} PROPERTIES
+                CXX_STANDARD ${STDCPP}
+                CXX_STANDARD_REQUIRED ON)
+        endif(${STDCPP})
         unset(UNIQUE)
     endforeach(EXAMPLE_FILE ${EXAMPLE_FILES})
 endif(NOT ${IS_DEP})

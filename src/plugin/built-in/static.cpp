@@ -125,6 +125,14 @@ std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
                     : "",
             },
             {
+                "STDC",
+                config.build && config.build->stdc ? std::to_string(*config.build->stdc) : "",
+            },
+            {
+                "STDCXX",
+                config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : "",
+            },
+            {
                 "COPTIONS",
                 config.build && config.build->compiler_options
                     ? join(*config.build->compiler_options, " ")

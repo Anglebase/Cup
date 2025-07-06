@@ -90,6 +90,14 @@ std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
                 '"' + replace((current_dir / "include").string()) + '"',
             },
             {
+                "STDC",
+                config.build && config.build->stdc ? std::to_string(*config.build->stdc) : "",
+            },
+            {
+                "STDCXX",
+                config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : "",
+            },
+            {
                 "EXPORT_DIR",
                 [&]
                 {

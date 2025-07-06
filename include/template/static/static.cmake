@@ -21,6 +21,8 @@ set(TEST_DEFINES ${%TEST_DEFINES%})
 set(EXAMPLE_INC ${%EXAMPLE_INC%})
 set(EXAMPLE_DEFINES ${%EXAMPLE_DEFINES%})
 set(DEPENDS ${%DEPENDS%})
+set(STDC ${%STDC%})
+set(STDCXX ${%STDCXX%})
 
 add_library(${EXPORT_NAME} STATIC ${SOURCES})
 target_include_directories(${EXPORT_NAME} PRIVATE ${INCLUDE_DIR})
@@ -36,6 +38,16 @@ set_target_properties(
     ARCHIVE_OUTPUT_DIRECTORY ${OUT_DIR}
     PREFIX ""
 )
+if(${STDC})
+    set_target_properties(${EXPORT_NAME} PROPERTIES
+        C_STANDARD ${STDC}
+        C_STANDARD_REQUIRED ON)
+endif(${STDC})
+if(${STDCXX})
+    set_target_properties(${EXPORT_NAME} PROPERTIES
+        CXX_STANDARD ${STDCXX}
+        CXX_STANDARD_REQUIRED ON)
+endif(${STDCXX})
 
 if(NOT ${IS_DEP})
     foreach(TEST_MAIN_FILE ${TEST_MAIN_FILES})
@@ -51,6 +63,16 @@ if(NOT ${IS_DEP})
             RUNTIME_OUTPUT_DIRECTORY ${TEST_OUT_DIR}
             PREFIX ""
         )
+        if(${STDC})
+            set_target_properties(${UNIQUE_NAME} PROPERTIES
+                C_STANDARD ${STDC}
+                C_STANDARD_REQUIRED ON)
+        endif(${STDC})
+        if(${STDCXX})
+            set_target_properties(${UNIQUE_NAME} PROPERTIES
+                CXX_STANDARD ${STDCXX}
+                CXX_STANDARD_REQUIRED ON)
+        endif(${STDCXX})
         unset(UNIQUE_NAME)
     endforeach(TEST_MAIN_FILE ${TEST_MAIN_FILES})
     
@@ -67,6 +89,16 @@ if(NOT ${IS_DEP})
             RUNTIME_OUTPUT_DIRECTORY ${EXAMPLE_OUT_DIR}
             PREFIX ""
         )
+        if(${STDC})
+            set_target_properties(${UNIQUE_NAME} PROPERTIES
+                C_STANDARD ${STDC}
+                C_STANDARD_REQUIRED ON)
+        endif(${STDC})
+        if(${STDCXX})
+            set_target_properties(${UNIQUE_NAME} PROPERTIES
+                CXX_STANDARD ${STDCXX}
+                CXX_STANDARD_REQUIRED ON)
+        endif(${STDCXX})
         unset(UNIQUE_NAME)
     endforeach(EXAMPLE_MAIN_FILE ${EXAMPLE_MAIN_FILES})
 endif(NOT ${IS_DEP})

@@ -182,6 +182,14 @@ std::string InterfacePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependen
                            { return d.first; })
                     : "",
             },
+            {
+                "STDC",
+                config.build && config.build->stdc ? std::to_string(*config.build->stdc) : "",
+            },
+            {
+                "STDCPP",
+                config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : "",
+            },
         },
     }
         .getContent();

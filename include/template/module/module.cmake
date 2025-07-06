@@ -14,6 +14,8 @@ set(TEST_DEFINES ${%TEST_DEFINES%})
 set(TEST_INCLUDES ${%TEST_INCLUDES%})
 set(OUT_DIR ${%OUT_DIR%})
 set(UNIQUE_SUFFIX ${%UNIQUE_SUFFIX%})
+set(STDC ${%STDC%})
+set(STCXX ${%STCXX%})
 
 add_library(${OUT_NAME} MODULE ${SOURCES})
 target_include_directories(${OUT_NAME} PRIVATE ${INCLUDE_DIR})
@@ -26,23 +28,43 @@ set_target_properties(${OUT_NAME} PROPERTIES
     PREFIX ""
     OUTPUT_NAME ${OUT_NAME}
     LIBRARY_OUTPUT_DIRECTORY ${OUT_DIR})
+if(${STDC})
+    set_target_properties(${OUT_NAME} PROPERTIES
+        C_STANDARD ${STDC}
+        C_STANDARD_REQUIRED ON)
+endif(${STDC})
+if(${STCXX})
+    set_target_properties(${OUT_NAME} PROPERTIES
+        CXX_STANDARD ${STCXX}
+        CXX_STANDARD_REQUIRED ON)
+endif(${STCXX})
 
 foreach(TEST_FILE ${TEST_FILES})
     get_filename_component(FILE_NAME ${TEST_FILE} NAME_WLE)
-    set(FILE_NAME "test_${FILE_NAME}_${UNIQUE_SUFFIX}")
-    add_executable(${FILE_NAME} ${TEST_FILE} ${SOURCES})
-    target_include_directories(${FILE_NAME} PRIVATE ${INCLUDE_DIR})
-    target_compile_definitions(${FILE_NAME} PRIVATE ${DEFINES})
-    target_compile_options(${FILE_NAME} PRIVATE ${COPTIONS})
-    target_link_directories(${FILE_NAME} PRIVATE ${LINK_DIRS})
-    target_link_libraries(${FILE_NAME} PRIVATE ${LINK_LIBS} ${DEPENDS})
-    target_link_options(${FILE_NAME} PRIVATE ${LOPTIONS})
-    target_compile_definitions(${FILE_NAME} PRIVATE ${TEST_DEFINES})
-    target_include_directories(${FILE_NAME} PRIVATE ${TEST_INCLUDES})
-    set_tests_properties(${FILE_NAME} PROPERTIES
+    set(UNIQUE_NAME "test_${FILE_NAME}_${UNIQUE_SUFFIX}")
+    add_executable(${UNIQUE_NAME} ${TEST_FILE} ${SOURCES})
+    target_include_directories(${UNIQUE_NAME} PRIVATE ${INCLUDE_DIR})
+    target_compile_definitions(${UNIQUE_NAME} PRIVATE ${DEFINES})
+    target_compile_options(${UNIQUE_NAME} PRIVATE ${COPTIONS})
+    target_link_directories(${UNIQUE_NAME} PRIVATE ${LINK_DIRS})
+    target_link_libraries(${UNIQUE_NAME} PRIVATE ${LINK_LIBS} ${DEPENDS})
+    target_link_options(${UNIQUE_NAME} PRIVATE ${LOPTIONS})
+    target_compile_definitions(${UNIQUE_NAME} PRIVATE ${TEST_DEFINES})
+    target_include_directories(${UNIQUE_NAME} PRIVATE ${TEST_INCLUDES})
+    set_tests_properties(${UNIQUE_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTDIR}
         OUTPUT_NAME ${FILE_NAME})
-    unset(FILE_NAME)
+    if(${STDC})
+        set_target_properties(${UNIQUE_NAME} PROPERTIES
+            C_STANDARD ${STDC}
+            C_STANDARD_REQUIRED ON)
+    endif(${STDC})
+    if(${STCXX})
+        set_target_properties(${UNIQUE_NAME} PROPERTIES
+            CXX_STANDARD ${STCXX}
+            CXX_STANDARD_REQUIRED ON)
+    endif(${STCXX})
+    unset(UNIQUE_NAME)
 endforeach(TEST_FILE ${TEST_FILES})
 
 unset(OUT_NAME)
