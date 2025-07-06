@@ -9,7 +9,7 @@
 
 namespace data
 {
-    struct Static
+    struct Shared
     {
         Project project;
         std::optional<Build> build;
@@ -18,7 +18,7 @@ namespace data
         std::optional<Part> examples;
     };
 
-    TOML_DESERIALIZE(Static, {
+    TOML_DESERIALIZE(Shared, {
         TOML_REQUIRE(project);
         TOML_OPTIONS(build);
         TOML_OPTIONS(dependencies);

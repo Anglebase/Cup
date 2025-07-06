@@ -77,6 +77,11 @@ fs::path Resource::bin(const fs::path &root)
     return target(root) / "bin";
 }
 
+fs::path Resource::dll(const fs::path &root)
+{
+    return target(root) / "dll";
+}
+
 fs::path Resource::build(const fs::path &root)
 {
     return target(root) / "build";
