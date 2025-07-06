@@ -5,4 +5,4 @@ version = "0.1.0"
 target = "binary"
 
 [dependencies]
-tomlpp = { git = "@Anglebase/tomlpp" }
+tomlpp = { git = "@Anglebase/tomlpp", version = "3.4.0" }
