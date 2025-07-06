@@ -1,187 +1,214 @@
-#include "plugin/built-in/module.h"
-#include "log.h"
-#include <unordered_set>
-#include <filesystem>
-#include <fstream>
-#include "template.h"
-#include "utils/utils.h"
-#include "res.h"
-#include "toml/default/module.h"
+#ifdef FORVSCODE
+#include "module.h"
+#endif
 
-std::string ModulePlugin::getName(std::optional<std::string> &) const
+#include "plugin/built-in/module.h"
+#include "template.h"
+#include "res.h"
+#include "utils/utils.h"
+#include "toml/default/module.h"
+#include <fstream>
+
+std::string ModulePlugin::getName(std::optional<std::string> &except) const
 {
     return "module";
 }
 
-const std::unordered_map<std::string, std::string> ModulePlugin::templates = {
-    {
-        "cup.toml",
-#include "template/cup.toml.txt"
-    },
-    {
-        "export.h",
-#include "template/module/export.h.txt"
-    },
-    {
-        "module.cpp",
-#include "template/module/module.cpp.txt"
-    },
-    {
-        "module.cmake",
-#include "template/module/module.cmake"
-    },
-};
-
-int ModulePlugin::run_new(const NewData &data, std::optional<std::string> &)
+int ModulePlugin::run_new(const NewData &data, std::optional<std::string> &except)
 {
-#ifdef _DEBUG
-    std::cout << "ModulePlugin::run_new: " << data.name << " " << data.type << std::endl;
-#endif
-    const auto project_dir = data.root / data.name;
-    const std::unordered_set<std::string> dirs{"include", "src"};
-    for (const auto &dir : dirs)
-        fs::create_directories(project_dir / dir);
-    const auto cup_toml = project_dir / "cup.toml";
-    const auto include_dir = project_dir / "include";
-    const auto source_dir = project_dir / "src";
+    auto [name, type, root] = data;
+    auto project = root / name;
+    auto src = project / "src";
+    fs::create_directories(src);
     {
-        std::ofstream ofs(cup_toml);
-        auto file_template = FileTemplate(
-            templates.at("cup.toml"),
-            {
-                {"NAME", data.name},
-                {"TYPE", data.type},
-            });
-        ofs << file_template.getContent();
+        auto demo_file = src / (name + ".cpp");
+        std::ofstream ofs(demo_file);
+        ofs << FileTemplate{
+#include "template/module/module.cpp.txt"
+            ,
+            {{"NAME", name}}}
+                   .getContent();
     }
     {
-        std::ofstream ofs(include_dir / (data.name + ".h"));
-        auto upper_name = data.name;
-        std::transform(upper_name.begin(), upper_name.end(), upper_name.begin(), ::toupper);
-        auto file_template = FileTemplate(
-            templates.at("export.h"),
-            {
-                {"NAME", data.name},
-                {"UNAME", upper_name},
-            });
-        ofs << file_template.getContent();
+        auto config = project / "cup.toml";
+        std::ofstream ofs(config);
+        ofs << FileTemplate{
+#include "template/cup.toml.txt"
+            , {
+                  {"NAME", name},
+                  {"TYPE", type},
+              }}.getContent();
     }
     {
-        std::ofstream ofs(source_dir / (data.name + ".cpp"));
-        auto file_template = FileTemplate(
-            templates.at("module.cpp"),
-            {
-                {"NAME", data.name},
-            });
-        ofs << file_template.getContent();
+        auto gitignore = project / ".gitignore";
+        std::ofstream ofs(gitignore);
+        ofs << "/target" << std::endl;
     }
     return 0;
 }
-std::string ModulePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &)
+
+std::string ModulePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &except)
 {
-    // Parse cup.toml
-    auto toml_config = data::Deserializer<data::Static>::deserialize(
-        toml::parse(read_file(ctx.current_dir / "cup.toml")));
-    // Find all source files
-    auto source_files = find_all_src(ctx.current_dir / "src");
-    // Find all include directories
-    std::vector<fs::path> include_dirs{ctx.current_dir / "include"};
-    if (toml_config.build.has_value() && toml_config.build->includes.has_value())
-        for (const auto &dir : *toml_config.build->includes)
-            include_dirs.push_back(dir);
-    // Find all defines
-    std::vector<std::string> defines;
-    if (toml_config.build.has_value() && toml_config.build->defines.has_value())
-        for (const auto &define : *toml_config.build->defines)
-            defines.push_back(define);
+    auto [name, _1, current_dir, root_dir, _2] = ctx;
+    auto src = current_dir / "src";
+    auto config = data::Deserializer<data::Module>::deserialize(toml::parse_file((current_dir / "cup.toml").string()));
     if (is_dependency)
-        for (const auto &feature : ctx.features)
-            defines.push_back(feature);
-    // Find all Link directories
-    std::vector<fs::path> link_dirs;
-    if (toml_config.build.has_value() && toml_config.build->link_dirs.has_value())
-        for (const auto &dir : *toml_config.build->link_dirs)
-            link_dirs.push_back(dir);
-    // Find all dependencies
-    std::vector<std::string> libs;
-    if (toml_config.dependencies.has_value())
-        for (const auto &[name, _] : *toml_config.dependencies)
-            libs.push_back(name);
-    if (toml_config.build.has_value() && toml_config.build->link_libs.has_value())
-        for (const auto &lib : *toml_config.build->link_libs)
-            libs.push_back(lib);
-    // Find all example main files
-    auto example_mains = find_all_example_main(ctx.current_dir / "example");
-    // Replace placeholders in CMakeLists.txt
-    std::unordered_map<std::string, std::string> replacements = {
+    {
+        except = "Module project cannot be used as a dependency.";
+        return std::string();
+    }
+    return FileTemplate{
+#include "template/module/module.cmake"
+        ,
         {
-            "OUT_NAME",
-            ctx.name,
-        },
-        {
-            "SOURCES",
-            join(source_files, " ", [](const fs::path &p)
-                 { return '"' + replace(p.string()) + '"'; }),
-        },
-        {
-            "DEFINES",
-            join(defines, " ", [](const std::string &s)
-                 { return "-D" + s; }),
-        },
-        {
-            "INCLUDE_DIRS",
-            join(include_dirs, " ", [](const fs::path &p)
-                 { return '"' + replace(p.string()) + '"'; }),
-        },
-        {
-            "EXPORT_INC",
-            '"' + replace((ctx.current_dir / "export").string()) + '"',
-        },
-        {
-            "LINK_DIRS",
-            join(link_dirs, " ", [](const fs::path &p)
-                 { return '"' + replace(p.string()) + '"'; }),
-        },
-        {
-            "LINK_LIBS",
-            join(libs, " "),
-        },
-        {
-            "AS_DEP",
-            is_dependency ? "ON" : "OFF",
-        },
-        {
-            "EXAMPLE_MAINS",
-            join(example_mains, " ", [](const fs::path &p)
-                 { return '"' + replace(p.string()) + '"'; }),
-        },
-        {
-            "EXAMPLE_OUTDIR",
-            '"' + replace((Resource::target(ctx.current_dir) / "bin" / "example").string()) + '"',
-        },
-        {
-            "LIB_OUTDIR",
-            '"' + replace((Resource::target(ctx.current_dir) / "module").string()) + '"',
-        },
-    };
-    // Gernerate the cmake file content.
-    auto file_template = FileTemplate(
-        templates.at("module.cmake"),
-        replacements);
-    ctx.set_cmake_version(3, 10);
-    return file_template.getContent();
+            {
+                "OUT_NAME",
+                name,
+            },
+            {
+                "SOURCES",
+                [&]
+                {
+                    std::vector<fs::path> sources;
+                    for (const auto &entry : fs::recursive_directory_iterator(src))
+                        if (entry.is_regular_file())
+                            sources.push_back(entry.path());
+                    return join(sources, " ", [](const fs::path &p)
+                                { return '"' + replace(p.string()) + '"'; });
+                }(),
+            },
+            {
+                "INCLUDE_DIR",
+
+                [&]
+                {
+                    std::vector<fs::path> includes{current_dir / "include"};
+                    if (config.build && config.build->includes)
+                        for (const auto &include : *config.build->includes)
+                            includes.push_back(include);
+                    return join(includes, " ", [](const fs::path &p)
+                                { return '"' + replace(p.string()) + '"'; });
+                }(),
+            },
+            {
+                "DEPENDS",
+                config.dependencies
+                    ? join(*config.dependencies, " ", [](const auto &dep)
+                           { return dep.first; })
+                    : "",
+            },
+            {
+                "DEFINES",
+                config.build && config.build->defines
+                    ? join(*config.build->defines, " ", [](const std::string &define)
+                           { return "-D" + define; })
+                    : "",
+            },
+            {
+                "COPTIONS",
+                config.build && config.build->compiler_options
+                    ? join(*config.build->compiler_options, " ")
+                    : "",
+            },
+            {
+                "LOPTIONS",
+                config.build && config.build->link_options
+                    ? join(*config.build->link_options, " ")
+                    : "",
+            },
+            {
+                "LINK_DIRS",
+                config.build && config.build->link_dirs
+                    ? join(*config.build->link_dirs, " ", [](const fs::path &dir)
+                           { return '"' + replace(dir.string()) + '"'; })
+                    : "",
+            },
+            {
+                "LINK_LIBS",
+                config.build && config.build->link_libs
+                    ? join(*config.build->link_libs, " ")
+                    : "",
+            },
+            {
+                "TEST_FILES",
+                [&]
+                {
+                    if (!fs::exists(src / "tests"))
+                        return std::string();
+                    std::vector<fs::path> tests;
+                    for (const auto &entry : fs::directory_iterator(src / "tests"))
+                        if (entry.is_regular_file())
+                            tests.push_back(entry.path());
+                    return join(tests, " ", [](const fs::path &p)
+                                { return '"' + replace(p.string()) + '"'; });
+                }(),
+            },
+            {
+                "TEST_OUTDIR",
+                '"' + replace((Resource::bin(root_dir) / "tests").string()) + '"',
+            },
+            {
+                "TEST_DEFINES",
+                config.tests && config.tests->defines
+                    ? join(*config.tests->defines, " ", [](const std::string &define)
+                           { return "-D" + define; })
+                    : "",
+            },
+            {
+                "TEST_INCLUDES",
+                config.tests && config.tests->includes
+                    ? join(*config.tests->includes, " ", [](const fs::path &include)
+                           { return '"' + replace(include.string()) + '"'; })
+                    : "",
+            },
+            {
+                "OUT_DIR",
+                '"' + replace(Resource::mod(root_dir).string()) + '"',
+            },
+            {
+                "UNIQUE_SUFFIX",
+                name + "_" + replace(config.project.version, ".", "_"),
+            },
+        }}
+        .getContent();
 }
 
-fs::path ModulePlugin::run_project(const RunProjectData &data, std::optional<std::string> &)
+fs::path ModulePlugin::run_project(const RunProjectData &data, std::optional<std::string> &except)
 {
-    return fs::path();
-}
-std::optional<std::string> ModulePlugin::get_target(const RunProjectData &data, std::optional<std::string> &) const
-{
-    return std::optional<std::string>();
+    auto [command, root, name, is_debug] = data;
+    if (!command)
+    {
+        except = "No target specified.";
+        return fs::path();
+    }
+    auto result = Resource::bin(root) / "tests" / *command;
+#ifdef _WIN32
+    result.replace_extension(".exe");
+#else
+    result.replace_extension();
+#endif
+    if (!fs::exists(result))
+        result = result.parent_path() / (is_debug ? "Debug" : "Release") / result.filename();
+    if (!fs::exists(result))
+        except = "Cannot find target: " + result.filename().string();
+    return result;
 }
 
-int ModulePlugin::show_help(const cmd::Args &command, std::optional<std::string> &) const
+std::optional<std::string> ModulePlugin::get_target(const RunProjectData &data, std::optional<std::string> &except) const
 {
+    auto [command, root, name, is_debug] = data;
+    if (!command)
+        return std::optional<std::string>();
+    auto config = data::Deserializer<data::Module>::deserialize(toml::parse_file((root / "cup.toml").string()));
+    auto unique_suffix = name + "_" + replace(config.project.version, ".", "_");
+    auto filename = split(fs::path(*command).filename().string(), ".")[0];
+    return "test_" + filename + "_" + unique_suffix;
+}
+
+int ModulePlugin::show_help(const cmd::Args &command, std::optional<std::string> &except) const
+{
+    std::cout <<
+#include "template/help/built-in/module.txt"
+        ;
     return 0;
 }

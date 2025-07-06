@@ -1,0 +1,20 @@
+R"(Module Project Builder Plugin
+
+Module Project is a module project which has a module.
+
+It's directory structure is like:
+- ProjectRoot
+    - src
+    - include
+    - tests
+    - cup.toml
+
+The `src` directory contains the source files of the project, 
+
+The `include` directory contains the header files of the project.
+
+The `test` directory contains the test files of the project.
+All files in the `test` directory will be considered as main file of the project.
+
+The `cup.toml` file is the configuration of the project.
+)"

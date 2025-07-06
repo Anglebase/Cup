@@ -2,8 +2,6 @@
 
 class ModulePlugin : public IPlugin
 {
-    static const std::unordered_map<std::string, std::string> templates;
-
 public:
     std::string getName(std::optional<std::string> &except) const override;
     int run_new(const NewData &data, std::optional<std::string> &except) override;

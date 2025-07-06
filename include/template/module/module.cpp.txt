@@ -1,5 +1,4 @@
-R"(#include "${%NAME%}/${%NAME%}.h"
-#include <iostream>
+R"(#include <iostream>
 
 extern "C" void ${%NAME%}()
 {

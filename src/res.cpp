@@ -82,6 +82,11 @@ fs::path Resource::dll(const fs::path &root)
     return target(root) / "dll";
 }
 
+fs::path Resource::mod(const fs::path &root)
+{
+    return target(root) / "mod";
+}
+
 fs::path Resource::build(const fs::path &root)
 {
     return target(root) / "build";

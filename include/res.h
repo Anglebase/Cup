@@ -33,6 +33,7 @@ public:
     static fs::path lib(const fs::path& root);
     static fs::path bin(const fs::path& root);
     static fs::path dll(const fs::path& root);
+    static fs::path mod(const fs::path& root);
     static fs::path build(const fs::path& root);
     static std::pair<fs::path, std::string> repo_dir(const std::string& url,
          const std::optional<std::string>& version, bool download = true);
