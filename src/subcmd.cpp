@@ -63,6 +63,7 @@ int New::run()
         fs::remove_all(this->root / this->name);
         throw std::runtime_error(*except);
     }
+    return result;
 }
 const std::unordered_map<std::string, std::string> Help::help_info = {
     {

@@ -27,15 +27,15 @@ std::string read_file(const fs::path &file_path);
 /// @return 替换后的字符串
 std::string replace(const std::string &str, const std::string &old_str = "\\", const std::string &new_str = "/");
 
-template <typename Iter, typename F>
-std::string join(Iter begin, Iter end, const std::string &delimiter, F &&f)
+template <typename Iterable, typename F>
+std::string join(Iterable container, const std::string &delimiter, F &&f)
 {
     std::string result;
-    for (auto it = begin; it != end; ++it)
+    for (const auto &ele: container)
     {
         if (!result.empty())
             result += delimiter;
-        result += f(*it);
+        result += f(ele);
     }
     return result;
 }

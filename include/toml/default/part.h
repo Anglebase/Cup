@@ -3,13 +3,13 @@
 
 namespace data
 {
-    struct Example
+    struct Part
     {
         std::optional<std::vector<fs::path>> includes;
         std::optional<std::vector<std::string>> defines;
     };
 
-    TOML_DESERIALIZE(Example, {
+    TOML_DESERIALIZE(Part, {
         TOML_OPTIONS(includes);
         TOML_OPTIONS(defines);
     });

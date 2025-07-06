@@ -56,7 +56,7 @@ int BinaryPlugin::run_new(const NewData &data, std::optional<std::string> &)
     return 0;
 }
 
-std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &)
+std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &except)
 {
     if (is_dependency)
         throw std::runtime_error("'binary' project cannot be a dependency.");
@@ -93,7 +93,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
                     auto last = std::remove_if(sources.begin(), sources.end(), [&](const fs::path &p)
                                                { return p.stem() == "main" && fs::equivalent(p.parent_path(), src); });
                     sources.erase(last, sources.end());
-                    return join(sources.begin(), sources.end(), " ", [](const fs::path &p)
+                    return join(sources, " ", [](const fs::path &p)
                                 { return '"' + replace(p.string()) + '"'; });
                 }(),
             },
@@ -110,7 +110,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
                 '"' + replace(include.string()) + '"' +
                     (config.build &&
                              config.build->includes
-                         ? join(config.build->includes->begin(), config.build->includes->end(), " ",
+                         ? join(*config.build->includes, " ",
                                 [](const fs::path &p)
                                 { return '"' + replace(p.string()) + '"'; })
                          : ""),
@@ -118,7 +118,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             {
                 "LIBRARY_DIRS",
                 config.build && config.build->link_dirs
-                    ? join(config.build->link_dirs->begin(), config.build->link_dirs->end(), " ",
+                    ? join(*config.build->link_dirs, " ",
                            [](const fs::path &s)
                            { return '"' + replace(s.string()) + '"'; })
                     : "",
@@ -132,7 +132,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             {
                 "DEFINES",
                 config.build && config.build->defines
-                    ? join(config.build->defines->begin(), config.build->defines->end(), " ",
+                    ? join(*config.build->defines, " ",
                            [](const std::string &s)
                            { return "-D" + s; })
                     : "",
@@ -140,7 +140,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             {
                 "COPTIONS",
                 config.build && config.build->compiler_options
-                    ? join(config.build->compiler_options->begin(), config.build->compiler_options->end(), " ",
+                    ? join(*config.build->compiler_options, " ",
                            [](const std::string &s)
                            { return '"' + s + '"'; })
                     : "",
@@ -148,7 +148,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             {
                 "LOPTIONS",
                 config.build && config.build->link_options
-                    ? join(config.build->link_options->begin(), config.build->link_options->end(), " ",
+                    ? join(*config.build->link_options, " ",
                            [](const std::string &s)
                            { return '"' + s + '"'; })
                     : "",
@@ -175,7 +175,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
                     for (const auto &entry : fs::directory_iterator(src / "bin"))
                         if (entry.is_regular_file())
                             files.push_back(entry.path());
-                    return join(files.begin(), files.end(), " ", [](const fs::path &p)
+                    return join(files, " ", [](const fs::path &p)
                                 { return '"' + replace(p.string()) + '"'; });
                 }(),
             },
@@ -189,7 +189,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
                     for (const auto &entry : fs::directory_iterator(project / "tests"))
                         if (entry.is_regular_file())
                             files.push_back(entry.path());
-                    return join(files.begin(), files.end(), " ", [](const fs::path &p)
+                    return join(files, " ", [](const fs::path &p)
                                 { return '"' + replace(p.string()) + '"'; });
                 }(),
             },
@@ -206,7 +206,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
         .getContent();
 }
 
-fs::path BinaryPlugin::run_project(const RunProjectData &data, std::optional<std::string> &)
+fs::path BinaryPlugin::run_project(const RunProjectData &data, std::optional<std::string> &except)
 {
     auto [command, root, name, is_debug] = data;
     fs::path result = Resource::bin(root) / (command && command != "main" ? *command : name);
@@ -218,11 +218,11 @@ fs::path BinaryPlugin::run_project(const RunProjectData &data, std::optional<std
     if (!fs::exists(result))
         result = result.parent_path() / (is_debug ? "Debug" : "Release") / result.filename();
     if (!fs::exists(result))
-        throw std::runtime_error("Cannot find executable file" + result.filename().string() + ".");
+        except = "Cannot find executable file" + result.filename().string() + ".";
     return result;
 }
 
-std::optional<std::string> BinaryPlugin::get_target(const RunProjectData &data, std::optional<std::string> &) const
+std::optional<std::string> BinaryPlugin::get_target(const RunProjectData &data, std::optional<std::string> &except) const
 {
     auto config = data::Deserializer<data::Binary>::deserialize(
         toml::parse_file((data.root / "cup.toml").string()));
@@ -236,7 +236,7 @@ std::optional<std::string> BinaryPlugin::get_target(const RunProjectData &data, 
     {
         return target_name + "_" + unique_suffix;
     }
-    else if (target.starts_with("test/"))
+    else if (target.starts_with("tests/"))
     {
         auto str = target.substr(5);
         auto filename = split(str, ".")[0];
@@ -250,7 +250,7 @@ std::optional<std::string> BinaryPlugin::get_target(const RunProjectData &data, 
     }
     else
     {
-        throw std::runtime_error("Invalid target: " + target);
+        except = "Invalid target: " + target;
     }
 }
 
