@@ -63,7 +63,39 @@ int New::run()
 const std::unordered_map<std::string, std::string> Help::help_info = {
     {
         "",
+#include "template/help/all.txt"
+    },
+    {
+        "help",
 #include "template/help/help.txt"
+    },
+    {
+        "build",
+#include "template/help/build.txt"
+    },
+    {
+        "clean",
+#include "template/help/clean.txt"
+    },
+    {
+        "install",
+#include "template/help/install.txt"
+    },
+    {
+        "uninstall",
+#include "template/help/uninstall.txt"
+    },
+    {
+        "list",
+#include "template/help/list.txt"
+    },
+    {
+        "new",
+#include "template/help/new.txt"
+    },
+    {
+        "run",
+#include "template/help/run.txt"
     },
 };
 
@@ -214,7 +246,7 @@ int Build::run()
     std::vector<std::string> cmake_content;
     for (const auto &[name, info] : dependencies)
     {
-        LOG_INFO("Generating cmake content for dependency ", name, " with type ", info.type);
+        LOG_INFO("Generating cmake content for dependency '", name, "' with type '", info.type, "'.");
         PluginLoader loader(info.type);
         context.name = name;
         context.current_dir = info.path;

@@ -1,14 +1,10 @@
-R"help(
-Usage: cup <subcommand> [args...]
-    Run cup with a subcommand to perform a specific task.
-Subcommands:
-    help        Display help information.
-    new         Create a new project.
-    build       Build a project.
-    run         Run a project.
-    list        List information about projects.
-    clean       Clean build files of a project.
+R"(Usage:
+    cup help [subcommand]
 
-Usage: cup help <subcommand>
-    Display help information about a subcommand.
-)help"
+Among them:
+    subcommand          [optional]
+                        indicate the subcommands to display help information. 
+                        If this parameter is omitted, an overview of the help 
+                        information for all subcommands will be displayed.
+                        If not specified, display an overview of all commands.
+)"

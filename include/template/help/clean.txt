@@ -1,0 +1,8 @@
+R"(Usage:
+    cup clean [--dir <project-dir>]
+
+Among them:
+    project-dir         [optional]
+                        Indicate the directory where the project is located, 
+                        which by default is the current command execution directory.
+)"

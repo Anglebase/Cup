@@ -1,0 +1,7 @@
+R"(Usage:
+    cup list <info-type>
+
+The value of <info-type> can be:
+    plugins                 Indicate to list all installed plugins.
+    packages                Indicate to list all installed packages.
+)"

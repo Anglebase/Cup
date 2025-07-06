@@ -1,0 +1,17 @@
+R"(Usage:
+    cup run [target] [-r|--release] [--dir <project-dir>]
+
+Among them:
+    target              [optional]
+                        Indicate the target to be run, this option can be empty. 
+                        The implementation of the builder plugin determines how 
+                        this option is interpreted.
+
+    -r|--release        [optional]
+                        Indicate the type of build, if this parameter is specified, 
+                        the type of build is`release`. Otherwise, it is`debug`
+
+    project-dir         [optional]
+                        Indicate the directory where the project is located, which by 
+                        default is the current command execution directory.
+)"

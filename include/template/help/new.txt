@@ -1,0 +1,17 @@
+R"(Usage:
+    cup new <project-name> [--type <project-type>] [--dir <project-dir>]
+
+Among them:
+    project-name        [required]
+                        Indicate the project name, which can only consist of 
+                        uppercase and lowercase letters, numbers, and underscores.
+
+    project-type        [optional]
+                        Indicate the project type, which is used to indicate which 
+                        builder plugin should be called when the project executes
+                        other commands. By default, it is`binary`.
+
+    project-dir         [optional]
+                        Indicate the directory where the project is generated, which
+                        by default is the current command execution directory.
+)"

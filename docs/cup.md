@@ -2,7 +2,7 @@
 
 ## Commands
 
-The command line parameter format for Cup is`cup <subcommand> [args...]`, where`<subcommand>`is a subcommant and, `[args...]`is an optional parameter.
+The command line parameter format for Cup is`cup <subcommand> [args...]`, where`<subcommand>`is a subcommant and, `[args...]`is the optional parameters.
 Overview of sub commands:
 + `new`: Create a project.
 + `build`: Build the project.
@@ -19,7 +19,7 @@ The command format for this sub command is:
 
 Among them:
 + `project-name`Indicate the project name, which can only consist of uppercase and lowercase letters, numbers, and underscores.
-+ `project-type`Indicate the project type, which is used to indicate which builder plugin should be called when the project executes other commands. By default, it is`binary`
++ `project-type`Indicate the project type, which is used to indicate which builder plugin should be called when the project executes other commands. By default, it is`binary`.
 + `project-dir`Indicate the directory where the project is generated, which by default is the current command execution directory.
 
 ### `build`
@@ -35,7 +35,7 @@ The command format for this sub command is:
 +   `cup run [target] [-r|--release] [--dir <project-dir>]`
 
 Among them:
-+ `target`Indicate the target to be run, this option can be empty. How to interpret this option as defined by the implementation of the builder plugin.
++ `target`Indicate the target to be run, this option can be empty. The implementation of the builder plugin determines how this option is interpreted.
 + `-r|--release`Indicate the type of build, if this parameter is specified, the type of build is`release`. Otherwise, it is`debug`
 + `project-dir`Indicate the directory where the project is located, which by default is the current command execution directory.
 

@@ -60,7 +60,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
 {
     if(is_dependency)
         throw std::runtime_error("'binary' project cannot be a dependency.");
-    auto [name, _, current_dir, root_dir, _] = ctx;
+    auto [name, _1, current_dir, root_dir, _2] = ctx;
     auto project = current_dir;
     auto src = project / "src";
     auto include = project / "include";

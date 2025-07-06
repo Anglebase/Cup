@@ -1,0 +1,16 @@
+R"(Usage:
+    cup <subcommand> [args...]
+
+Description:
+    <subcommand> is a subcommant and, [args...] is the optional parameters.
+
+Commands:
+    new             Create a project.
+    build           Build the project.
+    run             Run the project.
+    clean           Clean up the construction intermediate files of the project.
+    install         Install the package.
+    uninstall       Uninstall the package.
+    list            List the specified information.
+    help            Display help information.
+)"

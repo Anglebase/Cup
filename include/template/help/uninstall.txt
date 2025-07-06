@@ -1,0 +1,11 @@
+R"(Usage:
+    cup uninstall <package-url> --version <package-version>
+
+Among them:
+    package-url         [required]
+                        Indicate the URL of the package to be uninstalled, allowing 
+                        the use of shorthand `@<user>/<repo>` for Github projects.
+
+    package-version     [required]
+                        Indicate the version of the package to be uninstalled.
+)"

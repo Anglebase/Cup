@@ -1,0 +1,14 @@
+R"(Usage:
+    cup install <package-url> [--version <package-version>]
+
+Among them:
+    package-url         [required]
+                        Indicate the URL of the package to be installed locally, 
+                        allowing the use of shorthand `@<user>/<repo>` for Github
+                        projects.
+
+    package-version     [optional]
+                        Indicate the version of the package to be installed, and
+                        if not specified, automatically obtain the latest version
+                        for installation.
+)"

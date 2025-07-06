@@ -1,0 +1,12 @@
+R"(Usage:
+    cup build [-r|--release] [--dir <project-dir>]
+
+Among them:
+    -r|--release        [optional]
+                        Indicate the type of build, if this parameter is specified, 
+                        the type of build is`release`. Otherwise, it is`debug`
+
+    project-dir         [optional]
+                        Indicate the directory where the project is located, which by
+                        default is the current command execution directory.
+)"
