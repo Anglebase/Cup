@@ -134,7 +134,7 @@ Version::Version(const cmd::Args &args) : SubCommand(args) {}
 
 int Version::run()
 {
-    std::cout << "Cup version " << _VER_X << "." << _VER_Y << "." << _VER_Z << std::endl;
+    std::cout << "Cup version v" << _VER_X << "." << _VER_Y << "." << _VER_Z << std::endl;
     return 0;
 }
 
@@ -350,7 +350,12 @@ int Build::run()
         if (target)
             cmake.target(*target);
         if (toml_config.build && toml_config.build->jobs)
-            cmake.jobs(*toml_config.build->jobs ? std::max((data::Integer)1, *toml_config.build->jobs) : std::thread::hardware_concurrency());
+            cmake.jobs(
+                std::max(
+                    (data::Integer)1,
+                    *toml_config.build->jobs
+                        ? *toml_config.build->jobs
+                        : std::thread::hardware_concurrency()));
 
         if (std::system(cmake.as_command().c_str()))
             throw std::runtime_error("Failed to build project.");

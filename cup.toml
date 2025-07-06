@@ -1,9 +1,12 @@
-name = "cup2"
-version = "0.1.0"
+[project]
+name = "cup"
+type = "binary"
+version = "2.0.0"
 
 [build]
-target = "binary"
 jobs = 0
+stdcxx = 20
+defines = ["_VER_X=2", "_VER_Y=0", "_VER_Z=0"]
 
 [dependencies]
-tomlpp = { git = "@Anglebase/tomlpp", version = "3.4.0" }
+tomlpp = { url = "@Anglebase/tomlpp", version = "3.4.0" }
