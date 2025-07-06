@@ -1,9 +1,7 @@
 #include "plugin/interface.h"
 
-class BinaryPlugin : public IPlugin
+class InterfacePlugin : public IPlugin
 {
-    void _get_source_files(const fs::path &dir, std::vector<fs::path> &files);
-
 public:
     std::string getName(std::optional<std::string> &except) const override;
     int run_new(const NewData &data, std::optional<std::string> &except) override;

@@ -1,0 +1,6 @@
+R"(#include <iostream>
+
+inline void ${%NAME%}(){
+    std::cout << "Call ${%NAME%}!" << std::endl;
+}
+)"

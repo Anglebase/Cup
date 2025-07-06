@@ -7,6 +7,7 @@
 #include "plugin/built-in/shared.h"
 #include "plugin/built-in/static.h"
 #include "plugin/built-in/module.h"
+#include "plugin/built-in/interface.h"
 #include "res.h"
 
 PluginLoader::PluginLoader(const std::string &type)
@@ -31,6 +32,11 @@ PluginLoader::PluginLoader(const std::string &type)
             "module",
             []
             { return new ModulePlugin(); },
+        },
+        {
+            "interface",
+            []
+            { return new InterfacePlugin(); },
         },
     };
     if (!built_in_plugins.contains(type))
