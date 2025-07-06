@@ -140,7 +140,7 @@ Among them:
 
 ## Plugins
 
-Cup determines which plugin to call based on the `project. type` field in the project configuration file. The plugin mechanism of Cup allows users to customize builder plugins, and Cup retrieves the `$HOME/.cup/plugins` directory and loads them when used. Cup has four built-in plugins: `binary`, `static`, `shared`, and `module`, which are used to generate executable programs, static libraries, dynamic libraries, and module libraries(plugins).
+Cup determines which plugin to call based on the `project. type` field in the project configuration file. The plugin mechanism of Cup allows users to customize builder plugins, and Cup retrieves the `$HOME/.cup/plugins` directory and loads them when used. Cup has five built-in plugins: `binary`, `static`, `shared`, `module` and `interface`, which are used to generate executable programs, static libraries, dynamic libraries, module libraries(plugins) and interface libraries(without source files) respectively.
 ### API
 
 The plugin must implement the following interfaces:
@@ -178,6 +178,22 @@ public:
     ///       cup calls this function to obtain the instance name of the build target in CMake, 
     ///       which is passed as the --target option parameter of the cmake command-line tool. 
     virtual std::optional<std::string> get_target(const RunProjectData &data) const = 0;
+    /// @brief Display the help information that comes with the plugin.
+    /// @param command The raw parameters parsed from the command line.
+    /// @return Exit code.
+    /// @note This function is called when the plugin is executed with the `cup help @@<plugin-name>` command.
+    ///       The plugin can implement its own help information display logic here.
+    virtual int show_help(const cmd::Args &command, std::optional<std::string> &except) const = 0;
+    /// @brief Execute the command specified in the command line.
+    /// @param command The raw parameters parsed from the command line.
+    /// @return Exit code.
+    /// @note This function is called when the plugin is executed with the `cup run @@<plugin-name>` command.
+    ///       The plugin can implement its own command execution logic here.
+    virtual int execute(const cmd::Args &command, std::optional<std::string> &except)
+    {
+        except = "This plugin does not support command execution.";
+        return -1;
+    };
 };
 
 // External exposed interfaces
