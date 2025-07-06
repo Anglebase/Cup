@@ -129,7 +129,7 @@ compile_commands = "compile_commands.json"
 name = { path = "path/to/package", version = "1.0.0", url="https://github.com/user/repo", features = ["feature1", "feature2"] }
 # Add dependencies
 # 
-Among them:
+# Among them:
 # The `name` indicates the name of the dependency item, which is interpreted by Cup as the name referenced in the `link_ibraries` of the build target in CMake
 # `path` indicates that the dependency item is a local project path
 # `version` indicates the version of the dependency item

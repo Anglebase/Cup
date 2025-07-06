@@ -21,11 +21,12 @@ The Cup itself only has one executable file, which can be downloaded directly fr
 
 ### Commands
 
-+ **`cup new <project-name> [--type <project-type>]`**: Create a new C++ project with the specified name and type. The `type` is the name of plugin, and by default it is `binary`. Cup has 4 built-in plugins:
++ **`cup new <project-name> [--type <project-type>]`**: Create a new C++ project with the specified name and type. The `type` is the name of plugin, and by default it is `binary`. Cup has 5 built-in plugins:
     + `binary`: A binary(executable file) project.
     + `static`: A static library project.
     + `shared`: A shared library project.
     + `module`: A module library project.
+    + `interface`: An interface library project.
 + **`cup build`**: Build the current project.
 + **`cup clean`**: Clean the current project.
 + **`cup install`**: Install a package to the local system.
