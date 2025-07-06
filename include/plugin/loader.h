@@ -1,6 +1,7 @@
 #pragma once
 
 #ifdef _WIN32
+#define NOMINMAX
 #include <Windows.h>
 using DLLPtr = HMODULE;
 #define DLL_LOAD(dll, path) (dll = LoadLibrary(path.c_str()))

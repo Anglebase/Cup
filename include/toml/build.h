@@ -17,6 +17,7 @@ namespace data
         std::optional<Integer> stdc;
         std::optional<Integer> stdcxx;
         std::optional<Export> export_data;
+        std::optional<Integer> jobs;
     };
 
     TOML_DESERIALIZE(Build, {
@@ -29,6 +30,7 @@ namespace data
         TOML_OPTIONS(link_options);
         TOML_OPTIONS(stdc);
         TOML_OPTIONS(stdcxx);
+        TOML_OPTIONS(jobs);
         options(table, "export", result.export_data, key);
     });
 }

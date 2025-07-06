@@ -3,6 +3,7 @@ version = "0.1.0"
 
 [build]
 target = "binary"
+jobs = 0
 
 [dependencies]
 tomlpp = { git = "@Anglebase/tomlpp", version = "3.4.0" }
