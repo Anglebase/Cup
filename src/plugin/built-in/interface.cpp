@@ -175,6 +175,13 @@ std::string InterfacePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependen
                 "EXAMPLE_OUT_DIR",
                 '"' + replace((Resource::bin(root_dir) / "examples").string()) + '"',
             },
+            {
+                "DEPENDS",
+                config.dependencies
+                    ? join(*config.dependencies, " ", [](const std::pair<std::string, data::Dependency> &d)
+                           { return d.first; })
+                    : "",
+            },
         },
     }
         .getContent();
