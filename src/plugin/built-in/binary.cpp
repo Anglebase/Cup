@@ -183,10 +183,10 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
                 "TEST_MAIN_FILES",
                 [&]
                 {
-                    if (!fs::exists(project / "test"))
+                    if (!fs::exists(project / "tests"))
                         return std::string();
                     std::vector<fs::path> files;
-                    for (const auto &entry : fs::directory_iterator(project / "test"))
+                    for (const auto &entry : fs::directory_iterator(project / "tests"))
                         if (entry.is_regular_file())
                             files.push_back(entry.path());
                     return join(files.begin(), files.end(), " ", [](const fs::path &p)

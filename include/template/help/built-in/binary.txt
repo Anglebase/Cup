@@ -8,7 +8,7 @@ It's directory structure is like:
         - bin
         + main.cpp
     - include
-    - test
+    - tests
     - cup.toml
 
 The `src` directory contains the source files of the project, 
@@ -23,7 +23,7 @@ All files in the `test` directory will be considered as main file of the project
 
 The `cup.toml` file is the configuration of the project.
 
-For `src/bin` and `test` directory, it does not recursively search for the main files within it.
+For `src/bin` and `tests` directory, it does not recursively search for the main files within it.
 
 Command behavior:
 The parameters accepted by the `run` command will be interpreted as the executable program to be executed:
@@ -31,7 +31,7 @@ The parameters accepted by the `run` command will be interpreted as the executab
   which is the program compiled from src/main.cpp.
 - If bin/... is specified, it will be interpreted as an executable program compiled from the source
   files in src/bin.
-- If test/... is specified, it will be interpreted as an executable program compiled from the source
-  files in test/.
+- If tests/... is specified, it will be interpreted as an executable program compiled from the source
+  files in tests/.
 - Otherwise, it will be considered an error.
 )"
