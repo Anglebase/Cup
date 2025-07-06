@@ -124,17 +124,17 @@ std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
         },
         {
             "SOURCES",
-            join(source_files.begin(), source_files.end(), " ", [](const fs::path &p)
+            join(source_files, " ", [](const fs::path &p)
                  { return '"' + replace(p.string()) + '"'; }),
         },
         {
             "DEFINES",
-            join(defines.begin(), defines.end(), " ", [](const std::string &s)
+            join(defines, " ", [](const std::string &s)
                  { return "-D" + s; }),
         },
         {
             "INCLUDE_DIRS",
-            join(include_dirs.begin(), include_dirs.end(), " ", [](const fs::path &p)
+            join(include_dirs, " ", [](const fs::path &p)
                  { return '"' + replace(p.string()) + '"'; }),
         },
         {
@@ -143,7 +143,7 @@ std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
         },
         {
             "LINK_DIRS",
-            join(link_dirs.begin(), link_dirs.end(), " ", [](const fs::path &p)
+            join(link_dirs, " ", [](const fs::path &p)
                  { return '"' + replace(p.string()) + '"'; }),
         },
         {
@@ -156,7 +156,7 @@ std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
         },
         {
             "EXAMPLE_MAINS",
-            join(example_mains.begin(), example_mains.end(), " ", [](const fs::path &p)
+            join(example_mains, " ", [](const fs::path &p)
                  { return '"' + replace(p.string()) + '"'; }),
         },
         {
@@ -170,7 +170,7 @@ std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
         {
             "EXAMPLE_INC",
             toml_config.examples && toml_config.examples->includes
-                ? join(toml_config.examples->includes->begin(), toml_config.examples->includes->end(), " ",
+                ? join(*toml_config.examples->includes, " ",
                        [](const fs::path &p)
                        { return '"' + replace(p.string()) + '"'; })
                 : "",
@@ -178,7 +178,7 @@ std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
         {
             "EXAMPLE_DEF",
             toml_config.examples && toml_config.examples->defines
-                ? join(toml_config.examples->defines->begin(), toml_config.examples->defines->end(), " ",
+                ? join(*toml_config.examples->defines, " ",
                        [](const std::string &p)
                        { return "-D" + p; })
                 : "",
