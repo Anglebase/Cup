@@ -1,4 +1,4 @@
-# Cup2
+# Cup
 
 **A powerful C++ project management and package management tool**
 
