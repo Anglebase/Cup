@@ -350,7 +350,7 @@ int Build::run()
         if (target)
             cmake.target(*target);
         if (toml_config.build && toml_config.build->jobs)
-            cmake.jobs(*toml_config.build->jobs ? std::max(1ll, *toml_config.build->jobs) : std::thread::hardware_concurrency());
+            cmake.jobs(*toml_config.build->jobs ? std::max((data::Integer)1, *toml_config.build->jobs) : std::thread::hardware_concurrency());
 
         if (std::system(cmake.as_command().c_str()))
             throw std::runtime_error("Failed to build project.");

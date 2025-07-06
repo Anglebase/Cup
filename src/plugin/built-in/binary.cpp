@@ -274,6 +274,7 @@ std::optional<std::string> BinaryPlugin::get_target(const RunProjectData &data, 
     {
         except = "Invalid target: " + target;
     }
+    return std::nullopt;
 }
 
 int BinaryPlugin::show_help(const cmd::Args &command, std::optional<std::string> &) const

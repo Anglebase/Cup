@@ -3,6 +3,7 @@
 #include <string>
 #include <filesystem>
 #include <unordered_map>
+#include <optional>
 #include "cmd/args.h"
 namespace fs = std::filesystem;
 #ifdef _DEBUG
