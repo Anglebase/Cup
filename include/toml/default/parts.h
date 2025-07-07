@@ -29,5 +29,5 @@ namespace data
 
     using Generator = Parts;
     using Test = Parts;
-    using Examples = Parts;
+    using Example = Parts;
 }

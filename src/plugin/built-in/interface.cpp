@@ -9,6 +9,32 @@
 #include "utils/utils.h"
 #include <fstream>
 
+std::vector<fs::path> InterfacePlugin::get_all_tests_main_files(const fs::path &root)
+{
+    if (!fs::exists(root / "tests"))
+        return {};
+    std::vector<fs::path> result;
+    for (const auto &entry : fs::directory_iterator(root / "tests"))
+    {
+        if (entry.is_regular_file())
+            result.push_back(entry.path());
+    }
+    return result;
+}
+
+std::vector<fs::path> InterfacePlugin::get_examples_main_files(const fs::path &root)
+{
+    if (!fs::exists(root / "examples"))
+        return {};
+    std::vector<fs::path> result;
+    for (const auto &entry : fs::directory_iterator(root / "examples"))
+    {
+        if (entry.is_regular_file())
+            result.push_back(entry.path());
+    }
+    return result;
+}
+
 std::string InterfacePlugin::getName(std::optional<std::string> &except) const
 {
     return "interface";
@@ -47,151 +73,166 @@ int InterfacePlugin::run_new(const NewData &data, std::optional<std::string> &ex
     return 0;
 }
 
+template <class T>
+std::unordered_map<std::string, std::string> gen_map(const std::string &prefix, const std::optional<T> &config)
+{
+    return {
+        {
+            prefix + "INCLUDE_DIRS",
+            config && config->includes
+                ? join(*config->includes, " ", [](const fs::path &p)
+                       { return '"' + replace(p.string()) + '"'; })
+                : "",
+        },
+        {
+            prefix + "LIB_DIRS",
+            config && config->link_dirs
+                ? join(*config->link_dirs, " ", [](const fs::path &p)
+                       { return '"' + replace(p.string()) + '"'; })
+                : "",
+        },
+        {
+            prefix + "LIBS",
+            config && config->link_libs ? join(*config->link_libs, " ") : "",
+        },
+        {
+            prefix + "DEFINES",
+            config && config->defines
+                ? join(*config->defines, " ", [](const std::string &s)
+                       { return "-D" + s; })
+                : "",
+        },
+        {
+            prefix + "COPTIONS",
+            config && config->compile_options ? join(*config->compile_options, " ") : "",
+        },
+        {
+            prefix + "LINKOPTIONS",
+            config && config->link_options ? join(*config->link_options, " ") : "",
+        },
+    };
+}
+
+inline std::string dealpath(const fs::path &p)
+{
+    return '"' + replace(p.string()) + '"';
+}
 std::string InterfacePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &except)
 {
     auto [name, _, current_dir, root_dir, features] = ctx;
     auto config = data::Deserializer<data::Interface>::deserialize(toml::parse_file((current_dir / "cup.toml").string()));
+
+    // Generator specific configuration items
+    std::vector<std::string> for_gen;
+    if (config.generator)
+    {
+        for (const auto &[gen, cfg] : *config.generator)
+        {
+            std::unordered_map<std::string, std::string> replacements = {{"GEN", '"' + gen + '"'}};
+            {
+                auto extend = gen_map("GEN_", std::optional(cfg));
+                replacements.insert(extend.begin(), extend.end());
+            }
+            {
+                auto extend = gen_map("GEN_DEBUG_", cfg.debug);
+                replacements.insert(extend.begin(), extend.end());
+            }
+            {
+                auto extend = gen_map("GEN_RELEASE_", cfg.release);
+                replacements.insert(extend.begin(), extend.end());
+            }
+            FileTemplate temp{
+#include "template/interface/gen.cmake"
+                ,
+                replacements};
+            for_gen.push_back(temp.getContent());
+        }
+    }
+    // Mode specific configuration items
+    std::vector<std::string> for_mode;
+    {
+        std::unordered_map<std::string, std::string> replacements;
+        {
+            auto extend = gen_map("MODE_", config.build ? config.build : std::nullopt);
+            replacements.insert(extend.begin(), extend.end());
+        }
+        {
+            auto extand = gen_map("MODE_DEBUG_", config.build ? config.build->debug : std::nullopt);
+            replacements.insert(extand.begin(), extand.end());
+        }
+        {
+            auto extand = gen_map("MODE_RELEASE_", config.build ? config.build->release : std::nullopt);
+            replacements.insert(extand.begin(), extand.end());
+        }
+        FileTemplate temp{
+#include "template/interface/mode.cmake"
+            ,
+            replacements};
+        for_mode.push_back(temp.getContent());
+    }
+    // Tests mode specific configuration items
+    std::vector<std::string> for_tests;
+    {
+        std::unordered_map<std::string, std::string> replacements;
+        {
+            auto extend = gen_map("TEST_", config.tests ? config.tests : std::nullopt);
+            replacements.insert(extend.begin(), extend.end());
+        }
+        {
+            auto extand = gen_map("TEST_DEBUG_", config.tests ? config.tests->debug : std::nullopt);
+            replacements.insert(extand.begin(), extand.end());
+        }
+        {
+            auto extand = gen_map("TEST_RELEASE_", config.tests ? config.tests->release : std::nullopt);
+            replacements.insert(extand.begin(), extand.end());
+        }
+        FileTemplate temp{
+#include "template/interface/tests.cmake"
+            ,
+            replacements};
+        for_tests.push_back(temp.getContent());
+    }
+    // Examples mode specific configuration items
+    std::vector<std::string> for_examples;
+    {
+        std::unordered_map<std::string, std::string> replacements;
+        {
+            auto extend = gen_map("EXAMPLE_", config.examples ? config.examples : std::nullopt);
+            replacements.insert(extend.begin(), extend.end());
+        }
+        {
+            auto extand = gen_map("EXAMPLE_DEBUG_", config.examples ? config.examples->debug : std::nullopt);
+            replacements.insert(extand.begin(), extand.end());
+        }
+        {
+            auto extand = gen_map("EXAMPLE_RELEASE_", config.examples ? config.examples->release : std::nullopt);
+            replacements.insert(extand.begin(), extand.end());
+        }
+        FileTemplate temp{
+#include "template/interface/examples.cmake"
+            ,
+            replacements};
+        for_examples.push_back(temp.getContent());
+    }
     return FileTemplate{
 #include "template/interface/interface.cmake"
-        ,
-        {
-            {
-                "EXPORT_NAME",
-                name,
-            },
-            {
-                "UNIQUE_SUFFIX",
-                name + '_' + replace(config.project.version, ".", "_"),
-            },
-            {
-                "INCLUDE_DIR",
-                [&]
-                {
-                    std::vector<fs::path> include_dirs{current_dir / "include"};
-                    if (config.build && config.build->includes)
-                        for (const auto &include : *config.build->includes)
-                            include_dirs.push_back(include);
-                    return join(include_dirs, " ", [](const fs::path &p)
-                                { return '"' + replace(p.string()) + '"'; });
-                }(),
-            },
-            {
-                "LINK_DIRS",
-                config.build && config.build->link_dirs
-                    ? join(*config.build->link_dirs, " ", [](const fs::path &p)
-                           { return '"' + replace(p.string()) + '"'; })
-                    : "",
-            },
-            {
-                "LINK_LIBS",
-                config.build && config.build->link_libs
-                    ? join(*config.build->link_libs, " ")
-                    : "",
-            },
-            {
-                "COPTIONS",
-                config.build && config.build->compile_options
-                    ? join(*config.build->compile_options, " ")
-                    : "",
-            },
-            {
-                "LOPTIONS",
-                config.build && config.build->link_options
-                    ? join(*config.build->link_options, " ")
-                    : "",
-            },
-            {
-                "DEFINES",
-                config.build && config.build->defines
-                    ? join(*config.build->defines, " ", [](const std::string &p)
-                           { return "-D" + p; })
-                    : "",
-            },
-            {
-                "IS_DEP",
-                is_dependency ? "ON" : "OFF",
-            },
-            {
-                "TEST_FILES",
-                [&]
-                {
-                    if (!fs::exists(current_dir / "tests"))
-                        return std::string();
-                    std::vector<fs::path> test_files;
-                    for (const auto &entry : fs::directory_iterator(current_dir / "tests"))
-                        if (entry.is_regular_file())
-                            test_files.push_back(entry.path());
-                    return join(test_files, " ", [](const fs::path &p)
-                                { return '"' + replace(p.string()) + '"'; });
-                }(),
-            },
-            {
-                "TEST_DEFINES",
-                config.tests && config.tests->defines
-                    ? join(*config.tests->defines, " ", [](const std::string &p)
-                           { return "-D" + p; })
-                    : "",
-            },
-            {
-                "TEST_INCLUDE",
-                config.tests && config.tests->includes
-                    ? join(*config.tests->includes, " ", [](const fs::path &p)
-                           { return '"' + replace(p.string()) + '"'; })
-                    : "",
-            },
-            {
-                "EXAMPLE_FILES",
-                [&]
-                {
-                    if (!fs::exists(current_dir / "examples"))
-                        return std::string();
-                    std::vector<fs::path> test_files;
-                    for (const auto &entry : fs::directory_iterator(current_dir / "examples"))
-                        if (entry.is_regular_file())
-                            test_files.push_back(entry.path());
-                    return join(test_files, " ", [](const fs::path &p)
-                                { return '"' + replace(p.string()) + '"'; });
-                }(),
-            },
-            {
-                "EXAMPLE_DEFINES",
-                config.examples && config.examples->defines
-                    ? join(*config.examples->defines, " ", [](const std::string &p)
-                           { return "-D" + p; })
-                    : "",
-            },
-            {
-                "EXAMPLE_INCLUDE",
-                config.examples && config.examples->includes
-                    ? join(*config.examples->includes, " ", [](const fs::path &p)
-                           { return '"' + replace(p.string()) + '"'; })
-                    : "",
-            },
-            {
-                "TEST_OUT_DIR",
-                '"' + replace((Resource::bin(root_dir) / "tests").string()) + '"',
-            },
-            {
-                "EXAMPLE_OUT_DIR",
-                '"' + replace((Resource::bin(root_dir) / "examples").string()) + '"',
-            },
-            {
-                "DEPENDS",
-                config.dependencies
-                    ? join(*config.dependencies, " ", [](const std::pair<std::string, data::Dependency> &d)
-                           { return d.first; })
-                    : "",
-            },
-            {
-                "STDC",
-                config.build && config.build->stdc ? std::to_string(*config.build->stdc) : "",
-            },
-            {
-                "STDCPP",
-                config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : "",
-            },
-        },
-    }
+        , {
+              {"FOR_GEN", join(for_gen, "\n")},
+              {"FOR_MODE", join(for_mode, "\n")},
+              {"FOR_TESTS", join(for_tests, "\n")},
+              {"FOR_EXAMPLES", join(for_examples, "\n")},
+              {"EXPORT_NAME", name},
+              {"IS_DEP", is_dependency ? "ON" : "OFF"},
+              {"DEPS", config.dependencies ? join(*config.dependencies, " ", [](const std::pair<std::string, data::Dependency> &p)
+                                                  { return p.first; })
+                                           : ""},
+              {"UNIQUE", name + "_" + replace(config.project.version, ".", "_")},
+              {"TEST_MAIN_FILES", join(this->get_all_tests_main_files(root_dir), " ", dealpath)},
+              {"TEST_OUT_DIR", dealpath(Resource::bin(root_dir) / "tests")},
+              {"EXAMPLE_MAIN_FILES", join(this->get_examples_main_files(root_dir), " ", dealpath)},
+              {"EXAMPLE_OUT_DIR", dealpath(Resource::bin(root_dir) / "examples")},
+              {"INC", dealpath(current_dir / "include")},
+          }}
         .getContent();
 }
 
@@ -225,15 +266,15 @@ std::optional<std::string> InterfacePlugin::get_target(const RunProjectData &dat
     auto unique_suffix = name + '_' + replace(config.project.version, ".", "_");
     if (command->starts_with("tests/"))
     {
-        auto str = command->substr(5);
+        auto str = command->substr(6);
         auto filename = split(fs::path(str).filename().string(), ".")[0];
-        return "test_" + name + "_" + filename + "_" + unique_suffix;
+        return "test_" + filename + "_" + unique_suffix;
     }
     else if (command->starts_with("examples/"))
     {
-        auto str = command->substr(8);
+        auto str = command->substr(9);
         auto filename = split(fs::path(str).filename().string(), ".")[0];
-        return "example_" + name + "_" + filename + "_" + unique_suffix;
+        return "example_" + filename + "_" + unique_suffix;
     }
     else
     {

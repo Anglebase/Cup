@@ -2,6 +2,8 @@
 
 class InterfacePlugin : public IPlugin
 {
+    std::vector<fs::path> get_all_tests_main_files(const fs::path &root);
+    std::vector<fs::path> get_examples_main_files(const fs::path &root);
 public:
     std::string getName(std::optional<std::string> &except) const override;
     int run_new(const NewData &data, std::optional<std::string> &except) override;
