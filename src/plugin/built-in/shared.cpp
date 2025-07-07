@@ -262,7 +262,8 @@ std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
            {"TEST_OUT_DIR", dealpath(Resource::bin(root_dir) / "tests")},
            {"EXAMPLE_MAIN_FILES", join(this->get_example_mains(root_dir), " ", dealpath)},
            {"EXAMPLE_OUT_DIR", dealpath(Resource::bin(root_dir) / "examples")},
-           {"INC", dealpath(current_dir / "include") + " " + dealpath(current_dir / "export")},
+           {"INC", dealpath(current_dir / "include")},
+           {"EXPORT_INC", dealpath(current_dir / "export")},
            {"SOURCES", join(this->get_source_files(root_dir), " ", dealpath)}}}
         .getContent();
 }
