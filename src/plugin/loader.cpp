@@ -41,7 +41,7 @@ PluginLoader::PluginLoader(const std::string &type)
     };
     if (!built_in_plugins.contains(type))
     {
-        auto path = (Resource::home() / "plugins" /
+        auto path = (Resource::cup() / "plugins" /
                      (type +
 #ifdef _WIN32
                       ".dll"
@@ -50,12 +50,20 @@ PluginLoader::PluginLoader(const std::string &type)
 #endif
                       ))
                         .lexically_normal();
-        if (!fs::exists(path))
-            throw std::runtime_error("Plugin '" + type + "' not installed.");
-        if (!DLL_LOAD(this->dll, path.string()))
-            throw std::runtime_error("Plugin '" + type + "' failed to load.");
-        if (!DLL_GET_FUNC(this->dll, createPlugin) || !DLL_GET_FUNC(this->dll, destroyPlugin))
-            throw std::runtime_error("Plugin '" + type + "' not a valid plugin.");
+        try
+        {
+            if (!fs::exists(path))
+                throw std::runtime_error("Plugin '" + type + "' not installed.");
+            if (!DLL_LOAD(this->dll, path.string()))
+                throw std::runtime_error("Plugin '" + type + "' failed to load.");
+            if (!DLL_GET_FUNC(this->dll, createPlugin) || !DLL_GET_FUNC(this->dll, destroyPlugin))
+                throw std::runtime_error("Plugin '" + type + "' not a valid plugin.");
+        }
+        catch (const std::exception &e)
+        {
+            DLL_UNLOAD(this->dll);
+            throw e;
+        }
         this->plugin = this->createPlugin();
     }
     else

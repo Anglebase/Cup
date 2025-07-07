@@ -104,15 +104,22 @@ int main(int argc, char **argv)
             return 1;
         }
     }
-    else if (args.getPositions()[0].starts_with("@"))
+    else if (args.getPositions()[0].starts_with("/"))
     {
-        auto plugin_name = args.getPositions()[0].substr(1);
-        auto plugin = PluginLoader(plugin_name);
-        std::optional<std::string> error;
-        auto ret = plugin->execute(args, error);
-        if (error)
-            LOG_ERROR(*error);
-        return ret;
+        try
+        {
+            auto plugin_name = args.getPositions()[0].substr(1);
+            auto plugin = PluginLoader(plugin_name);
+            std::optional<std::string> error;
+            auto ret = plugin->execute(args, error);
+            if (error)
+                throw std::runtime_error(*error);
+            return ret;
+        }
+        catch (const exception &e)
+        {
+            LOG_ERROR(e.what());
+        }
     }
     else
     {

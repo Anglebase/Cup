@@ -20,11 +20,11 @@ using DLLPtr = void *;
 class PluginLoader
 {
     using CreatePluginFunc = IPlugin *(*)();
-    using DestoryPluginFunc = void (*)(IPlugin *);
+    using DestroyPluginFunc = void (*)(IPlugin *);
     DLLPtr dll{nullptr};
     IPlugin *plugin{nullptr};
     CreatePluginFunc createPlugin{nullptr};
-    DestoryPluginFunc destroyPlugin{nullptr};
+    DestroyPluginFunc destroyPlugin{nullptr};
 
 public:
     PluginLoader(const std::string &type);
