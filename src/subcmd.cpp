@@ -116,7 +116,7 @@ int Help::run()
 {
     if (Help::help_info.contains(this->key))
         std::cout << Help::help_info.at(this->key) << std::endl;
-    else if (this->key.starts_with("@"))
+    else if (this->key.starts_with("/"))
     {
         auto plugin_name = this->key.substr(1);
         auto plugin = PluginLoader(plugin_name);
