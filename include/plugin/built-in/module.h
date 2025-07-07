@@ -2,6 +2,9 @@
 
 class ModulePlugin : public IPlugin
 {
+    void _get_all_source_files(const fs::path &root, std::vector<fs::path> &src_files);
+    std::vector<fs::path> get_all_source_files(const fs::path &root);
+    std::vector<fs::path> get_test_main_files(const fs::path &root);
 public:
     std::string getName(std::optional<std::string> &except) const override;
     int run_new(const NewData &data, std::optional<std::string> &except) override;

@@ -5,6 +5,7 @@
 #include "toml/build.h"
 #include "toml/dependency.h"
 #include "toml/default/part.h"
+#include "toml/default/parts.h"
 #include <map>
 
 namespace data
@@ -14,7 +15,8 @@ namespace data
         Project project;
         std::optional<Build> build;
         std::optional<std::map<std::string, Dependency>> dependencies;
-        std::optional<Part> tests;
+        std::optional<Test> tests;
+        std::optional<Table<Generator>> generator;
     };
 
     TOML_DESERIALIZE(Module, {
@@ -22,5 +24,6 @@ namespace data
         TOML_OPTIONS(build);
         TOML_OPTIONS(dependencies);
         TOML_OPTIONS(tests);
+        TOML_OPTIONS(generator);
     });
 }

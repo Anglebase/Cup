@@ -1,85 +1,52 @@
-R"( #"
-set(OUT_NAME ${%OUT_NAME%})
+R"(#"
+
 set(SOURCES ${%SOURCES%})
-set(INCLUDE_DIR ${%INCLUDE_DIR%})
-set(DEPENDS ${%DEPENDS%})
-set(DEFINES ${%DEFINES%})
-set(COPTIONS ${%COPTIONS%})
-set(LOPTIONS ${%LOPTIONS%})
-set(LINK_DIRS ${%LINK_DIRS%})
-set(LINK_LIBS ${%LINK_LIBS%})
-set(TEST_FILES ${%TEST_FILES%})
-set(TEST_OUTDIR ${%TEST_OUTDIR%})
-set(TEST_DEFINES ${%TEST_DEFINES%})
-set(TEST_INCLUDES ${%TEST_INCLUDES%})
+set(OUT_NAME ${%OUT_NAME%})
 set(OUT_DIR ${%OUT_DIR%})
-set(UNIQUE_SUFFIX ${%UNIQUE_SUFFIX%})
-set(STDC ${%STDC%})
-set(STDCXX ${%STDCXX%})
+set(UNIQUE ${%UNIQUE%})
+set(TEST_MAIN_FILES ${%TEST_MAIN_FILES%})
+set(TEST_OUT_DIR ${%TEST_OUT_DIR%})
+set(DEPS ${%DEPS%})
+set(INC ${%INC%})
 
-add_library(${OUT_NAME} MODULE ${SOURCES})
-target_include_directories(${OUT_NAME} PRIVATE ${INCLUDE_DIR})
-target_compile_definitions(${OUT_NAME} PRIVATE ${DEFINES})
-target_compile_options(${OUT_NAME} PRIVATE ${COPTIONS})
-target_link_directories(${OUT_NAME} PRIVATE ${LINK_DIRS})
-target_link_libraries(${OUT_NAME} PRIVATE ${LINK_LIBS} ${DEPENDS})
-target_link_options(${OUT_NAME} PRIVATE ${LOPTIONS})
-set_target_properties(${OUT_NAME} PROPERTIES
-    PREFIX ""
+${%FOR_GEN%}
+${%FOR_MODE%}
+${%FOR_TEST%}
+
+set(INCLUDE_DIRS ${M_INCLUDE_DIRS} ${MODE_INCLUDE_DIRS} ${GEN_INCLUDE_DIRS} ${GEN_MODE_INCLUDE_DIRS} ${INC})
+set(LIB_DIRS ${M_LIB_DIRS} ${MODE_LIB_DIRS} ${GEN_LIB_DIRS} ${GEN_MODE_LIB_DIRS})
+set(LIBS ${M_LIBS} ${MODE_LIBS} ${GEN_LIBS} ${GEN_MODE_LIBS} ${DEPS})
+set(DEFINES ${M_DEFINES} ${MODE_DEFINES} ${GEN_DEFINES} ${GEN_MODE_DEFINES})
+set(COPTIONS ${M_COPTIONS} ${MODE_COPTIONS} ${GEN_COPTIONS} ${GEN_MODE_COPTIONS})
+set(LINKOPTIONS ${M_LINKOPTIONS} ${MODE_LINKOPTIONS} ${GEN_LINKOPTIONS} ${GEN_MODE_LINKOPTIONS})
+set(UNIQUE_NAME "${OUT_NAME}_${UNIQUE}")
+
+add_library(${UNIQUE_NAME} MODULE ${SOURCES})
+target_include_directories(${UNIQUE_NAME} PRIVATE ${INCLUDE_DIRS})
+target_link_directories(${UNIQUE_NAME} PRIVATE ${LIB_DIRS})
+target_link_libraries(${UNIQUE_NAME} PRIVATE ${LIBS})
+target_compile_definitions(${UNIQUE_NAME} PRIVATE ${DEFINES})
+target_compile_options(${UNIQUE_NAME} PRIVATE ${COPTIONS})
+target_link_options(${UNIQUE_NAME} PRIVATE ${LINKOPTIONS})
+set_target_properties(${UNIQUE_NAME} PROPERTIES
     OUTPUT_NAME ${OUT_NAME}
-    LIBRARY_OUTPUT_DIRECTORY ${OUT_DIR})
-if(${STDC})
-    set_target_properties(${OUT_NAME} PROPERTIES
-        C_STANDARD ${STDC}
-        C_STANDARD_REQUIRED ON)
-endif(${STDC})
-if(${STDCXX})
-    set_target_properties(${OUT_NAME} PROPERTIES
-        CXX_STANDARD ${STDCXX}
-        CXX_STANDARD_REQUIRED ON)
-endif(${STDCXX})
+    PREFIX ""
+    RUNTIME_OUTPUT_DIRECTORY ${OUT_DIR})
 
-foreach(TEST_FILE ${TEST_FILES})
-    get_filename_component(FILE_NAME ${TEST_FILE} NAME_WLE)
-    set(UNIQUE_NAME "test_${FILE_NAME}_${UNIQUE_SUFFIX}")
-    add_executable(${UNIQUE_NAME} ${TEST_FILE} ${SOURCES})
-    target_include_directories(${UNIQUE_NAME} PRIVATE ${INCLUDE_DIR})
-    target_compile_definitions(${UNIQUE_NAME} PRIVATE ${DEFINES})
-    target_compile_options(${UNIQUE_NAME} PRIVATE ${COPTIONS})
-    target_link_directories(${UNIQUE_NAME} PRIVATE ${LINK_DIRS})
-    target_link_libraries(${UNIQUE_NAME} PRIVATE ${LINK_LIBS} ${DEPENDS})
-    target_link_options(${UNIQUE_NAME} PRIVATE ${LOPTIONS})
-    target_compile_definitions(${UNIQUE_NAME} PRIVATE ${TEST_DEFINES})
-    target_include_directories(${UNIQUE_NAME} PRIVATE ${TEST_INCLUDES})
-    set_tests_properties(${UNIQUE_NAME} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY ${TEST_OUTDIR}
-        OUTPUT_NAME ${FILE_NAME})
-    if(${STDC})
-        set_target_properties(${UNIQUE_NAME} PROPERTIES
-            C_STANDARD ${STDC}
-            C_STANDARD_REQUIRED ON)
-    endif(${STDC})
-    if(${STDCXX})
-        set_target_properties(${UNIQUE_NAME} PROPERTIES
-            CXX_STANDARD ${STDCXX}
-            CXX_STANDARD_REQUIRED ON)
-    endif(${STDCXX})
-    unset(UNIQUE_NAME)
-endforeach(TEST_FILE ${TEST_FILES})
+foreach(TEST_MAIN_FILE ${TEST_MAIN_FILES})
+    get_filename_component(TEST_NAME ${TEST_MAIN_FILE} NAME_WLE)
+    set(TEST_UNIQUE_NAME "test_${TEST_NAME}_${UNIQUE}")
+    add_executable(${TEST_UNIQUE_NAME} ${SOURCES} ${TEST_MAIN_FILE})
+    target_include_directories(${TEST_UNIQUE_NAME} PRIVATE ${INCLUDE_DIRS} ${TEST_INCLUDE_DIRS} ${TEST_MODE_INCLUDE_DIRS})
+    target_link_directories(${TEST_UNIQUE_NAME} PRIVATE ${LIB_DIRS} ${TEST_LIB_DIRS} ${TEST_MODE_LIB_DIRS})
+    target_link_libraries(${TEST_UNIQUE_NAME} PRIVATE ${LIBS} ${TEST_LIBS} ${TEST_MODE_LIBS})
+    target_compile_definitions(${TEST_UNIQUE_NAME} PRIVATE ${DEFINES} ${TEST_DEFINES} ${TEST_MODE_DEFINES})
+    target_compile_options(${TEST_UNIQUE_NAME} PRIVATE ${COPTIONS} ${TEST_COPTIONS} ${TEST_MODE_COPTIONS})
+    target_link_options(${TEST_UNIQUE_NAME} PRIVATE ${LINKOPTIONS} ${TEST_LINKOPTIONS} ${TEST_MODE_LINKOPTIONS})
+    set_target_properties(${TEST_UNIQUE_NAME} PROPERTIES
+        OUTPUT_NAME ${TEST_NAME}
+        PREFIX ""
+        RUNTIME_OUTPUT_DIRECTORY ${TEST_OUT_DIR})
+endforeach(TEST_MAIN_FILE ${TEST_MAIN_FILES})
 
-unset(OUT_NAME)
-unset(SOURCES)
-unset(INCLUDE_DIR)
-unset(DEPENDS)
-unset(DEFINES)
-unset(COPTIONS)
-unset(LOPTIONS)
-unset(LINK_DIRS)
-unset(LINK_LIBS)
-unset(TEST_FILES)
-unset(TEST_OUTDIR)
-unset(TEST_DEFINES)
-unset(TEST_INCLUDES)
-unset(OUT_DIR)
-unset(UNIQUE_SUFFIX)
-# )"
+#)"
