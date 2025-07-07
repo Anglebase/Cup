@@ -9,6 +9,8 @@ set(TEST_OUT_DIR ${%TEST_OUT_DIR%})
 set(EXAMPLE_MAIN_FILES ${%EXAMPLE_MAIN_FILES%})
 set(EXAMPLE_OUT_DIR ${%EXAMPLE_OUT_DIR%})
 set(INC ${%INC%})
+set(STDC ${%STDC%})
+set(STDCXX ${%STDCXX%})
 
 ${%FOR_GEN%}
 ${%FOR_MODE%}
@@ -29,6 +31,16 @@ target_link_libraries(${EXPORT_NAME} INTERFACE ${LIBS})
 target_compile_definitions(${EXPORT_NAME} INTERFACE ${DEFINES})
 target_compile_options(${EXPORT_NAME} INTERFACE ${COPTIONS})
 target_link_options(${EXPORT_NAME} INTERFACE ${LINKOPTIONS})
+if(${STDC})
+set_target_properties(${EXPORT_NAME} PROPERTIES
+    C_STANDARD ${STDC}
+    C_STANDARD_REQUIRED ON)
+endif()
+if(${STDCXX})
+set_target_properties(${EXPORT_NAME} PROPERTIES
+    CXX_STANDARD ${STDCXX}
+    CXX_STANDARD_REQUIRED ON)
+endif()
 
 if(NOT ${IS_DEP})
     foreach(TEST_MAIN_FILE ${TEST_MAIN_FILES})
@@ -44,6 +56,16 @@ if(NOT ${IS_DEP})
         set_target_properties(${UNIQUE_NAME} PROPERTIES
             OUTPUT_NAME ${TEST_NAME}
             RUNTIME_OUTPUT_DIRECTORY ${TEST_OUT_DIR})
+        if(${STDC})
+        set_target_properties(${UNIQUE_NAME} PROPERTIES
+            C_STANDARD ${STDC}
+            C_STANDARD_REQUIRED ON)
+        endif()
+        if(${STDCXX})
+        set_target_properties(${UNIQUE_NAME} PROPERTIES
+            CXX_STANDARD ${STDCXX}
+            CXX_STANDARD_REQUIRED ON)
+        endif()
     endforeach(TEST_MAIN_FILE ${TEST_MAIN_FILES})
     
     foreach(EXAMPLE_MAIN_FILE ${EXAMPLE_MAIN_FILES})
@@ -59,6 +81,16 @@ if(NOT ${IS_DEP})
         set_target_properties(${UNIQUE_NAME} PROPERTIES
             OUTPUT_NAME ${EXAMPLE_NAME}
             RUNTIME_OUTPUT_DIRECTORY ${EXAMPLE_OUT_DIR})
+        if(${STDC})
+        set_target_properties(${UNIQUE_NAME} PROPERTIES
+            C_STANDARD ${STDC}
+            C_STANDARD_REQUIRED ON)
+        endif()
+        if(${STDCXX})
+        set_target_properties(${UNIQUE_NAME} PROPERTIES
+            CXX_STANDARD ${STDCXX}
+            CXX_STANDARD_REQUIRED ON)
+        endif()
     endforeach(EXAMPLE_MAIN_FILE ${EXAMPLE_MAIN_FILES})
 endif()
 #)"

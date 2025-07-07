@@ -254,17 +254,29 @@ std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
     }
     return FileTemplate{
 #include "template/shared/shared.cmake"
-        , {{"FOR_GEN", join(for_gen, "\n")}, {"FOR_MODE", join(for_mode, "\n")}, {"FOR_TESTS", join(for_tests, "\n")}, {"FOR_EXAMPLES", join(for_examples, "\n")}, {"EXPORT_NAME", name}, {"IS_DEP", is_dependency ? "ON" : "OFF"}, {"DEPS", config.dependencies ? join(*config.dependencies, " ", [](const std::pair<std::string, data::Dependency> &p)
-                                                                                                                                                                                                                                                                        { return p.first; })
-                                                                                                                                                                                                                                                                 : ""},
-           {"UNIQUE", name + "_" + replace(config.project.version, ".", "_")},
-           {"TEST_MAIN_FILES", join(this->get_test_mains(root_dir), " ", dealpath)},
-           {"TEST_OUT_DIR", dealpath(Resource::bin(root_dir) / "tests")},
-           {"EXAMPLE_MAIN_FILES", join(this->get_example_mains(root_dir), " ", dealpath)},
-           {"EXAMPLE_OUT_DIR", dealpath(Resource::bin(root_dir) / "examples")},
-           {"INC", dealpath(current_dir / "include")},
-           {"EXPORT_INC", dealpath(current_dir / "export")},
-           {"SOURCES", join(this->get_source_files(root_dir), " ", dealpath)}}}
+        ,
+        {
+            {"FOR_GEN", join(for_gen, "\n")},
+            {"FOR_MODE", join(for_mode, "\n")},
+            {"FOR_TESTS", join(for_tests, "\n")},
+            {"FOR_EXAMPLES", join(for_examples, "\n")},
+            {"EXPORT_NAME", name},
+            {"IS_DEP", is_dependency ? "ON" : "OFF"},
+            {"DEPS", config.dependencies ? join(*config.dependencies, " ", [](const std::pair<std::string, data::Dependency> &p)
+                                                { return p.first; })
+                                         : ""},
+            {"UNIQUE", name + "_" + replace(config.project.version, ".", "_")},
+            {"TEST_MAIN_FILES", join(this->get_test_mains(root_dir), " ", dealpath)},
+            {"TEST_OUT_DIR", dealpath(Resource::bin(root_dir) / "tests")},
+            {"EXAMPLE_MAIN_FILES", join(this->get_example_mains(root_dir), " ", dealpath)},
+            {"EXAMPLE_OUT_DIR", dealpath(Resource::bin(root_dir) / "examples")},
+            {"INC", dealpath(current_dir / "include")},
+            {"EXPORT_INC", dealpath(current_dir / "export")},
+            {"SOURCES", join(this->get_source_files(root_dir), " ", dealpath)},
+            {"STDC", config.build && config.build->stdc ? std::to_string(*config.build->stdc) : ""},
+            {"STDCXX", config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : ""},
+        },
+    }
         .getContent();
 }
 

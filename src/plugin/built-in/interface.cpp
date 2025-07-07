@@ -216,23 +216,27 @@ std::string InterfacePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependen
     }
     return FileTemplate{
 #include "template/interface/interface.cmake"
-        , {
-              {"FOR_GEN", join(for_gen, "\n")},
-              {"FOR_MODE", join(for_mode, "\n")},
-              {"FOR_TESTS", join(for_tests, "\n")},
-              {"FOR_EXAMPLES", join(for_examples, "\n")},
-              {"EXPORT_NAME", name},
-              {"IS_DEP", is_dependency ? "ON" : "OFF"},
-              {"DEPS", config.dependencies ? join(*config.dependencies, " ", [](const std::pair<std::string, data::Dependency> &p)
-                                                  { return p.first; })
-                                           : ""},
-              {"UNIQUE", name + "_" + replace(config.project.version, ".", "_")},
-              {"TEST_MAIN_FILES", join(this->get_all_tests_main_files(root_dir), " ", dealpath)},
-              {"TEST_OUT_DIR", dealpath(Resource::bin(root_dir) / "tests")},
-              {"EXAMPLE_MAIN_FILES", join(this->get_examples_main_files(root_dir), " ", dealpath)},
-              {"EXAMPLE_OUT_DIR", dealpath(Resource::bin(root_dir) / "examples")},
-              {"INC", dealpath(current_dir / "include")},
-          }}
+        ,
+        {
+            {"FOR_GEN", join(for_gen, "\n")},
+            {"FOR_MODE", join(for_mode, "\n")},
+            {"FOR_TESTS", join(for_tests, "\n")},
+            {"FOR_EXAMPLES", join(for_examples, "\n")},
+            {"EXPORT_NAME", name},
+            {"IS_DEP", is_dependency ? "ON" : "OFF"},
+            {"DEPS", config.dependencies ? join(*config.dependencies, " ", [](const std::pair<std::string, data::Dependency> &p)
+                                                { return p.first; })
+                                         : ""},
+            {"UNIQUE", name + "_" + replace(config.project.version, ".", "_")},
+            {"TEST_MAIN_FILES", join(this->get_all_tests_main_files(root_dir), " ", dealpath)},
+            {"TEST_OUT_DIR", dealpath(Resource::bin(root_dir) / "tests")},
+            {"EXAMPLE_MAIN_FILES", join(this->get_examples_main_files(root_dir), " ", dealpath)},
+            {"EXAMPLE_OUT_DIR", dealpath(Resource::bin(root_dir) / "examples")},
+            {"INC", dealpath(current_dir / "include")},
+            {"STDC", config.build && config.build->stdc ? std::to_string(*config.build->stdc) : ""},
+            {"STDCXX", config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : ""},
+        },
+    }
         .getContent();
 }
 

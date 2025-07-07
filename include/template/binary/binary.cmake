@@ -10,6 +10,8 @@ set(TEST_MAIN_FILES ${%TEST_MAIN_FILES%})
 set(TEST_OUT_DIR ${%TEST_OUT_DIR%})
 set(DEPS ${%DEPS%})
 set(INC ${%INC%})
+set(STDC ${%STDC%})
+set(STDCXX ${%STDCXX%})
 
 ${%FOR_GEN%}
 ${%FOR_MODE%}
@@ -34,6 +36,16 @@ set_target_properties(${UNIQUE_NAME} PROPERTIES
     OUTPUT_NAME ${OUT_NAME}
     PREFIX ""
     RUNTIME_OUTPUT_DIRECTORY ${OUT_DIR})
+if(${STDC})
+set_target_properties(${UNIQUE_NAME} PROPERTIES
+    C_STANDARD ${STDC}
+    C_STANDARD_REQUIRED ON)
+endif()
+if(${STDCXX})
+set_target_properties(${UNIQUE_NAME} PROPERTIES
+    CXX_STANDARD ${STDCXX}
+    CXX_STANDARD_REQUIRED ON)
+endif()
 
 foreach(TEST_MAIN_FILE ${TEST_MAIN_FILES})
     get_filename_component(TEST_NAME ${TEST_MAIN_FILE} NAME_WLE)
@@ -49,6 +61,16 @@ foreach(TEST_MAIN_FILE ${TEST_MAIN_FILES})
         OUTPUT_NAME ${TEST_NAME}
         PREFIX ""
         RUNTIME_OUTPUT_DIRECTORY ${TEST_OUT_DIR})
+    if(${STDC})
+    set_target_properties(${TEST_UNIQUE_NAME} PROPERTIES
+        C_STANDARD ${STDC}
+        C_STANDARD_REQUIRED ON)
+    endif()
+    if(${STDCXX})
+    set_target_properties(${TEST_UNIQUE_NAME} PROPERTIES
+        CXX_STANDARD ${STDCXX}
+        CXX_STANDARD_REQUIRED ON)
+    endif()
 endforeach(TEST_MAIN_FILE ${TEST_MAIN_FILES})
 
 #)"

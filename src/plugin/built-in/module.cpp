@@ -229,7 +229,10 @@ std::string ModulePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
                         { return d.first; })
                  : ""},
             {"INC", dealpath(current_dir / "include")},
-        }}
+            {"STDC", config.build && config.build->stdc ? std::to_string(*config.build->stdc) : ""},
+            {"STDCXX", config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : ""},
+        },
+    }
         .getContent();
 }
 
