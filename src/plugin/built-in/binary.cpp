@@ -251,6 +251,11 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             {"UNIQUE", name + "_" + replace(config.project.version, ".", "_")},
             {"TEST_MAIN_FILES", join(this->get_tests_main_files(current_dir), " ", dealpath)},
             {"TEST_OUT_DIR", dealpath(Resource::bin(root_dir) / "tests")},
+            {"DEPS",
+             config.dependencies
+                 ? join(*config.dependencies, " ", [](const std::pair<std::string, data::Dependency> &d)
+                        { return d.first; })
+                 : ""},
         }}
         .getContent();
 }
