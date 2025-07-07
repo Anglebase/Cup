@@ -300,13 +300,13 @@ int Build::run()
         if (this->is_release)
         {
             ofs <<
-#include "template/release.cmake.txt"
+#include "template/release.cmake"
                 << std::endl;
         }
         else
         {
             ofs <<
-#include "template/debug.cmake.txt"
+#include "template/debug.cmake"
                 << std::endl;
         }
         for (const auto &content : cmake_content)

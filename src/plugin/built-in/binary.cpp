@@ -16,9 +16,68 @@ void BinaryPlugin::_get_source_files(const fs::path &dir, std::vector<fs::path> 
     {
         if (entry.is_directory() && entry.path().stem() != "bin")
             this->_get_source_files(entry.path(), files);
-        else if (entry.is_regular_file())
+        else if (entry.is_regular_file() && entry.path().stem() != "main")
             files.push_back(entry.path());
     }
+}
+
+std::vector<fs::path> BinaryPlugin::get_source_files(const fs::path &root)
+{
+    std::vector<fs::path> source_files;
+    if (!fs::exists(root / "src"))
+        throw std::runtime_error("Cannot find required directory 'src' in project root directory.");
+    this->_get_source_files(root / "src", source_files);
+    return source_files;
+}
+
+fs::path BinaryPlugin::get_main_file(const fs::path &root)
+{
+    if (!fs::exists(root / "src"))
+        throw std::runtime_error("Cannot find required directory 'src' in project root directory.");
+    auto src = root / "src";
+    std::optional<fs::path> main_file;
+    for (const auto &entry : fs::directory_iterator(src))
+    {
+        if (entry.is_regular_file() && entry.path().stem() == "main")
+        {
+            main_file = entry.path();
+            break;
+        }
+    }
+    if (!main_file)
+        throw std::runtime_error("Cannot find required file 'main' in 'src' directory.");
+    return *main_file;
+}
+
+std::vector<fs::path> BinaryPlugin::get_bin_main_files(const fs::path &root)
+{
+    if (!fs::exists(root / "src" / "bin"))
+        return std::vector<fs::path>();
+    std::vector<fs::path> bin_main_files;
+    for (const auto &entry : fs::directory_iterator(root / "src" / "bin"))
+    {
+        if (entry.is_regular_file())
+            bin_main_files.push_back(entry.path());
+    }
+    return bin_main_files;
+}
+
+std::vector<fs::path> BinaryPlugin::get_tests_main_files(const fs::path &root)
+{
+    if (!fs::exists(root / "tests"))
+        return std::vector<fs::path>();
+    std::vector<fs::path> tests_main_files;
+    for (const auto &entry : fs::directory_iterator(root / "tests"))
+    {
+        if (entry.is_regular_file())
+            tests_main_files.push_back(entry.path());
+    }
+    return tests_main_files;
+}
+
+inline std::string dealpath(const fs::path &p)
+{
+    return '"' + replace(p.string()) + '"';
 }
 
 std::string BinaryPlugin::getName(std::optional<std::string> &) const { return "binary"; }
@@ -56,6 +115,46 @@ int BinaryPlugin::run_new(const NewData &data, std::optional<std::string> &)
     return 0;
 }
 
+template <class T>
+std::unordered_map<std::string, std::string> gen_map(const std::string &prefix, const std::optional<T> &config)
+{
+    return {
+        {
+            prefix + "INCLUDE_DIRS",
+            config && config->includes
+                ? join(*config->includes, " ", [](const fs::path &p)
+                       { return '"' + replace(p.string()) + '"'; })
+                : "",
+        },
+        {
+            prefix + "LIB_DIRS",
+            config && config->link_dirs
+                ? join(*config->link_dirs, " ", [](const fs::path &p)
+                       { return '"' + replace(p.string()) + '"'; })
+                : "",
+        },
+        {
+            prefix + "LIBS",
+            config && config->link_libs ? join(*config->link_libs, " ") : "",
+        },
+        {
+            prefix + "DEFINES",
+            config && config->defines
+                ? join(*config->defines, " ", [](const std::string &s)
+                       { return "-D" + s; })
+                : "",
+        },
+        {
+            prefix + "COPTIONS",
+            config && config->compiler_options ? join(*config->compiler_options, " ") : "",
+        },
+        {
+            prefix + "LINKOPTIONS",
+            config && config->link_options ? join(*config->link_options, " ") : "",
+        },
+    };
+}
+
 std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &except)
 {
     if (is_dependency)
@@ -66,268 +165,93 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
     auto include = project / "include";
     auto config = data::Deserializer<data::Binary>::deserialize(
         toml::parse_file((project / "cup.toml").string()));
+
+    // Generator specific configuration items
+    std::vector<std::string> for_gen;
+    if (config.generator)
+    {
+        for (const auto &[gen, cfg] : *config.generator)
+        {
+            std::unordered_map<std::string, std::string> replacements = {{"GEN", gen}};
+            {
+                auto extend = gen_map("GEN_", std::optional(cfg));
+                replacements.insert(extend.begin(), extend.end());
+            }
+            {
+                auto extend = gen_map("GEN_DEBUG_", cfg.debug);
+                replacements.insert(extend.begin(), extend.end());
+            }
+            {
+                auto extend = gen_map("GEN_RELEASE_", cfg.release);
+                replacements.insert(extend.begin(), extend.end());
+            }
+            FileTemplate temp{
+#include "template/binary/gen.cmake"
+                ,
+                replacements};
+            for_gen.push_back(temp.getContent());
+        }
+    }
+    // Mode specific configuration items
+    std::vector<std::string> for_mode;
+    {
+        std::unordered_map<std::string, std::string> replacements;
+        {
+            auto extend = gen_map("MODE_", config.build ? config.build : std::nullopt);
+            replacements.insert(extend.begin(), extend.end());
+        }
+        {
+            auto extand = gen_map("MODE_DEBUG_", config.build ? config.build->debug : std::nullopt);
+            replacements.insert(extand.begin(), extand.end());
+        }
+        {
+            auto extand = gen_map("MODE_RELEASE_", config.build ? config.build->release : std::nullopt);
+            replacements.insert(extand.begin(), extand.end());
+        }
+        FileTemplate temp{
+#include "template/binary/mode.cmake"
+            ,
+            replacements};
+        for_mode.push_back(temp.getContent());
+    }
+    // Tests mode specific configuration items
+    std::vector<std::string> for_tests;
+    {
+        std::unordered_map<std::string, std::string> replacements;
+        {
+            auto extend = gen_map("TEST_", config.tests ? config.tests : std::nullopt);
+            replacements.insert(extend.begin(), extend.end());
+        }
+        {
+            auto extand = gen_map("TEST_DEBUG_", config.tests ? config.tests->debug : std::nullopt);
+            replacements.insert(extand.begin(), extand.end());
+        }
+        {
+            auto extand = gen_map("TEST_RELEASE_", config.tests ? config.tests->release : std::nullopt);
+            replacements.insert(extand.begin(), extand.end());
+        }
+        FileTemplate temp{
+#include "template/binary/tests.cmake"
+            ,
+            replacements};
+        for_tests.push_back(temp.getContent());
+    }
     return FileTemplate{
 #include "template/binary/binary.cmake"
         ,
         {
-            {
-                "MAIN_FILE",
-                [&]
-                {
-                    if (!fs::exists(src))
-                        throw std::runtime_error("Cannot find 'src' directory.");
-                    for (const auto &entry : fs::directory_iterator(src))
-                        if (entry.is_regular_file() && entry.path().stem() == "main")
-                            return '"' + replace(entry.path().string()) + '"';
-                    throw std::runtime_error("Cannot find main file in 'src' directory.");
-                }(),
-            },
-            {
-                "SOURCES",
-                [&]
-                {
-                    if (!fs::exists(src))
-                        throw std::runtime_error("Cannot find 'src' directory.");
-                    std::vector<fs::path> sources;
-                    this->_get_source_files(src, sources);
-                    auto last = std::remove_if(sources.begin(), sources.end(), [&](const fs::path &p)
-                                               { return p.stem() == "main" && fs::equivalent(p.parent_path(), src); });
-                    sources.erase(last, sources.end());
-                    return join(sources, " ", [](const fs::path &p)
-                                { return '"' + replace(p.string()) + '"'; });
-                }(),
-            },
-            {
-                "UNIQUE_SUFFIX",
-                replace(config.project.version, ".", "_"),
-            },
-            {
-                "TARGET_NAME",
-                name,
-            },
-            {
-                "INCLUDE_DIRS",
-                '"' + replace(include.string()) + '"' +
-                    (config.build &&
-                             config.build->includes
-                         ? join(*config.build->includes, " ",
-                                [](const fs::path &p)
-                                { return '"' + replace(p.string()) + '"'; })
-                         : ""),
-            },
-            {
-                "LIBRARY_DIRS",
-                config.build && config.build->link_dirs
-                    ? join(*config.build->link_dirs, " ",
-                           [](const fs::path &s)
-                           { return '"' + replace(s.string()) + '"'; })
-                    : "",
-            },
-            {
-                "LIBRARIES",
-                config.build && config.build->link_libs
-                    ? join(*config.build->link_libs, " ")
-                    : "",
-            },
-            {
-                "DEFINES",
-                config.build && config.build->defines
-                    ? join(*config.build->defines, " ",
-                           [](const std::string &s)
-                           { return "-D" + s; })
-                    : "",
-            },
-            {
-                "COPTIONS",
-                config.build && config.build->compiler_options
-                    ? join(*config.build->compiler_options, " ",
-                           [](const std::string &s)
-                           { return '"' + s + '"'; })
-                    : "",
-            },
-            {
-                "LOPTIONS",
-                config.build && config.build->link_options
-                    ? join(*config.build->link_options, " ",
-                           [](const std::string &s)
-                           { return '"' + s + '"'; })
-                    : "",
-            },
-            {
-                "MAIN_OUTDIR",
-                '"' + replace(Resource::bin(project).string()) + '"',
-            },
-            {
-                "STDC",
-                config.build && config.build->stdc ? std::to_string(*config.build->stdc) : "",
-            },
-            {
-                "STDCPP",
-                config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : "",
-            },
-            {
-                "BIN_MAIN_FILES",
-                [&]
-                {
-                    if (!fs::exists(src / "bin"))
-                        return std::string();
-                    std::vector<fs::path> files;
-                    for (const auto &entry : fs::directory_iterator(src / "bin"))
-                        if (entry.is_regular_file())
-                            files.push_back(entry.path());
-                    return join(files, " ", [](const fs::path &p)
-                                { return '"' + replace(p.string()) + '"'; });
-                }(),
-            },
-            {
-                "TEST_MAIN_FILES",
-                [&]
-                {
-                    if (!fs::exists(project / "tests"))
-                        return std::string();
-                    std::vector<fs::path> files;
-                    for (const auto &entry : fs::directory_iterator(project / "tests"))
-                        if (entry.is_regular_file())
-                            files.push_back(entry.path());
-                    return join(files, " ", [](const fs::path &p)
-                                { return '"' + replace(p.string()) + '"'; });
-                }(),
-            },
-            {
-                "BIN_OUTDIR",
-                '"' + replace((Resource::bin(project) / "bin").string()) + '"',
-            },
-            {
-                "TEST_OUTDIR",
-                '"' + replace((Resource::bin(project) / "test").string()) + '"',
-            },
-            {
-                "TEST_INC",
-                config.tests && config.tests->includes
-                    ? join(*config.tests->includes, " ", [](const fs::path &p)
-                           { return '"' + replace(p.string()) + '"'; })
-                    : "",
-            },
-            {
-                "TEST_DEFINES",
-                config.tests && config.tests->defines
-                    ? join(*config.tests->defines, " ", [](const std::string &s)
-                           { return "-D" + s; })
-                    : "",
-            },
-            {
-                "DEPENDS",
-                config.dependencies
-                    ? join(*config.dependencies, " ",
-                           [](const std::pair<std::string, data::Dependency> &p)
-                           { return p.first; })
-                    : "",
-            },
-            {
-                "TEST_LINK_DIRS",
-                config.tests && config.tests->link_dirs
-                    ? join(*config.tests->link_dirs, " ", [](const fs::path &s)
-                           { return '"' + replace(s.string()) + '"'; })
-                    : "",
-            },
-            {
-                "TEST_LINK_LIBS",
-                config.tests && config.tests->link_libs
-                    ? join(*config.tests->link_libs, " ")
-                    : "",
-            },
-            {
-                "TEST_LOPTIONS",
-                config.tests && config.tests->link_options
-                    ? join(*config.tests->link_options, " ")
-                    : "",
-            },
-            {
-                "TEST_COPTIONS",
-                config.tests && config.tests->compiler_options
-                    ? join(*config.tests->compiler_options, " ")
-                    : "",
-            },
-            {
-                "DEBUG_LINK_DIRS",
-                config.debug && config.debug->link_dirs
-                    ? join(*config.debug->link_dirs, " ", [](const fs::path &s)
-                           { return '"' + replace(s.string()) + '"'; })
-                    : "",
-            },
-            {
-                "DEBUG_LINK_LIBS",
-                config.debug && config.debug->link_libs
-                    ? join(*config.debug->link_libs, " ")
-                    : "",
-            },
-            {
-                "DEBUG_LOPTIONS",
-                config.debug && config.debug->link_options
-                    ? join(*config.debug->link_options, " ")
-                    : "",
-            },
-            {
-                "DEBUG_COPTIONS",
-                config.debug && config.debug->compiler_options
-                    ? join(*config.debug->compiler_options, " ")
-                    : "",
-            },
-            {
-                "DEBUG_INC",
-                config.debug && config.debug->includes
-                    ? join(*config.debug->includes, " ", [](const fs::path &s)
-                           { return '"' + replace(s.string()) + '"'; })
-                    : "",
-            },
-            {
-                "DEBUG_DEFINES",
-                config.debug && config.debug->compiler_options
-                    ? join(*config.debug->compiler_options, " ", [](const std::string &s)
-                           { return "-D" + s; })
-                    : "",
-            },
-            {
-                "RELEASE_LINK_DIRS",
-                config.release && config.release->link_dirs
-                    ? join(*config.release->link_dirs, " ", [](const fs::path &s)
-                           { return '"' + replace(s.string()) + '"'; })
-                    : "",
-            },
-            {
-                "RELEASE_LINK_LIBS",
-                config.release && config.release->link_libs
-                    ? join(*config.release->link_libs, " ")
-                    : "",
-            },
-            {
-                "RELEASE_LOPTIONS",
-                config.release && config.release->link_options
-                    ? join(*config.release->link_options, " ")
-                    : "",
-            },
-            {
-                "RELEASE_COPTIONS",
-                config.release && config.release->compiler_options
-                    ? join(*config.release->compiler_options, " ")
-                    : "",
-            },
-            {
-                "RELEASE_INC",
-                config.release && config.release->includes
-                    ? join(*config.release->includes, " ", [](const fs::path &s)
-                           { return '"' + replace(s.string()) + '"'; })
-                    : "",
-            },
-            {
-                "RELEASE_DEFINES",
-                config.release && config.release->compiler_options
-                    ? join(*config.release->compiler_options, " ", [](const std::string &s)
-                           { return "-D" + s; })
-                    : "",
-            },
-        },
-    }
+            {"FOR_GEN", join(for_gen, "\n")},
+            {"FOR_MODE", join(for_mode, "\n")},
+            {"FOR_TEST", join(for_tests, "\n")},
+            {"MAIN_FILE", dealpath(this->get_main_file(current_dir))},
+            {"BIN_MAIN_FILES", join(this->get_bin_main_files(current_dir), " ", dealpath)},
+            {"SOURCES", join(this->get_source_files(current_dir), " ", dealpath)},
+            {"OUT_NAME", name},
+            {"OUT_DIR", dealpath(Resource::bin(root_dir))},
+            {"UNIQUE", name + "_" + replace(config.project.version, ".", "_")},
+            {"TEST_MAIN_FILES", join(this->get_tests_main_files(current_dir), " ", dealpath)},
+            {"TEST_OUT_DIR", dealpath(Resource::bin(root_dir) / "tests")},
+        }}
         .getContent();
 }
 

@@ -2,7 +2,11 @@
 
 class BinaryPlugin : public IPlugin
 {
-    void _get_source_files(const fs::path &dir, std::vector<fs::path> &files);
+    void _get_source_files(const fs::path &src, std::vector<fs::path> &files);
+    std::vector<fs::path> get_source_files(const fs::path &root);
+    fs::path get_main_file(const fs::path &root);
+    std::vector<fs::path> get_bin_main_files(const fs::path &root);
+    std::vector<fs::path> get_tests_main_files(const fs::path &root);
 
 public:
     std::string getName(std::optional<std::string> &except) const override;
