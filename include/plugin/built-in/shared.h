@@ -2,6 +2,10 @@
 
 class SharedPlugin : public IPlugin
 {
+    void _get_source_files(const fs::path &dir, std::vector<fs::path> &src_files) const;
+    std::vector<fs::path> get_source_files(const fs::path &root) const;
+    std::vector<fs::path> get_test_mains(const fs::path &root) const;
+    std::vector<fs::path> get_example_mains(const fs::path &root) const;
 public:
     std::string getName(std::optional<std::string> &except) const override;
     int run_new(const NewData &data, std::optional<std::string> &except) override;

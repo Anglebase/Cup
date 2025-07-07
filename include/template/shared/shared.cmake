@@ -1,129 +1,65 @@
 R"(#"
+
 set(EXPORT_NAME ${%EXPORT_NAME%})
-set(SOURCES ${%SOURCES%})
-set(INCLUDE_DIR ${%INCLUDE_DIR%})
-set(EXPORT_DIR ${%EXPORT_DIR%})
-set(DEFINES ${%DEFINES%})
-set(LINK_DIRS ${%LINK_DIRS%})
-set(LINK_LIBS ${%LINK_LIBS%})
-set(COPTIONS ${%COPTIONS%})
-set(LOPTIONS ${%LOPTIONS%})
-set(OUT_DIR ${%OUT_DIR%})
 set(IS_DEP ${%IS_DEP%})
+set(DEPS ${%DEPS%})
+set(UNIQUE ${%UNIQUE%})
 set(TEST_MAIN_FILES ${%TEST_MAIN_FILES%})
-set(EXAMPLE_MAIN_FILES ${%EXAMPLE_MAIN_FILES%})
-set(UNIQUE_SUFFIX ${%UNIQUE_SUFFIX%})
 set(TEST_OUT_DIR ${%TEST_OUT_DIR%})
+set(EXAMPLE_MAIN_FILES ${%EXAMPLE_MAIN_FILES%})
 set(EXAMPLE_OUT_DIR ${%EXAMPLE_OUT_DIR%})
-set(TEST_INC ${%TEST_INC%})
-set(TEST_DEFINES ${%TEST_DEFINES%})
-set(EXAMPLE_INC ${%EXAMPLE_INC%})
-set(EXAMPLE_DEFINES ${%EXAMPLE_DEFINES%})
-set(DEPENDS ${%DEPENDS%})
-set(DLL_OUT_DIR ${%DLL_OUT_DIR%})
-set(STDC ${%STDC%})
-set(STDCXX ${%STDCXX%})
+set(INC ${%INC%})
+set(SOURCES ${%SOURCES%})
+
+${%FOR_GEN%}
+${%FOR_MODE%}
+${%FOR_TESTS%}
+${%FOR_EXAMPLES%}
+
+set(INCLUDE_DIRS ${M_INCLUDE_DIRS} ${MODE_INCLUDE_DIRS} ${GEN_INCLUDE_DIRS} ${GEN_MODE_INCLUDE_DIRS} ${INC})
+set(LIB_DIRS ${M_LIB_DIRS} ${MODE_LIB_DIRS} ${GEN_LIB_DIRS} ${GEN_MODE_LIB_DIRS})
+set(LIBS ${M_LIBS} ${MODE_LIBS} ${GEN_LIBS} ${GEN_MODE_LIBS} ${DEPS})
+set(DEFINES ${M_DEFINES} ${MODE_DEFINES} ${GEN_DEFINES} ${GEN_MODE_DEFINES})
+set(COPTIONS ${M_COPTIONS} ${MODE_COPTIONS} ${GEN_COPTIONS} ${GEN_MODE_COPTIONS})
+set(LINKOPTIONS ${M_LINKOPTIONS} ${MODE_LINKOPTIONS} ${GEN_LINKOPTIONS} ${GEN_MODE_LINKOPTIONS})
 
 add_library(${EXPORT_NAME} SHARED ${SOURCES})
-target_include_directories(${EXPORT_NAME} PRIVATE ${INCLUDE_DIR})
-target_include_directories(${EXPORT_NAME} PUBLIC ${EXPORT_DIR})
-target_compile_definitions(${EXPORT_NAME} PRIVATE ${DEFINES})
-target_compile_options(${EXPORT_NAME} PRIVATE ${COPTIONS})
-target_link_options(${EXPORT_NAME} PUBLIC ${LOPTIONS})
-target_link_directories(${EXPORT_NAME} PUBLIC ${LINK_DIRS})
-target_link_libraries(${EXPORT_NAME} PUBLIC ${LINK_LIBS} ${DEPENDS})
-set_target_properties(
-    ${EXPORT_NAME} PROPERTIES
-    OUTPUT_NAME ${EXPORT_NAME}
-    ARCHIVE_OUTPUT_DIRECTORY ${OUT_DIR}
-    RUNTIME_OUTPUT_DIRECTORY ${DLL_OUT_DIR}
-    PREFIX ""
-)
-if(${STDC})
-    set_target_properties(${EXPORT_NAME} PROPERTIES
-        C_STANDARD ${STDC}
-        C_STANDARD_REQUIRED ON)
-endif(${STDC})
-if(${STDCXX})
-    set_target_properties(${EXPORT_NAME} PROPERTIES
-        CXX_STANDARD ${STDCXX}
-        CXX_STANDARD_REQUIRED ON)
-endif(${STDCXX})
+target_include_directories(${EXPORT_NAME} PUBLIC ${INCLUDE_DIRS})
+target_link_directories(${EXPORT_NAME} PUBLIC ${LIB_DIRS})
+target_link_libraries(${EXPORT_NAME} PUBLIC ${LIBS})
+target_compile_definitions(${EXPORT_NAME} PUBLIC ${DEFINES})
+target_compile_options(${EXPORT_NAME} PUBLIC ${COPTIONS})
+target_link_options(${EXPORT_NAME} PUBLIC ${LINKOPTIONS})
 
 if(NOT ${IS_DEP})
     foreach(TEST_MAIN_FILE ${TEST_MAIN_FILES})
-        get_filename_component(FILE_NAME ${TEST_MAIN_FILE} NAME_WLE)
-        set(UNIQUE_NAME "test_${FILE_NAME}_${UNIQUE_SUFFIX}")
+        get_filename_component(TEST_NAME ${TEST_MAIN_FILE} NAME_WE)
+        set(UNIQUE_NAME "test_${TEST_NAME}_${UNIQUE}")
         add_executable(${UNIQUE_NAME} ${TEST_MAIN_FILE})
-        target_link_libraries(${UNIQUE_NAME} ${EXPORT_NAME})
-        target_compile_definitions(${UNIQUE_NAME} PRIVATE ${TEST_DEFINES})
-        target_include_directories(${UNIQUE_NAME} PRIVATE ${TEST_INC})
-        set_target_properties(
-            ${UNIQUE_NAME} PROPERTIES
-            OUTPUT_NAME ${FILE_NAME}
-            RUNTIME_OUTPUT_DIRECTORY ${TEST_OUT_DIR}
-            PREFIX ""
-        )
-        if(${STDC})
-            set_target_properties(${UNIQUE_NAME} PROPERTIES
-                C_STANDARD ${STDC}
-                C_STANDARD_REQUIRED ON)
-        endif(${STDC})
-        if(${STDCXX})
-            set_target_properties(${UNIQUE_NAME} PROPERTIES
-                CXX_STANDARD ${STDCXX}
-                CXX_STANDARD_REQUIRED ON)
-        endif(${STDCXX})
-        unset(UNIQUE_NAME)
+        target_include_directories(${UNIQUE_NAME} PRIVATE ${TEST_INCLUDE_DIRS} ${TEST_MODE_INCLUDE_DIRS})
+        target_link_libraries(${UNIQUE_NAME} PRIVATE ${EXPORT_NAME} ${TEST_LIBS} ${TEST_MODE_LIBS})
+        target_compile_definitions(${UNIQUE_NAME} PRIVATE ${TEST_DEFINES} ${TEST_MODE_DEFINES})
+        target_compile_options(${UNIQUE_NAME} PRIVATE ${TEST_COPTIONS} ${TEST_MODE_COPTIONS})
+        target_link_options(${UNIQUE_NAME} PRIVATE ${TEST_LINKOPTIONS} ${TEST_MODE_LINKOPTIONS})
+        target_link_directories(${UNIQUE_NAME} PRIVATE ${TEST_LIB_DIRS} ${TEST_MODE_LIB_DIRS})
+        set_target_properties(${UNIQUE_NAME} PROPERTIES
+            OUTPUT_NAME ${TEST_NAME}
+            RUNTIME_OUTPUT_DIRECTORY ${TEST_OUT_DIR})
     endforeach(TEST_MAIN_FILE ${TEST_MAIN_FILES})
     
     foreach(EXAMPLE_MAIN_FILE ${EXAMPLE_MAIN_FILES})
-        get_filename_component(FILE_NAME ${EXAMPLE_MAIN_FILE} NAME_WLE)
-        set(UNIQUE_NAME "example_${FILE_NAME}_${UNIQUE_SUFFIX}")
+        get_filename_component(EXAMPLE_NAME ${EXAMPLE_MAIN_FILE} NAME_WE)
+        set(UNIQUE_NAME "example_${EXAMPLE_NAME}_${UNIQUE}")
         add_executable(${UNIQUE_NAME} ${EXAMPLE_MAIN_FILE})
-        target_link_libraries(${UNIQUE_NAME} ${EXPORT_NAME})
-        target_compile_definitions(${UNIQUE_NAME} PRIVATE ${EXAMPLE_DEFINES})
-        target_include_directories(${UNIQUE_NAME} PRIVATE ${EXAMPLE_INC})
-        set_target_properties(
-            ${UNIQUE_NAME} PROPERTIES
-            OUTPUT_NAME ${FILE_NAME}
-            RUNTIME_OUTPUT_DIRECTORY ${EXAMPLE_OUT_DIR}
-            PREFIX ""
-        )
-        if(${STDC})
-            set_target_properties(${UNIQUE_NAME} PROPERTIES
-                C_STANDARD ${STDC}
-                C_STANDARD_REQUIRED ON)
-        endif(${STDC})
-        if(${STDCXX})
-            set_target_properties(${UNIQUE_NAME} PROPERTIES
-                CXX_STANDARD ${STDCXX}
-                CXX_STANDARD_REQUIRED ON)
-        endif(${STDCXX})
-        unset(UNIQUE_NAME)
+        target_include_directories(${UNIQUE_NAME} PRIVATE ${EXAMPLE_INCLUDE_DIRS} ${EXAMPLE_MODE_INCLUDE_DIRS})
+        target_link_libraries(${UNIQUE_NAME} PRIVATE ${EXPORT_NAME} ${EXAMPLE_LIBS} ${EXAMPLE_MODE_LIBS})
+        target_compile_definitions(${UNIQUE_NAME} PRIVATE ${EXAMPLE_DEFINES} ${EXAMPLE_MODE_DEFINES})
+        target_compile_options(${UNIQUE_NAME} PRIVATE ${EXAMPLE_COPTIONS} ${EXAMPLE_MODE_COPTIONS})
+        target_link_options(${UNIQUE_NAME} PRIVATE ${EXAMPLE_LINKOPTIONS} ${EXAMPLE_MODE_LINKOPTIONS})
+        target_link_directories(${UNIQUE_NAME} PRIVATE ${EXAMPLE_LIB_DIRS} ${EXAMPLE_MODE_LIB_DIRS})
+        set_target_properties(${UNIQUE_NAME} PROPERTIES
+            OUTPUT_NAME ${EXAMPLE_NAME}
+            RUNTIME_OUTPUT_DIRECTORY ${EXAMPLE_OUT_DIR})
     endforeach(EXAMPLE_MAIN_FILE ${EXAMPLE_MAIN_FILES})
-endif(NOT ${IS_DEP})
-
-unset(EXPORT_NAME)
-unset(SOURCES)
-unset(INCLUDE_DIR)
-unset(EXPORT_DIR)
-unset(DEFINES)
-unset(LINK_DIRS)
-unset(LINK_LIBS)
-unset(COPTIONS)
-unset(LOPTIONS)
-unset(OUT_DIR)
-unset(IS_DEP)
-unset(TEST_MAIN_FILES)
-unset(EXAMPLE_MAIN_FILES)
-unset(UNIQUE_SUFFIX)
-unset(TEST_OUT_DIR)
-unset(EXAMPLE_OUT_DIR)
-unset(TEST_INC)
-unset(TEST_DEFINES)
-unset(EXAMPLE_INC)
-unset(EXAMPLE_DEFINES)
-unset(DEPENDS)
-unset(DLL_OUT_DIR)
+endif()
 #)"

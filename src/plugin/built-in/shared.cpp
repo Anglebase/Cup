@@ -9,6 +9,56 @@
 #include "res.h"
 #include <fstream>
 
+void SharedPlugin::_get_source_files(const fs::path &dir, std::vector<fs::path> &src_files) const
+{
+    for (const auto &entry : fs::directory_iterator(dir))
+    {
+        if (entry.is_directory())
+        {
+            _get_source_files(entry.path(), src_files);
+        }
+        else if (entry.is_regular_file())
+        {
+            src_files.push_back(entry.path());
+        }
+    }
+}
+
+std::vector<fs::path> SharedPlugin::get_source_files(const fs::path &root) const
+{
+    if (!fs::exists(root / "src"))
+        throw std::runtime_error("Cannot find required directory 'src' in project root directory.");
+    std::vector<fs::path> source_files;
+    this->_get_source_files(root / "src", source_files);
+    return source_files;
+}
+
+std::vector<fs::path> SharedPlugin::get_test_mains(const fs::path &root) const
+{
+    if (!fs::exists(root / "tests"))
+        return std::vector<fs::path>();
+    std::vector<fs::path> test_mains;
+    for (const auto &entry : fs::directory_iterator(root / "tests"))
+    {
+        if (entry.is_regular_file())
+            test_mains.push_back(entry.path());
+    }
+    return test_mains;
+}
+
+std::vector<fs::path> SharedPlugin::get_example_mains(const fs::path &root) const
+{
+    if (!fs::exists(root / "examples"))
+        return std::vector<fs::path>();
+    std::vector<fs::path> example_mains;
+    for (const auto &entry : fs::directory_iterator(root / "examples"))
+    {
+        if (entry.is_regular_file())
+            example_mains.push_back(entry.path());
+    }
+    return example_mains;
+}
+
 std::string SharedPlugin::getName(std::optional<std::string> &except) const
 {
     return "shared";
@@ -60,180 +110,160 @@ int SharedPlugin::run_new(const NewData &data, std::optional<std::string> &excep
     return 0;
 }
 
+template <class T>
+std::unordered_map<std::string, std::string> gen_map(const std::string &prefix, const std::optional<T> &config)
+{
+    return {
+        {
+            prefix + "INCLUDE_DIRS",
+            config && config->includes
+                ? join(*config->includes, " ", [](const fs::path &p)
+                       { return '"' + replace(p.string()) + '"'; })
+                : "",
+        },
+        {
+            prefix + "LIB_DIRS",
+            config && config->link_dirs
+                ? join(*config->link_dirs, " ", [](const fs::path &p)
+                       { return '"' + replace(p.string()) + '"'; })
+                : "",
+        },
+        {
+            prefix + "LIBS",
+            config && config->link_libs ? join(*config->link_libs, " ") : "",
+        },
+        {
+            prefix + "DEFINES",
+            config && config->defines
+                ? join(*config->defines, " ", [](const std::string &s)
+                       { return "-D" + s; })
+                : "",
+        },
+        {
+            prefix + "COPTIONS",
+            config && config->compile_options ? join(*config->compile_options, " ") : "",
+        },
+        {
+            prefix + "LINKOPTIONS",
+            config && config->link_options ? join(*config->link_options, " ") : "",
+        },
+    };
+}
+
+inline std::string dealpath(const fs::path &p)
+{
+    return '"' + replace(p.string()) + '"';
+}
 std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &except)
 {
     auto [name, _1, current_dir, root_dir, features] = ctx;
     auto src = current_dir / "src";
     auto config = data::Deserializer<data::Shared>::deserialize(toml::parse(read_file(current_dir / "cup.toml")));
+
+    // Generator specific configuration items
+    std::vector<std::string> for_gen;
+    if (config.generator)
+    {
+        for (const auto &[gen, cfg] : *config.generator)
+        {
+            std::unordered_map<std::string, std::string> replacements = {{"GEN", '"' + gen + '"'}};
+            {
+                auto extend = gen_map("GEN_", std::optional(cfg));
+                replacements.insert(extend.begin(), extend.end());
+            }
+            {
+                auto extend = gen_map("GEN_DEBUG_", cfg.debug);
+                replacements.insert(extend.begin(), extend.end());
+            }
+            {
+                auto extend = gen_map("GEN_RELEASE_", cfg.release);
+                replacements.insert(extend.begin(), extend.end());
+            }
+            FileTemplate temp{
+#include "template/shared/gen.cmake"
+                ,
+                replacements};
+            for_gen.push_back(temp.getContent());
+        }
+    }
+    // Mode specific configuration items
+    std::vector<std::string> for_mode;
+    {
+        std::unordered_map<std::string, std::string> replacements;
+        {
+            auto extend = gen_map("MODE_", config.build ? config.build : std::nullopt);
+            replacements.insert(extend.begin(), extend.end());
+        }
+        {
+            auto extand = gen_map("MODE_DEBUG_", config.build ? config.build->debug : std::nullopt);
+            replacements.insert(extand.begin(), extand.end());
+        }
+        {
+            auto extand = gen_map("MODE_RELEASE_", config.build ? config.build->release : std::nullopt);
+            replacements.insert(extand.begin(), extand.end());
+        }
+        FileTemplate temp{
+#include "template/shared/mode.cmake"
+            ,
+            replacements};
+        for_mode.push_back(temp.getContent());
+    }
+    // Tests mode specific configuration items
+    std::vector<std::string> for_tests;
+    {
+        std::unordered_map<std::string, std::string> replacements;
+        {
+            auto extend = gen_map("TEST_", config.tests ? config.tests : std::nullopt);
+            replacements.insert(extend.begin(), extend.end());
+        }
+        {
+            auto extand = gen_map("TEST_DEBUG_", config.tests ? config.tests->debug : std::nullopt);
+            replacements.insert(extand.begin(), extand.end());
+        }
+        {
+            auto extand = gen_map("TEST_RELEASE_", config.tests ? config.tests->release : std::nullopt);
+            replacements.insert(extand.begin(), extand.end());
+        }
+        FileTemplate temp{
+#include "template/shared/tests.cmake"
+            ,
+            replacements};
+        for_tests.push_back(temp.getContent());
+    }
+    // Examples mode specific configuration items
+    std::vector<std::string> for_examples;
+    {
+        std::unordered_map<std::string, std::string> replacements;
+        {
+            auto extend = gen_map("EXAMPLE_", config.examples ? config.examples : std::nullopt);
+            replacements.insert(extend.begin(), extend.end());
+        }
+        {
+            auto extand = gen_map("EXAMPLE_DEBUG_", config.examples ? config.examples->debug : std::nullopt);
+            replacements.insert(extand.begin(), extand.end());
+        }
+        {
+            auto extand = gen_map("EXAMPLE_RELEASE_", config.examples ? config.examples->release : std::nullopt);
+            replacements.insert(extand.begin(), extand.end());
+        }
+        FileTemplate temp{
+#include "template/shared/examples.cmake"
+            ,
+            replacements};
+        for_examples.push_back(temp.getContent());
+    }
     return FileTemplate{
 #include "template/shared/shared.cmake"
-        ,
-        {
-            {
-                "EXPORT_NAME",
-                name,
-            },
-            {
-                "SOURCES",
-                [&]
-                {
-                    std::vector<fs::path> sources;
-                    for (const auto &entry : fs::recursive_directory_iterator(src))
-                        if (entry.is_regular_file())
-                            sources.push_back(entry.path());
-                    return join(sources, " ", [](const fs::path &p)
-                                { return '"' + replace(p.string()) + '"'; });
-                }(),
-            },
-            {
-                "INCLUDE_DIR",
-                '"' + replace((current_dir / "include").string()) + '"',
-            },
-            {
-                "STDC",
-                config.build && config.build->stdc ? std::to_string(*config.build->stdc) : "",
-            },
-            {
-                "STDCXX",
-                config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : "",
-            },
-            {
-                "EXPORT_DIR",
-                [&]
-                {
-                    std::vector<fs::path> export_dirs{(current_dir / "export").string()};
-                    if (config.build && config.build->includes)
-                        for (const auto &include_dir : *config.build->includes)
-                            export_dirs.push_back(include_dir);
-                    return join(export_dirs, " ", [](const fs::path &p)
-                                { return '"' + replace(p.string()) + '"'; });
-                }(),
-            },
-            {
-                "DEFINES",
-                config.build && config.build->defines
-                    ? join(*config.build->defines, " ", [](const std::string &d)
-                           { return "-D" + d; }) +
-                          " " +
-                          join(features, " ", [](const std::string &f)
-                               { return "-D" + f; })
-                    : "",
-            },
-            {
-                "LINK_DIRS",
-                config.build && config.build->link_dirs
-                    ? join(*config.build->link_dirs, " ", [](const fs::path &d)
-                           { return '"' + replace(d.string()) + '"'; })
-                    : "",
-            },
-            {
-                "LINK_LIBS",
-                config.build && config.build->link_libs
-                    ? join(*config.build->link_libs, " ")
-                    : "",
-            },
-            {
-                "COPTIONS",
-                config.build && config.build->compile_options
-                    ? join(*config.build->compile_options, " ")
-                    : "",
-            },
-            {
-                "LOPTIONS",
-                config.build && config.build->link_options
-                    ? join(*config.build->link_options, " ")
-                    : "",
-            },
-            {
-                "OUT_DIR",
-                '"' + replace(Resource::lib(root_dir).string()) + '"',
-            },
-            {
-                "IS_DEP",
-                is_dependency ? "ON" : "OFF",
-            },
-            {
-                "TEST_MAIN_FILES",
-                [&]
-                {
-                    if (!fs::exists(current_dir / "tests"))
-                        return std::string();
-                    std::vector<fs::path> test_main_files;
-                    for (const auto &entry : fs::directory_iterator(current_dir / "tests"))
-                        if (entry.is_regular_file())
-                            test_main_files.push_back(entry.path());
-                    return join(test_main_files, " ", [](const fs::path &p)
-                                { return '"' + replace(p.string()) + '"'; });
-                }(),
-            },
-            {
-                "EXAMPLE_MAIN_FILES",
-                [&]
-                {
-                    if (!fs::exists(current_dir / "examples"))
-                        return std::string();
-                    std::vector<fs::path> example_main_files;
-                    for (const auto &entry : fs::directory_iterator(current_dir / "examples"))
-                        if (entry.is_regular_file())
-                            example_main_files.push_back(entry.path());
-                    return join(example_main_files, " ", [](const fs::path &p)
-                                { return '"' + replace(p.string()) + '"'; });
-                }(),
-            },
-            {
-                "UNIQUE_SUFFIX",
-                name + "_" + replace(config.project.version, ".", "_"),
-            },
-            {
-                "TEST_OUT_DIR",
-                '"' + replace((Resource::bin(root_dir) / "tests").string()) + '"',
-            },
-            {
-                "EXAMPLE_OUT_DIR",
-                '"' + replace((Resource::bin(root_dir) / "examples").string()) + '"',
-            },
-            {
-                "TEST_DEFINES",
-                config.tests && config.tests->defines
-                    ? join(*config.tests->defines, " ", [](const std::string &d)
-                           { return "-D" + d; })
-                    : "",
-            },
-            {
-                "TEST_INC",
-                config.tests && config.tests->includes
-                    ? join(*config.tests->includes, " ", [](const fs::path &d)
-                           { return '"' + replace(d.string()) + '"'; })
-                    : "",
-            },
-            {
-                "EXAMPLE_INC",
-                config.examples && config.examples->includes
-                    ? join(*config.examples->includes, " ", [](const fs::path &d)
-                           { return '"' + replace(d.string()) + '"'; })
-                    : "",
-            },
-            {
-                "EXAMPLE_DEFINES",
-                config.examples && config.examples->defines
-                    ? join(*config.examples->defines, " ", [](const std::string &d)
-                           { return "-D" + d; })
-                    : "",
-            },
-            {
-                "DEPENDS",
-                config.dependencies
-                    ? join(*config.dependencies, " ",
-                           [](const std::pair<std::string, data::Dependency> &p)
-                           { return p.first; })
-                    : "",
-            },
-            {
-                "DLL_OUT_DIR",
-                '"' + replace(Resource::dll(root_dir).string()) + '"',
-            },
-        },
-    }
+        , {{"FOR_GEN", join(for_gen, "\n")}, {"FOR_MODE", join(for_mode, "\n")}, {"FOR_TESTS", join(for_tests, "\n")}, {"FOR_EXAMPLES", join(for_examples, "\n")}, {"EXPORT_NAME", name}, {"IS_DEP", is_dependency ? "ON" : "OFF"}, {"DEPS", config.dependencies ? join(*config.dependencies, " ", [](const std::pair<std::string, data::Dependency> &p)
+                                                                                                                                                                                                                                                                        { return p.first; })
+                                                                                                                                                                                                                                                                 : ""},
+           {"UNIQUE", name + "_" + replace(config.project.version, ".", "_")},
+           {"TEST_MAIN_FILES", join(this->get_test_mains(root_dir), " ", dealpath)},
+           {"TEST_OUT_DIR", dealpath(Resource::bin(root_dir) / "tests")},
+           {"EXAMPLE_MAIN_FILES", join(this->get_example_mains(root_dir), " ", dealpath)},
+           {"EXAMPLE_OUT_DIR", dealpath(Resource::bin(root_dir) / "examples")},
+           {"INC", dealpath(current_dir / "include") + " " + dealpath(current_dir / "export")},
+           {"SOURCES", join(this->get_source_files(root_dir), " ", dealpath)}}}
         .getContent();
 }
 
