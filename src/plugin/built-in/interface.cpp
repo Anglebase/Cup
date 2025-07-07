@@ -90,8 +90,8 @@ std::string InterfacePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependen
             },
             {
                 "COPTIONS",
-                config.build && config.build->compiler_options
-                    ? join(*config.build->compiler_options, " ")
+                config.build && config.build->compile_options
+                    ? join(*config.build->compile_options, " ")
                     : "",
             },
             {

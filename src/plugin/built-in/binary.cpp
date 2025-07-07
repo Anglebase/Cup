@@ -146,7 +146,7 @@ std::unordered_map<std::string, std::string> gen_map(const std::string &prefix, 
         },
         {
             prefix + "COPTIONS",
-            config && config->compiler_options ? join(*config->compiler_options, " ") : "",
+            config && config->compile_options ? join(*config->compile_options, " ") : "",
         },
         {
             prefix + "LINKOPTIONS",
