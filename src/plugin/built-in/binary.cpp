@@ -233,47 +233,98 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             {
                 "TEST_LINK_LIBS",
                 config.tests && config.tests->link_libs
-                    ? join(*config.tests->link_libs, " ", [](const fs::path &s)
-                           { return '"' + replace(s.string()) + '"'; })
+                    ? join(*config.tests->link_libs, " ")
                     : "",
             },
             {
                 "TEST_LOPTIONS",
                 config.tests && config.tests->link_options
-                    ? join(*config.tests->link_options, " ", [](const fs::path &s)
-                           { return '"' + replace(s.string()) + '"'; })
+                    ? join(*config.tests->link_options, " ")
                     : "",
             },
             {
                 "TEST_COPTIONS",
                 config.tests && config.tests->compiler_options
-                    ? join(*config.tests->compiler_options, " ", [](const fs::path &s)
+                    ? join(*config.tests->compiler_options, " ")
+                    : "",
+            },
+            {
+                "DEBUG_LINK_DIRS",
+                config.debug && config.debug->link_dirs
+                    ? join(*config.debug->link_dirs, " ", [](const fs::path &s)
                            { return '"' + replace(s.string()) + '"'; })
                     : "",
             },
             {
-                "MODE_LINK_DIRS",
-                ,
+                "DEBUG_LINK_LIBS",
+                config.debug && config.debug->link_libs
+                    ? join(*config.debug->link_libs, " ")
+                    : "",
             },
             {
-                "MODE_LINK_LIBS",
-                "",
+                "DEBUG_LOPTIONS",
+                config.debug && config.debug->link_options
+                    ? join(*config.debug->link_options, " ")
+                    : "",
             },
             {
-                "MODE_LOPTIONS",
-                "",
+                "DEBUG_COPTIONS",
+                config.debug && config.debug->compiler_options
+                    ? join(*config.debug->compiler_options, " ")
+                    : "",
             },
             {
-                "MODE_COPTIONS",
-                "",
+                "DEBUG_INC",
+                config.debug && config.debug->includes
+                    ? join(*config.debug->includes, " ", [](const fs::path &s)
+                           { return '"' + replace(s.string()) + '"'; })
+                    : "",
             },
             {
-                "MODE_INC",
-                "",
+                "DEBUG_DEFINES",
+                config.debug && config.debug->compiler_options
+                    ? join(*config.debug->compiler_options, " ", [](const std::string &s)
+                           { return "-D" + s; })
+                    : "",
             },
             {
-                "MODE_DEFINES",
-                "",
+                "RELEASE_LINK_DIRS",
+                config.release && config.release->link_dirs
+                    ? join(*config.release->link_dirs, " ", [](const fs::path &s)
+                           { return '"' + replace(s.string()) + '"'; })
+                    : "",
+            },
+            {
+                "RELEASE_LINK_LIBS",
+                config.release && config.release->link_libs
+                    ? join(*config.release->link_libs, " ")
+                    : "",
+            },
+            {
+                "RELEASE_LOPTIONS",
+                config.release && config.release->link_options
+                    ? join(*config.release->link_options, " ")
+                    : "",
+            },
+            {
+                "RELEASE_COPTIONS",
+                config.release && config.release->compiler_options
+                    ? join(*config.release->compiler_options, " ")
+                    : "",
+            },
+            {
+                "RELEASE_INC",
+                config.release && config.release->includes
+                    ? join(*config.release->includes, " ", [](const fs::path &s)
+                           { return '"' + replace(s.string()) + '"'; })
+                    : "",
+            },
+            {
+                "RELEASE_DEFINES",
+                config.release && config.release->compiler_options
+                    ? join(*config.release->compiler_options, " ", [](const std::string &s)
+                           { return "-D" + s; })
+                    : "",
             },
         },
     }
