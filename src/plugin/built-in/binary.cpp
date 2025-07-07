@@ -256,6 +256,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
                  ? join(*config.dependencies, " ", [](const std::pair<std::string, data::Dependency> &d)
                         { return d.first; })
                  : ""},
+            {"INC", dealpath(current_dir / "include")},
         }}
         .getContent();
 }
