@@ -15,7 +15,7 @@ set(TEST_INCLUDES ${%TEST_INCLUDES%})
 set(OUT_DIR ${%OUT_DIR%})
 set(UNIQUE_SUFFIX ${%UNIQUE_SUFFIX%})
 set(STDC ${%STDC%})
-set(STCXX ${%STCXX%})
+set(STDCXX ${%STDCXX%})
 
 add_library(${OUT_NAME} MODULE ${SOURCES})
 target_include_directories(${OUT_NAME} PRIVATE ${INCLUDE_DIR})
@@ -33,11 +33,11 @@ if(${STDC})
         C_STANDARD ${STDC}
         C_STANDARD_REQUIRED ON)
 endif(${STDC})
-if(${STCXX})
+if(${STDCXX})
     set_target_properties(${OUT_NAME} PROPERTIES
-        CXX_STANDARD ${STCXX}
+        CXX_STANDARD ${STDCXX}
         CXX_STANDARD_REQUIRED ON)
-endif(${STCXX})
+endif(${STDCXX})
 
 foreach(TEST_FILE ${TEST_FILES})
     get_filename_component(FILE_NAME ${TEST_FILE} NAME_WLE)
@@ -59,11 +59,11 @@ foreach(TEST_FILE ${TEST_FILES})
             C_STANDARD ${STDC}
             C_STANDARD_REQUIRED ON)
     endif(${STDC})
-    if(${STCXX})
+    if(${STDCXX})
         set_target_properties(${UNIQUE_NAME} PROPERTIES
-            CXX_STANDARD ${STCXX}
+            CXX_STANDARD ${STDCXX}
             CXX_STANDARD_REQUIRED ON)
-    endif(${STCXX})
+    endif(${STDCXX})
     unset(UNIQUE_NAME)
 endforeach(TEST_FILE ${TEST_FILES})
 
