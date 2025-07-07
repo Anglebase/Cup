@@ -223,6 +223,58 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
                            { return p.first; })
                     : "",
             },
+            {
+                "TEST_LINK_DIRS",
+                config.tests && config.tests->link_dirs
+                    ? join(*config.tests->link_dirs, " ", [](const fs::path &s)
+                           { return '"' + replace(s.string()) + '"'; })
+                    : "",
+            },
+            {
+                "TEST_LINK_LIBS",
+                config.tests && config.tests->link_libs
+                    ? join(*config.tests->link_libs, " ", [](const fs::path &s)
+                           { return '"' + replace(s.string()) + '"'; })
+                    : "",
+            },
+            {
+                "TEST_LOPTIONS",
+                config.tests && config.tests->link_options
+                    ? join(*config.tests->link_options, " ", [](const fs::path &s)
+                           { return '"' + replace(s.string()) + '"'; })
+                    : "",
+            },
+            {
+                "TEST_COPTIONS",
+                config.tests && config.tests->compiler_options
+                    ? join(*config.tests->compiler_options, " ", [](const fs::path &s)
+                           { return '"' + replace(s.string()) + '"'; })
+                    : "",
+            },
+            {
+                "MODE_LINK_DIRS",
+                ,
+            },
+            {
+                "MODE_LINK_LIBS",
+                "",
+            },
+            {
+                "MODE_LOPTIONS",
+                "",
+            },
+            {
+                "MODE_COPTIONS",
+                "",
+            },
+            {
+                "MODE_INC",
+                "",
+            },
+            {
+                "MODE_DEFINES",
+                "",
+            },
         },
     }
         .getContent();
