@@ -1,3 +1,24 @@
-R"(Interface Plugin
+R"(Shared Project Builder Plugin
 
+Shared Project is a shared library project which has one shared library.
+
+It's directory structure is like:
+- ProjectRoot
+    - src
+    - include
+    - tests
+    - examples
+    - cup.toml
+
+The `src` directory contains the source files of the shared library.
+
+The `include` directory contains the header files of the shared library.
+
+The `tests` directory contains the test files of the shared library.
+
+The `examples` directory contains the example files of the shared library.
+
+For `examples` and `tests` directory, it does not recursively search for the main files within it.
+
+See https://github.com/Anglebase/Cup/blob/master/docs/interface.toml for information about configuration files.
 )"

@@ -17,4 +17,6 @@ The `test` directory contains the test files of the project.
 All files in the `test` directory will be considered as main file of the project.
 
 The `cup.toml` file is the configuration of the project.
+
+See https://github.com/Anglebase/Cup/blob/master/docs/module.toml for information about configuration files.
 )"
