@@ -172,7 +172,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
     {
         for (const auto &[gen, cfg] : *config.generator)
         {
-            std::unordered_map<std::string, std::string> replacements = {{"GEN", gen}};
+            std::unordered_map<std::string, std::string> replacements = {{"GEN", '"' + gen + '"'}};
             {
                 auto extend = gen_map("GEN_", std::optional(cfg));
                 replacements.insert(extend.begin(), extend.end());
