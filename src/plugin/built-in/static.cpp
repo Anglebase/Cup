@@ -200,7 +200,7 @@ std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
                 replacements.insert(extend.begin(), extend.end());
             }
             FileTemplate temp{
-#include "template/static/gen.cmake"
+#include "template/cmake/gen.cmake"
                 ,
                 replacements};
             for_gen.push_back(temp.getContent());
@@ -223,7 +223,7 @@ std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             replacements.insert(extand.begin(), extand.end());
         }
         FileTemplate temp{
-#include "template/static/mode.cmake"
+#include "template/cmake/mode.cmake"
             ,
             replacements};
         for_mode.push_back(temp.getContent());
@@ -245,7 +245,7 @@ std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             replacements.insert(extand.begin(), extand.end());
         }
         FileTemplate temp{
-#include "template/static/tests.cmake"
+#include "template/cmake/tests.cmake"
             ,
             replacements};
         for_tests.push_back(temp.getContent());
@@ -267,7 +267,7 @@ std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             replacements.insert(extand.begin(), extand.end());
         }
         FileTemplate temp{
-#include "template/static/examples.cmake"
+#include "template/cmake/examples.cmake"
             ,
             replacements};
         for_examples.push_back(temp.getContent());

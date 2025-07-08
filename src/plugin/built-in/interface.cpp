@@ -163,7 +163,7 @@ std::string InterfacePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependen
                 replacements.insert(extend.begin(), extend.end());
             }
             FileTemplate temp{
-#include "template/interface/gen.cmake"
+#include "template/cmake/gen.cmake"
                 ,
                 replacements};
             for_gen.push_back(temp.getContent());
@@ -186,7 +186,7 @@ std::string InterfacePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependen
             replacements.insert(extand.begin(), extand.end());
         }
         FileTemplate temp{
-#include "template/interface/mode.cmake"
+#include "template/cmake/mode.cmake"
             ,
             replacements};
         for_mode.push_back(temp.getContent());
@@ -208,7 +208,7 @@ std::string InterfacePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependen
             replacements.insert(extand.begin(), extand.end());
         }
         FileTemplate temp{
-#include "template/interface/tests.cmake"
+#include "template/cmake/tests.cmake"
             ,
             replacements};
         for_tests.push_back(temp.getContent());
@@ -230,7 +230,7 @@ std::string InterfacePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependen
             replacements.insert(extand.begin(), extand.end());
         }
         FileTemplate temp{
-#include "template/interface/examples.cmake"
+#include "template/cmake/examples.cmake"
             ,
             replacements};
         for_examples.push_back(temp.getContent());
