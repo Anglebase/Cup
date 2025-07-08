@@ -279,7 +279,8 @@ std::vector<std::pair<std::string, DependencyInfo>> get_all_dependencies(const d
                                                                          const std::optional<fs::path> &root = std::nullopt)
 {
     std::vector<std::pair<std::string, DependencyInfo>> dependencies;
-    _get_all_dependencies(toml_config, dependencies, {}, root);
+    auto features = toml_config.build ? toml_config.build->features : std::nullopt;
+    _get_all_dependencies(toml_config, dependencies, features, root);
     return dependencies;
 }
 
