@@ -91,6 +91,34 @@ link_libs = ["lib"]
 compile_options = ["-Wall", "-Wextra"]
 link_options = ["-static"]
 
+[examples]
+# They are the same as the configuration items under [build], 
+# but only effective for the contents in the /examples directory.
+defines = ["DEBUG"]
+includes = ["include"]
+link_dirs = ["dir"]
+link_libs = ["lib"]
+compile_options = ["-Wall", "-Wextra"]
+link_options = ["-static"]
+
+[examples.debug]
+# They are the same as the configuration items under [examples], but only effective in debug mode.
+defines = ["DEBUG"]
+includes = ["include"]
+link_dirs = ["dir"]
+link_libs = ["lib"]
+compile_options = ["-Wall", "-Wextra"]
+link_options = ["-static"]
+
+[examples.release]
+# They are the same as the configuration items under [examples], but only effective in release mode.
+defines = ["DEBUG"]
+includes = ["include"]
+link_dirs = ["dir"]
+link_libs = ["lib"]
+compile_options = ["-Wall", "-Wextra"]
+link_options = ["-static"]
+
 [generator."<Gen>"]
 # They are the same as the configuration items under [build],
 # but only take effect when the CMake generator is consistent with "<GEN>".
@@ -112,6 +140,34 @@ link_options = ["-static"]
 
 [generator."<Gen>".release]
 # They are the same as the configuration items under [generator."<Gen>"], but only effective in release mode.
+defines = ["DEBUG"]
+includes = ["include"]
+link_dirs = ["dir"]
+link_libs = ["lib"]
+compile_options = ["-Wall", "-Wextra"]
+link_options = ["-static"]
+
+[feature."<feat>"]
+# They are the same as the configuration items under [build],
+# but only take effect when the features contained in "<feat>" are enabled.
+defines = ["DEBUG"]
+includes = ["include"]
+link_dirs = ["dir"]
+link_libs = ["lib"]
+compile_options = ["-Wall", "-Wextra"]
+link_options = ["-static"]
+
+[feature."<feat>".debug]
+# They are the same as the configuration items under [feature."<feat>"], but only effective in debug mode.
+defines = ["DEBUG"]
+includes = ["include"]
+link_dirs = ["dir"]
+link_libs = ["lib"]
+compile_options = ["-Wall", "-Wextra"]
+link_options = ["-static"]
+
+[feature."<feat>".release]
+# They are the same as the configuration items under [feature."<feat>"], but only effective in release mode.
 defines = ["DEBUG"]
 includes = ["include"]
 link_dirs = ["dir"]

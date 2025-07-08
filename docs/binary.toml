@@ -118,3 +118,31 @@ link_dirs = ["dir"]
 link_libs = ["lib"]
 compile_options = ["-Wall", "-Wextra"]
 link_options = ["-static"]
+
+[feature."<feat>"]
+# They are the same as the configuration items under [build],
+# but only take effect when the features contained in "<feat>" are enabled.
+defines = ["DEBUG"]
+includes = ["include"]
+link_dirs = ["dir"]
+link_libs = ["lib"]
+compile_options = ["-Wall", "-Wextra"]
+link_options = ["-static"]
+
+[feature."<feat>".debug]
+# They are the same as the configuration items under [feature."<feat>"], but only effective in debug mode.
+defines = ["DEBUG"]
+includes = ["include"]
+link_dirs = ["dir"]
+link_libs = ["lib"]
+compile_options = ["-Wall", "-Wextra"]
+link_options = ["-static"]
+
+[feature."<feat>".release]
+# They are the same as the configuration items under [feature."<feat>"], but only effective in release mode.
+defines = ["DEBUG"]
+includes = ["include"]
+link_dirs = ["dir"]
+link_libs = ["lib"]
+compile_options = ["-Wall", "-Wextra"]
+link_options = ["-static"]

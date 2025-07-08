@@ -1,0 +1,55 @@
+
+[project]
+name = "Project Name" # Required
+# Project name.
+# It can only be composed of uppercase and lowercase letters, numbers, and underscores.
+version = "0.1.0" # Required
+# Project version.
+# Used to indicate the version number of the project.
+type = "binary" # Required
+# Project type.
+# Used to indicate which builder plugin should be called when the project executes other commands.
+# It is the same as the --type parameter specified by the `new` sub command.
+license = "MIT"
+# Project license.
+# Used to indicate license information for the project.
+
+[build]
+generator = "MinGW Makefiles"
+# Specify the generator used by CMake
+# This option is used to control the toolchain called by CMake
+# By default, Visual Studio 17 2022 (Windows) Unix Makefiles (Linux) are used
+# Please refer to the CMake documentation for other options
+defines = ["DEBUG", "ONE=1"]
+# Add global macro
+# This option adds macro definitions for building projects
+includes = ["include"]
+# Add additional header file search path
+link_dirs = ["link_dir"]
+# Add additional link library search paths
+link_libs = ["lib1", "lib2"]
+# Add additional link libraries
+compile_options = ["-Wall", "-Wextra"]
+# Add compilation options
+link_options = ["-static"]
+# Add link options
+
+[build.export]
+compile_commands = "compile_commands.json"
+# Specify the path to generate the compile_commands.json file
+# If empty, it will be located at the default build location (<project-dir>/target/build/cake)
+# If this option is not specified, the file will not be generated
+# This option is only valid for some CMake generators, please refer to the CMake documentation for details
+
+[dependencies]
+name = { path = "path/to/package", version = "1.0.0", url="https://github.com/user/repo", features = ["feature1", "feature2"], optional = ["feat1", "feat2"] }
+# Add dependencies
+# 
+# Among them:
+# The `name` indicates the name of the dependency item, which is interpreted by Cup as the name referenced in the `link_ibraries` of the build target in CMake
+# `path` indicates that the dependency item is a local project path
+# `version` indicates the version of the dependency item
+# `url` indicates the URL of the dependency item, used for downloading from a remote repository. For Github projects, shorthand `@<user>/<repo>` is allowed`
+# `features` indicates the functional feature macro of a dependency item. How to explain that the functional feature macro is defined by the dependency's builder plugin
+# `optional` indicates whether a dependency is necessary. If specified as [], the dependency will be ignored. If not empty, the dependency will only be introduced when the content has its corresponding characteristics.
+# At least one of the configuration parameters `path` and `url` needs to be specified
