@@ -13,11 +13,13 @@ namespace data
         Project project;
         std::optional<Build> build;
         std::optional<std::map<std::string, Dependency>> dependencies;
+        std::optional<Table<Array<std::string>>> features;
     };
 
     TOML_DESERIALIZE(Default, {
         TOML_REQUIRE(project);
         TOML_OPTIONS(build);
         TOML_OPTIONS(dependencies);
+        TOML_OPTIONS(features);
     });
 }

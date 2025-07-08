@@ -194,9 +194,39 @@ struct DependencyInfo
     std::vector<std::string> features;
 };
 
+std::vector<std::string> get_features(
+    const std::optional<std::vector<std::string>> &features,
+    const std::optional<std::map<std::string, std::vector<std::string>>> &table)
+{
+    if (!features)
+        return std::vector<std::string>();
+    auto result = *features;
+    if (!table)
+        return result;
+    std::vector<std::string> buffer;
+    bool contains = false;
+    do
+    {
+        contains = false;
+        for (const auto &[key, value] : *table)
+        {
+            auto iter = std::find(result.begin(), result.end(), key);
+            if (iter != result.end())
+            {
+                contains = true;
+                if (std::find(buffer.begin(), buffer.end(), *iter) == buffer.end())
+                    buffer.push_back(*iter);
+                result.erase(iter);
+                result.insert(result.end(), value.begin(), value.end());
+            }
+        }
+    } while (contains);
+    return result;
+}
+
 void _get_all_dependencies(
     const data::Default &toml_config, std::vector<std::pair<std::string, DependencyInfo>> &dependencies,
-    const std::optional<fs::path> &root = std::nullopt)
+    const std::optional<std::vector<std::string>> features, const std::optional<fs::path> &root = std::nullopt)
 {
     for (const auto &[name, info] : toml_config.dependencies.value_or(std::map<std::string, data::Dependency>{}))
     {
@@ -210,7 +240,19 @@ void _get_all_dependencies(
             .version = parse_version(version),
             .features = info.features.value_or(std::vector<std::string>{}),
         };
-        _get_all_dependencies(dep_config, dependencies, path);
+        if (!info.optional)
+            _get_all_dependencies(dep_config, dependencies, info.features, path);
+        else
+        {
+            // Expand features
+            auto all_features = get_features(features, dep_config.features);
+            if (std::find_if(
+                    all_features.begin(), all_features.end(), [&](const auto &f)
+                    { return std::find(info.optional->begin(), info.optional->end(), f) != info.optional->end(); }) != all_features.end())
+                _get_all_dependencies(dep_config, dependencies, info.features, path);
+            else
+                continue;
+        }
         decltype(dependencies.begin()) iter;
         if ((iter = std::find_if(dependencies.begin(), dependencies.end(), [&](const auto &item)
                                  { return item.first == name; })) != dependencies.end())
@@ -237,7 +279,7 @@ std::vector<std::pair<std::string, DependencyInfo>> get_all_dependencies(const d
                                                                          const std::optional<fs::path> &root = std::nullopt)
 {
     std::vector<std::pair<std::string, DependencyInfo>> dependencies;
-    _get_all_dependencies(toml_config, dependencies, root);
+    _get_all_dependencies(toml_config, dependencies, {}, root);
     return dependencies;
 }
 

@@ -10,6 +10,7 @@ namespace data
         std::optional<fs::path> path;
         std::optional<std::string> url;
         std::optional<std::vector<std::string>> features;
+        std::optional<std::vector<std::string>> optional;
     };
 
     TOML_DESERIALIZE(Dependency, {
@@ -17,5 +18,6 @@ namespace data
         TOML_OPTIONS(path);
         TOML_OPTIONS(url);
         TOML_OPTIONS(features);
+        TOML_OPTIONS(optional);
     });
 }

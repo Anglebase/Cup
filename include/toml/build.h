@@ -21,6 +21,7 @@ namespace data
         std::optional<Integer> stdcxx;
         std::optional<Export> export_data;
         std::optional<Integer> jobs;
+        std::optional<Array<std::string>> features;
     };
 
     TOML_DESERIALIZE(Build, {

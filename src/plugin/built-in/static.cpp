@@ -154,9 +154,9 @@ inline std::string dealpath(const fs::path &p)
 }
 std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &except)
 {
-    auto [name, _1, current_dir, root_dir, features] = ctx;
+    auto [name, _1, current_dir, _, features] = ctx;
     auto src = current_dir / "src";
-    auto config = data::parse_toml_file<data::Static>(root_dir / "cup.toml");
+    auto config = data::parse_toml_file<data::Static>(current_dir / "cup.toml");
 
     // Generator specific configuration items
     std::vector<std::string> for_gen;
@@ -264,13 +264,13 @@ std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
                                                 { return p.first; })
                                          : ""},
             {"UNIQUE", name + "_" + replace(config.project.version, ".", "_")},
-            {"TEST_MAIN_FILES", join(this->get_test_mains(root_dir), " ", dealpath)},
-            {"TEST_OUT_DIR", dealpath(Resource::bin(root_dir) / "tests")},
-            {"EXAMPLE_MAIN_FILES", join(this->get_example_mains(root_dir), " ", dealpath)},
-            {"EXAMPLE_OUT_DIR", dealpath(Resource::bin(root_dir) / "examples")},
+            {"TEST_MAIN_FILES", join(this->get_test_mains(current_dir), " ", dealpath)},
+            {"TEST_OUT_DIR", dealpath(Resource::bin(current_dir) / "tests")},
+            {"EXAMPLE_MAIN_FILES", join(this->get_example_mains(current_dir), " ", dealpath)},
+            {"EXAMPLE_OUT_DIR", dealpath(Resource::bin(current_dir) / "examples")},
             {"INC", dealpath(current_dir / "include")},
             {"EXPORT_INC", dealpath(current_dir / "export")},
-            {"SOURCES", join(this->get_source_files(root_dir), " ", dealpath)},
+            {"SOURCES", join(this->get_source_files(current_dir), " ", dealpath)},
             {"STDC", config.build && config.build->stdc ? std::to_string(*config.build->stdc) : ""},
             {"STDCXX", config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : ""},
         },

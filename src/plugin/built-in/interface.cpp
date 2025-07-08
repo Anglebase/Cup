@@ -119,8 +119,8 @@ inline std::string dealpath(const fs::path &p)
 }
 std::string InterfacePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &except)
 {
-    auto [name, _, current_dir, root_dir, features] = ctx;
-    auto config = data::parse_toml_file<data::Interface>(root_dir / "cup.toml");
+    auto [name, _1, current_dir, _, features] = ctx;
+    auto config = data::parse_toml_file<data::Interface>(current_dir / "cup.toml");
     // Generator specific configuration items
     std::vector<std::string> for_gen;
     if (config.generator)
@@ -227,10 +227,10 @@ std::string InterfacePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependen
                                                 { return p.first; })
                                          : ""},
             {"UNIQUE", name + "_" + replace(config.project.version, ".", "_")},
-            {"TEST_MAIN_FILES", join(this->get_all_tests_main_files(root_dir), " ", dealpath)},
-            {"TEST_OUT_DIR", dealpath(Resource::bin(root_dir) / "tests")},
-            {"EXAMPLE_MAIN_FILES", join(this->get_examples_main_files(root_dir), " ", dealpath)},
-            {"EXAMPLE_OUT_DIR", dealpath(Resource::bin(root_dir) / "examples")},
+            {"TEST_MAIN_FILES", join(this->get_all_tests_main_files(current_dir), " ", dealpath)},
+            {"TEST_OUT_DIR", dealpath(Resource::bin(current_dir) / "tests")},
+            {"EXAMPLE_MAIN_FILES", join(this->get_examples_main_files(current_dir), " ", dealpath)},
+            {"EXAMPLE_OUT_DIR", dealpath(Resource::bin(current_dir) / "examples")},
             {"INC", dealpath(current_dir / "include")},
             {"STDC", config.build && config.build->stdc ? std::to_string(*config.build->stdc) : ""},
             {"STDCXX", config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : ""},
