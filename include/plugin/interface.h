@@ -78,6 +78,11 @@ public:
     /// @param is_dependency Indicate whether it is used as a dependency when calling the generation of CMake logic.
     /// @return CMakeLists.txt content.
     virtual std::string gen_cmake(const CMakeContext &context, bool is_dependency, std::optional<std::string> &except) = 0;
+    /// @brief The return value of this interface will be used as the file content before the project command in the CMake file.
+    /// @param context Context data.
+    /// @param is_dependency Indicate whether it is used as a dependency when calling the generation of CMake logic.
+    /// @return CMakeLists.txt content.
+    virtual std::string gen_cmake_global(const CMakeContext &context, bool is_dependency, std::optional<std::string> &except) { return ""; }
     /// @brief This function should return the absolute path of the executable file to be executed.
     /// @param data Context data.
     /// @return Absolute path of a valid executable file.
