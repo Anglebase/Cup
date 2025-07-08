@@ -97,6 +97,7 @@ public:
 class Clean : public SubCommand
 {
     fs::path root;
+    bool all{false};
 
 public:
     Clean(const cmd::Args &args);

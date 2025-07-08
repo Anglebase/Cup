@@ -41,9 +41,10 @@ Among them:
 
 ### `clean`
 The command format for this sub command is:
-+   `cup clean [--dir <project-dir>]`
++   `cup clean [-all] [--dir <project-dir>]`
 
 Among them:
++ `-all`If this option is specified, it will be cleaned up along with the build results (target directory). If not specified, only the intermediate files of the build (target/build directory) will be cleaned up
 + `project-dir`Indicate the directory where the project is located, which by default is the current command execution directory.
 
 ### `install`

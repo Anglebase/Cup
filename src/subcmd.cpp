@@ -545,6 +545,7 @@ Clean::Clean(const cmd::Args &args) : SubCommand(args)
         this->root = ".";
     if (this->root.is_relative())
         this->root = fs::current_path() / this->root;
+    this->all = args.has_flag("all");
 
     if (!fs::exists(this->root))
         throw std::runtime_error("The directory '" + this->root.lexically_normal().string() + "' not exists.");
@@ -557,10 +558,10 @@ int Clean::run()
     auto cup_toml = this->root / "cup.toml";
     if (!fs::exists(cup_toml))
         throw std::runtime_error("The directory '" + this->root.string() + "' is not a cup project.");
-    auto build_dir = this->root / "target" / "build";
+    auto clean_dir = all ? Resource::target(this->root) : Resource::build(this->root);
     LOG_INFO("Cleaning build directory...");
-    if (fs::exists(build_dir))
-        fs::remove_all(build_dir);
+    if (fs::exists(clean_dir))
+        fs::remove_all(clean_dir);
     LOG_INFO("Finished...");
     return 0;
 }
