@@ -40,8 +40,9 @@ New::New(const cmd::Args &args) : SubCommand(args)
 
 int New::run()
 {
+    LOG_MSG("Creating...");
     auto plugin = PluginLoader(this->type);
-    LOG_INFO("Creating new project ", this->name, " with type ", this->type);
+    LOG_INFO("Creating new project '", this->name, "' with type '", this->type, "'.");
     std::optional<std::string> except = std::nullopt;
     auto plugin_name = plugin->getName(except);
     if (except)
@@ -64,6 +65,7 @@ int New::run()
         fs::remove_all(this->root / this->name);
         throw std::runtime_error(*except);
     }
+    LOG_MSG("Finished.");
     return result;
 }
 const std::unordered_map<std::string, std::string> Help::help_info = {
@@ -150,6 +152,11 @@ Build::Build(const cmd::Args &args) : SubCommand(args)
     this->is_release = args.has_flag("release") || args.has_flag("r");
     if (args.getPositions().size() >= 2)
         this->command = args.getPositions()[1];
+
+    if (!fs::exists(this->root))
+        throw std::runtime_error("The directory '" + this->root.lexically_normal().string() + "' not exists.");
+    if (!fs::exists(this->root / "cup.toml"))
+        throw std::runtime_error("The directory '" + this->root.lexically_normal().string() + "' not a cup project.");
 }
 
 using VersionInfo = std::tuple<int, int, int>;
@@ -248,6 +255,27 @@ void _get_all_dependencies(
             {
                 iter->second = dep_info;
             }
+            auto exist_version = join(std::vector<std::string>{
+                                          std::to_string(std::get<0>(exist_info.version)),
+                                          std::to_string(std::get<1>(exist_info.version)),
+                                          std::to_string(std::get<2>(exist_info.version)),
+                                      },
+                                      ".");
+            auto dep_version = join(std::vector<std::string>{
+                                        std::to_string(std::get<0>(dep_info.version)),
+                                        std::to_string(std::get<1>(dep_info.version)),
+                                        std::to_string(std::get<2>(dep_info.version)),
+                                    },
+                                    ".");
+            auto result_version = join(std::vector<std::string>{
+                                           std::to_string(std::get<0>(iter->second.version)),
+                                           std::to_string(std::get<1>(iter->second.version)),
+                                           std::to_string(std::get<2>(iter->second.version)),
+                                       },
+                                       ".");
+            LOG_WARN("Merge dependencies:", path.lexically_normal().string(),
+                     "with version ", exist_version, " and version ", dep_version, " -> ",
+                     result_version);
         }
         else
         {
@@ -295,7 +323,7 @@ int Build::run()
     }
     auto end_name = toml_config.project.name;
     auto end_type = toml_config.project.type;
-    LOG_INFO("Generating cmake content for ", end_name, " with type ", end_type);
+    LOG_INFO("Generating cmake content for '", end_name, "' with type '", end_type, "'.");
     auto loader = PluginLoader(end_type);
     context.name = end_name;
     context.current_dir = this->root;
@@ -517,6 +545,11 @@ Clean::Clean(const cmd::Args &args) : SubCommand(args)
         this->root = ".";
     if (this->root.is_relative())
         this->root = fs::current_path() / this->root;
+
+    if (!fs::exists(this->root))
+        throw std::runtime_error("The directory '" + this->root.lexically_normal().string() + "' not exists.");
+    if (!fs::exists(this->root / "cup.toml"))
+        throw std::runtime_error("The directory '" + this->root.lexically_normal().string() + "' not a cup project.");
 }
 
 int Clean::run()
