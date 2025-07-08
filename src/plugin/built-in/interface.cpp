@@ -273,12 +273,12 @@ fs::path InterfacePlugin::run_project(const RunProjectData &data, std::optional<
     if (mode == "Debug" || mode == "Release")
     {
         auto dll = Resource::dll(root) / mode;
-        fs::copy(dll, result.parent_path(), fs::copy_options::overwrite_existing | fs::copy_options::create_hard_links);
+        fs::copy(dll, result.parent_path(), fs::copy_options::overwrite_existing);
     }
     else
     {
         auto dll = Resource::dll(root);
-        fs::copy(dll, result.parent_path(), fs::copy_options::overwrite_existing | fs::copy_options::create_hard_links);
+        fs::copy(dll, result.parent_path(), fs::copy_options::overwrite_existing);
     }
     return result;
 }
