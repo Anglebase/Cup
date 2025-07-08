@@ -10,9 +10,6 @@ type = "binary" # Required
 # Project type.
 # Used to indicate which builder plugin should be called when the project executes other commands.
 # It is the same as the --type parameter specified by the `new` sub command.
-license = "MIT"
-# Project license.
-# Used to indicate license information for the project.
 
 [build]
 generator = "MinGW Makefiles"
@@ -20,19 +17,11 @@ generator = "MinGW Makefiles"
 # This option is used to control the toolchain called by CMake
 # By default, Visual Studio 17 2022 (Windows) Unix Makefiles (Linux) are used
 # Please refer to the CMake documentation for other options
-defines = ["DEBUG", "ONE=1"]
-# Add global macro
-# This option adds macro definitions for building projects
-includes = ["include"]
-# Add additional header file search path
-link_dirs = ["link_dir"]
-# Add additional link library search paths
-link_libs = ["lib1", "lib2"]
-# Add additional link libraries
-compile_options = ["-Wall", "-Wextra"]
-# Add compilation options
-link_options = ["-static"]
-# Add link options
+jobs = 0
+# Specify the number of threads involved in the build, default is 1.
+# If specified as zero, the number of CPU cores of the device will be used.
+features = ["feat1", "feat2"]
+# Specify the feature to enable when the current project is not a dependency.
 
 [build.export]
 compile_commands = "compile_commands.json"
@@ -40,6 +29,10 @@ compile_commands = "compile_commands.json"
 # If empty, it will be located at the default build location (<project-dir>/target/build/cake)
 # If this option is not specified, the file will not be generated
 # This option is only valid for some CMake generators, please refer to the CMake documentation for details
+
+[features]
+# Specify the dependency relationships between specified features.
+feat1 = ["feat2", "feat3"]
 
 [dependencies]
 name = { path = "path/to/package", version = "1.0.0", url="https://github.com/user/repo", features = ["feature1", "feature2"], optional = ["feat1", "feat2"] }
