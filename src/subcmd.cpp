@@ -5,6 +5,7 @@
 #include <algorithm>
 #include "res.h"
 #include "utils/utils.h"
+#include "plugin/built-in/utils.h"
 #include <tuple>
 #include "cmd/cmake.h"
 #include "cmd/git.h"

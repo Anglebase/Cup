@@ -3,6 +3,7 @@
 #endif
 
 #include "plugin/built-in/module.h"
+#include "plugin/built-in/utils.h"
 #include "template.h"
 #include "res.h"
 #include "utils/utils.h"
@@ -82,51 +83,6 @@ int ModulePlugin::run_new(const NewData &data, std::optional<std::string> &excep
         ofs << "/target" << std::endl;
     }
     return 0;
-}
-
-template <class T>
-std::unordered_map<std::string, std::string> gen_map(const std::string &prefix, const std::optional<T> &config)
-{
-    return {
-        {
-            prefix + "INCLUDE_DIRS",
-            config && config->includes
-                ? join(*config->includes, " ", [](const fs::path &p)
-                       { return '"' + replace(p.string()) + '"'; })
-                : "",
-        },
-        {
-            prefix + "LIB_DIRS",
-            config && config->link_dirs
-                ? join(*config->link_dirs, " ", [](const fs::path &p)
-                       { return '"' + replace(p.string()) + '"'; })
-                : "",
-        },
-        {
-            prefix + "LIBS",
-            config && config->link_libs ? join(*config->link_libs, " ") : "",
-        },
-        {
-            prefix + "DEFINES",
-            config && config->defines
-                ? join(*config->defines, " ", [](const std::string &s)
-                       { return "-D" + s; })
-                : "",
-        },
-        {
-            prefix + "COPTIONS",
-            config && config->compile_options ? join(*config->compile_options, " ") : "",
-        },
-        {
-            prefix + "LINKOPTIONS",
-            config && config->link_options ? join(*config->link_options, " ") : "",
-        },
-    };
-}
-
-inline std::string dealpath(const fs::path &p)
-{
-    return '"' + replace(p.string()) + '"';
 }
 
 std::string ModulePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &except)

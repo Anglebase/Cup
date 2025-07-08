@@ -3,6 +3,7 @@
 #endif
 
 #include "plugin/built-in/binary.h"
+#include "plugin/built-in/utils.h"
 #include "template.h"
 #include "utils/utils.h"
 #include "toml/default/binary.h"
@@ -75,11 +76,6 @@ std::vector<fs::path> BinaryPlugin::get_tests_main_files(const fs::path &root)
     return tests_main_files;
 }
 
-inline std::string dealpath(const fs::path &p)
-{
-    return '"' + replace(p.string()) + '"';
-}
-
 std::string BinaryPlugin::getName(std::optional<std::string> &) const { return "binary"; }
 
 int BinaryPlugin::run_new(const NewData &data, std::optional<std::string> &)
@@ -113,46 +109,6 @@ int BinaryPlugin::run_new(const NewData &data, std::optional<std::string> &)
             }}.getContent();
     }
     return 0;
-}
-
-template <class T>
-std::unordered_map<std::string, std::string> gen_map(const std::string &prefix, const std::optional<T> &config)
-{
-    return {
-        {
-            prefix + "INCLUDE_DIRS",
-            config && config->includes
-                ? join(*config->includes, " ", [](const fs::path &p)
-                       { return '"' + replace(p.string()) + '"'; })
-                : "",
-        },
-        {
-            prefix + "LIB_DIRS",
-            config && config->link_dirs
-                ? join(*config->link_dirs, " ", [](const fs::path &p)
-                       { return '"' + replace(p.string()) + '"'; })
-                : "",
-        },
-        {
-            prefix + "LIBS",
-            config && config->link_libs ? join(*config->link_libs, " ") : "",
-        },
-        {
-            prefix + "DEFINES",
-            config && config->defines
-                ? join(*config->defines, " ", [](const std::string &s)
-                       { return "-D" + s; })
-                : "",
-        },
-        {
-            prefix + "COPTIONS",
-            config && config->compile_options ? join(*config->compile_options, " ") : "",
-        },
-        {
-            prefix + "LINKOPTIONS",
-            config && config->link_options ? join(*config->link_options, " ") : "",
-        },
-    };
 }
 
 std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &except)
