@@ -173,8 +173,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
         FileTemplate temp{
 #include "template/cmake/feature.cmake"
             ,
-            gen_feat_replacement(has_unique)
-        };
+            gen_feat_replacement(has_unique)};
         for_feats.push_back(temp.getContent());
     }
     // Generator specific configuration items
@@ -285,6 +284,17 @@ fs::path BinaryPlugin::run_project(const RunProjectData &data, std::optional<std
         result = result.parent_path() / (is_debug ? "Debug" : "Release") / result.filename();
     if (!fs::exists(result))
         except = "Cannot find executable file" + result.filename().string() + ".";
+    auto mode = result.parent_path().filename().string();
+    if (mode == "Debug" || mode == "Release")
+    {
+        auto dll = Resource::dll(root) / mode;
+        fs::copy(dll, result.parent_path(), fs::copy_options::overwrite_existing | fs::copy_options::create_hard_links);
+    }
+    else
+    {
+        auto dll = Resource::dll(root);
+        fs::copy(dll, result.parent_path(), fs::copy_options::overwrite_existing | fs::copy_options::create_hard_links);
+    }
     return result;
 }
 
