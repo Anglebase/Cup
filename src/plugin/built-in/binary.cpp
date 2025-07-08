@@ -164,7 +164,28 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
     auto src = project / "src";
     auto include = project / "include";
     auto config = data::parse_toml_file<data::Binary>(project / "cup.toml");
-
+    std::vector<std::string> deps;
+    {
+        std::vector<std::string> feats;
+        if (is_dependency)
+            feats = get_features(ctx.features, config.features);
+        else if (config.build)
+            feats = get_features(config.build->features, config.features);
+        if (config.dependencies)
+        {
+            for (const auto &[name, info] : *config.dependencies)
+            {
+                if (!info.optional ||
+                    std::find_if(
+                        info.optional->begin(), info.optional->end(),
+                        [&](const std::string &f)
+                        {
+                            return std::find(feats.begin(), feats.end(), f) != feats.end();
+                        }) != info.optional->end())
+                    deps.push_back(name);
+            }
+        }
+    }
     // Generator specific configuration items
     std::vector<std::string> for_gen;
     if (config.generator)
@@ -250,11 +271,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             {"UNIQUE", name + "_" + replace(config.project.version, ".", "_")},
             {"TEST_MAIN_FILES", join(this->get_tests_main_files(current_dir), " ", dealpath)},
             {"TEST_OUT_DIR", dealpath(Resource::bin(root_dir) / "tests")},
-            {"DEPS",
-             config.dependencies
-                 ? join(*config.dependencies, " ", [](const std::pair<std::string, data::Dependency> &d)
-                        { return d.first; })
-                 : ""},
+            {"DEPS", join(deps, " ")},
             {"INC", dealpath(current_dir / "include")},
             {"STDC", config.build && config.build->stdc ? std::to_string(*config.build->stdc) : ""},
             {"STDCXX", config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : ""},

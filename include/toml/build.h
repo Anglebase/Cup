@@ -37,6 +37,7 @@ namespace data
         TOML_OPTIONS(jobs);
         TOML_OPTIONS(debug);
         TOML_OPTIONS(release);
+        TOML_OPTIONS(features);
         options(table, "export", result.export_data, key);
     });
 }

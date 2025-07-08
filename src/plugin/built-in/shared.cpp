@@ -160,6 +160,28 @@ std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
     auto src = current_dir / "src";
     auto config = data::parse_toml_file<data::Shared>(current_dir / "cup.toml");
 
+    std::vector<std::string> deps;
+    {
+        std::vector<std::string> feats;
+        if (is_dependency)
+            feats = get_features(ctx.features, config.features);
+        else if (config.build)
+            feats = get_features(config.build->features, config.features);
+        if (config.dependencies)
+        {
+            for (const auto &[name, info] : *config.dependencies)
+            {
+                if (!info.optional ||
+                    std::find_if(
+                        info.optional->begin(), info.optional->end(),
+                        [&](const std::string &f)
+                        {
+                            return std::find(feats.begin(), feats.end(), f) != feats.end();
+                        }) != info.optional->end())
+                    deps.push_back(name);
+            }
+        }
+    }
     // Generator specific configuration items
     std::vector<std::string> for_gen;
     if (config.generator)
@@ -262,9 +284,7 @@ std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             {"FOR_EXAMPLES", join(for_examples, "\n")},
             {"EXPORT_NAME", name},
             {"IS_DEP", is_dependency ? "ON" : "OFF"},
-            {"DEPS", config.dependencies ? join(*config.dependencies, " ", [](const std::pair<std::string, data::Dependency> &p)
-                                                { return p.first; })
-                                         : ""},
+            {"DEPS", join(deps, " ")},
             {"UNIQUE", name + "_" + replace(config.project.version, ".", "_")},
             {"TEST_MAIN_FILES", join(this->get_test_mains(current_dir), " ", dealpath)},
             {"TEST_OUT_DIR", dealpath(Resource::bin(root_dir) / "tests")},

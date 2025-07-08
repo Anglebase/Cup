@@ -116,31 +116,32 @@ public:
         void destroyPlugin(IPlugin *plugin) { delete plugin; } \
     }
 
-inline void _find_all_src(const fs::path &dir, std::vector<fs::path> &src_files)
+inline std::vector<std::string> get_features(
+    const std::optional<std::vector<std::string>> &features,
+    const std::optional<std::map<std::string, std::vector<std::string>>> &table)
 {
-    for (const auto &entry : fs::directory_iterator(dir))
+    if (!features)
+        return std::vector<std::string>();
+    auto result = *features;
+    if (!table)
+        return result;
+    std::vector<std::string> buffer;
+    bool contains = false;
+    do
     {
-        if (entry.is_directory())
-            _find_all_src(entry.path(), src_files);
-        else if (entry.is_regular_file())
-            src_files.push_back(entry.path());
-    }
-}
-
-inline std::vector<fs::path> find_all_src(const fs::path &src)
-{
-    std::vector<fs::path> src_files;
-    _find_all_src(src, src_files);
-    return src_files;
-}
-
-inline std::vector<fs::path> find_all_example_main(const fs::path &example)
-{
-    std::vector<fs::path> main_files;
-    if (!fs::exists(example))
-        return main_files;
-    for (const auto &entry : fs::directory_iterator(example))
-        if (entry.is_regular_file())
-            main_files.push_back(entry.path());
-    return main_files;
+        contains = false;
+        for (const auto &[key, value] : *table)
+        {
+            auto iter = std::find(result.begin(), result.end(), key);
+            if (iter != result.end())
+            {
+                contains = true;
+                if (std::find(buffer.begin(), buffer.end(), *iter) == buffer.end())
+                    buffer.push_back(*iter);
+                result.erase(iter);
+                result.insert(result.end(), value.begin(), value.end());
+            }
+        }
+    } while (contains);
+    return result;
 }

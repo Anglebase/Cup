@@ -194,36 +194,6 @@ struct DependencyInfo
     std::vector<std::string> features;
 };
 
-std::vector<std::string> get_features(
-    const std::optional<std::vector<std::string>> &features,
-    const std::optional<std::map<std::string, std::vector<std::string>>> &table)
-{
-    if (!features)
-        return std::vector<std::string>();
-    auto result = *features;
-    if (!table)
-        return result;
-    std::vector<std::string> buffer;
-    bool contains = false;
-    do
-    {
-        contains = false;
-        for (const auto &[key, value] : *table)
-        {
-            auto iter = std::find(result.begin(), result.end(), key);
-            if (iter != result.end())
-            {
-                contains = true;
-                if (std::find(buffer.begin(), buffer.end(), *iter) == buffer.end())
-                    buffer.push_back(*iter);
-                result.erase(iter);
-                result.insert(result.end(), value.begin(), value.end());
-            }
-        }
-    } while (contains);
-    return result;
-}
-
 void _get_all_dependencies(
     const data::Default &toml_config, std::vector<std::pair<std::string, DependencyInfo>> &dependencies,
     const std::optional<std::vector<std::string>> features, const std::optional<fs::path> &root = std::nullopt)

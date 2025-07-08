@@ -17,6 +17,7 @@ namespace data
         std::optional<std::map<std::string, Dependency>> dependencies;
         std::optional<Test> tests;
         std::optional<Table<Generator>> generator;
+        std::optional<Table<Array<std::string>>> features;
     };
 
     TOML_DESERIALIZE(Module, {
@@ -25,5 +26,6 @@ namespace data
         TOML_OPTIONS(dependencies);
         TOML_OPTIONS(tests);
         TOML_OPTIONS(generator);
+        TOML_OPTIONS(features);
     });
 }

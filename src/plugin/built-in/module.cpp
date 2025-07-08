@@ -131,13 +131,33 @@ inline std::string dealpath(const fs::path &p)
 
 std::string ModulePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &except)
 {
+    if (is_dependency)
+        throw std::runtime_error("Module project cannot be used as a dependency.");
     auto [name, _1, current_dir, root_dir, _2] = ctx;
     auto src = current_dir / "src";
     auto config = data::parse_toml_file<data::Module>(root_dir / "cup.toml");
-    if (is_dependency)
+
+    std::vector<std::string> deps;
     {
-        except = "Module project cannot be used as a dependency.";
-        return std::string();
+        std::vector<std::string> feats;
+        if (is_dependency)
+            feats = get_features(ctx.features, config.features);
+        else if (config.build)
+            feats = get_features(config.build->features, config.features);
+        if (config.dependencies)
+        {
+            for (const auto &[name, info] : *config.dependencies)
+            {
+                if (!info.optional ||
+                    std::find_if(
+                        info.optional->begin(), info.optional->end(),
+                        [&](const std::string &f)
+                        {
+                            return std::find(feats.begin(), feats.end(), f) != feats.end();
+                        }) != info.optional->end())
+                    deps.push_back(name);
+            }
+        }
     }
 
     // Generator specific configuration items
@@ -223,11 +243,7 @@ std::string ModulePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             {"UNIQUE", name + "_" + replace(config.project.version, ".", "_")},
             {"TEST_MAIN_FILES", join(this->get_test_main_files(current_dir), " ", dealpath)},
             {"TEST_OUT_DIR", dealpath(Resource::bin(root_dir) / "tests")},
-            {"DEPS",
-             config.dependencies
-                 ? join(*config.dependencies, " ", [](const std::pair<std::string, data::Dependency> &d)
-                        { return d.first; })
-                 : ""},
+            {"DEPS", join(deps, " ")},
             {"INC", dealpath(current_dir / "include")},
             {"STDC", config.build && config.build->stdc ? std::to_string(*config.build->stdc) : ""},
             {"STDCXX", config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : ""},
