@@ -163,8 +163,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
     auto project = current_dir;
     auto src = project / "src";
     auto include = project / "include";
-    auto config = data::Deserializer<data::Binary>::deserialize(
-        toml::parse_file((project / "cup.toml").string()));
+    auto config = data::parse_toml_file<data::Binary>(project / "cup.toml");
 
     // Generator specific configuration items
     std::vector<std::string> for_gen;
@@ -282,8 +281,7 @@ fs::path BinaryPlugin::run_project(const RunProjectData &data, std::optional<std
 
 std::optional<std::string> BinaryPlugin::get_target(const RunProjectData &data, std::optional<std::string> &except) const
 {
-    auto config = data::Deserializer<data::Binary>::deserialize(
-        toml::parse_file((data.root / "cup.toml").string()));
+    auto config = data::parse_toml_file<data::Binary>(data.root / "cup.toml");
     const auto unique_suffix = replace(config.project.version, ".", "_");
     const auto target_name = data.name;
     auto [command, root, name, is_debug] = data;

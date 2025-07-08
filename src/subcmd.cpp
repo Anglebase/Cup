@@ -172,8 +172,7 @@ std::pair<fs::path, std::string> get_path(
         if (path.is_relative() && root.has_value())
             path = *root / path;
         path.lexically_normal();
-        auto toml_config = data::Deserializer<data::Default>::deserialize(
-            toml::parse_file((path / "cup.toml").string()));
+        auto toml_config = data::parse_toml_file<data::Default>(path / "cup.toml");
         if (dep.version && toml_config.project.version != dep.version.value())
             LOG_WARN("Dependency version is not consistent with the version in 'cup.toml'.");
         return {path, toml_config.project.version};
@@ -204,8 +203,7 @@ void _get_all_dependencies(
         auto [path, version] = get_path(info, true, root);
         if (!fs::exists(path))
             throw std::runtime_error("Dependency '" + name + "' not found.");
-        auto dep_config = data::Deserializer<data::Default>::deserialize(
-            toml::parse_file((path / "cup.toml").string()));
+        auto dep_config = data::parse_toml_file<data::Default>(path / "cup.toml");
         auto dep_info = DependencyInfo{
             .path = path,
             .type = dep_config.project.type,
@@ -246,8 +244,7 @@ std::vector<std::pair<std::string, DependencyInfo>> get_all_dependencies(const d
 int Build::run()
 {
     // Parse cup.toml file.
-    auto toml_config = data::Deserializer<data::Default>::deserialize(
-        toml::parse_file((this->root / "cup.toml").string()));
+    auto toml_config = data::parse_toml_file<data::Default>(this->root / "cup.toml");
     // Get all dependencies.
     CMakeContext context{
         .name = toml_config.project.name,
@@ -518,8 +515,7 @@ Run::Run(const cmd::Args &args) : Build(args)
 
 int Run::run()
 {
-    auto toml_config = data::Deserializer<data::Default>::deserialize(
-        toml::parse_file((this->root / "cup.toml").string()));
+    auto toml_config = data::parse_toml_file<data::Default>(this->root / "cup.toml");
     RunProjectData data{
         .command = this->command,
         .root = this->root,

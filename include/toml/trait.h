@@ -69,7 +69,10 @@ namespace data
         {
             if (!v.is_string())
                 throw std::runtime_error("toml value for " + key + " is not a string");
-            return Dollar::dollar(*v.value<std::string>());
+            fs::path path = Dollar::dollar(*v.value<std::string>());
+            if (path.is_relative())
+                path = Dollar::ROOT / path;
+            return path;
         }
     };
 
@@ -121,6 +124,13 @@ namespace data
         table.contains(key)
             ? value = Deserializer<T>::deserialize(table.at(key), key_desc)
             : value = std::nullopt;
+    }
+
+    template <Deserializable T>
+    T parse_toml_file(const fs::path &path)
+    {
+        Dollar::ROOT = path.parent_path();
+        return Deserializer<T>::deserialize(toml::parse_file(path.string()));
     }
 }
 

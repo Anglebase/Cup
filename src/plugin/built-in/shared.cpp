@@ -158,7 +158,7 @@ std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
 {
     auto [name, _1, current_dir, root_dir, features] = ctx;
     auto src = current_dir / "src";
-    auto config = data::Deserializer<data::Shared>::deserialize(toml::parse(read_file(current_dir / "cup.toml")));
+    auto config = data::parse_toml_file<data::Shared>(root_dir / "cup.toml");
 
     // Generator specific configuration items
     std::vector<std::string> for_gen;
@@ -304,7 +304,7 @@ fs::path SharedPlugin::run_project(const RunProjectData &data, std::optional<std
 std::optional<std::string> SharedPlugin::get_target(const RunProjectData &data, std::optional<std::string> &except) const
 {
     auto [command, root, name, is_debug] = data;
-    auto config = data::Deserializer<data::Shared>::deserialize(toml::parse(read_file(root / "cup.toml")));
+    auto config = data::parse_toml_file<data::Shared>(root / "cup.toml");
     auto unique_suffix = name + "_" + replace(config.project.version, ".", "_");
     if (!command)
         return std::optional<std::string>();

@@ -120,8 +120,7 @@ inline std::string dealpath(const fs::path &p)
 std::string InterfacePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &except)
 {
     auto [name, _, current_dir, root_dir, features] = ctx;
-    auto config = data::Deserializer<data::Interface>::deserialize(toml::parse_file((current_dir / "cup.toml").string()));
-
+    auto config = data::parse_toml_file<data::Interface>(root_dir / "cup.toml");
     // Generator specific configuration items
     std::vector<std::string> for_gen;
     if (config.generator)
@@ -266,7 +265,7 @@ std::optional<std::string> InterfacePlugin::get_target(const RunProjectData &dat
     auto [command, root, name, is_debug] = data;
     if (!command)
         return std::optional<std::string>();
-    auto config = data::Deserializer<data::Interface>::deserialize(toml::parse_file((root / "cup.toml").string()));
+    auto config = data::parse_toml_file<data::Interface>(root / "cup.toml");
     auto unique_suffix = name + '_' + replace(config.project.version, ".", "_");
     if (command->starts_with("tests/"))
     {

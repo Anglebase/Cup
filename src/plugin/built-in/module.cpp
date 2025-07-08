@@ -133,7 +133,7 @@ std::string ModulePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
 {
     auto [name, _1, current_dir, root_dir, _2] = ctx;
     auto src = current_dir / "src";
-    auto config = data::Deserializer<data::Module>::deserialize(toml::parse_file((current_dir / "cup.toml").string()));
+    auto config = data::parse_toml_file<data::Module>(root_dir / "cup.toml");
     if (is_dependency)
     {
         except = "Module project cannot be used as a dependency.";
@@ -262,7 +262,7 @@ std::optional<std::string> ModulePlugin::get_target(const RunProjectData &data, 
     auto [command, root, name, is_debug] = data;
     if (!command)
         return std::optional<std::string>();
-    auto config = data::Deserializer<data::Module>::deserialize(toml::parse_file((root / "cup.toml").string()));
+    auto config = data::parse_toml_file<data::Module>(root / "cup.toml");
     auto unique_suffix = name + "_" + replace(config.project.version, ".", "_");
     auto filename = split(fs::path(*command).filename().string(), ".")[0];
     return "test_" + filename + "_" + unique_suffix;
