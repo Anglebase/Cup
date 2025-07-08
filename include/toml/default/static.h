@@ -19,6 +19,7 @@ namespace data
         std::optional<Example> examples;
         std::optional<Table<Generator>> generator;
         std::optional<Table<Array<std::string>>> features;
+        std::optional<Table<Feature>> feature;
     };
 
     TOML_DESERIALIZE(Static, {
@@ -29,5 +30,6 @@ namespace data
         TOML_OPTIONS(examples);
         TOML_OPTIONS(generator);
         TOML_OPTIONS(features);
+        TOML_OPTIONS(feature);
     });
 }

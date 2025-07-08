@@ -30,4 +30,5 @@ namespace data
     using Generator = Parts;
     using Test = Parts;
     using Example = Parts;
+    using Feature = Parts;
 }

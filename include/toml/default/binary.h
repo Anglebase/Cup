@@ -18,6 +18,7 @@ namespace data
         std::optional<Test> tests;
         std::optional<Table<Generator>> generator;
         std::optional<Table<Array<std::string>>> features;
+        std::optional<Table<Feature>> feature;
     };
 
     TOML_DESERIALIZE(Binary, {
@@ -27,5 +28,6 @@ namespace data
         TOML_OPTIONS(tests);
         TOML_OPTIONS(generator);
         TOML_OPTIONS(features);
+        TOML_OPTIONS(feature);
     });
 }

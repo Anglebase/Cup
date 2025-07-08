@@ -2,6 +2,7 @@
 
 #include "plugin/interface.h"
 #include "utils/utils.h"
+#include <unordered_map>
 
 inline std::vector<std::string> get_features(
     const std::optional<std::vector<std::string>> &features,
@@ -32,7 +33,6 @@ inline std::vector<std::string> get_features(
     } while (contains);
     return result;
 }
-
 
 template <class T>
 std::unordered_map<std::string, std::string> gen_map(const std::string &prefix, const std::optional<T> &config)
@@ -77,4 +77,25 @@ std::unordered_map<std::string, std::string> gen_map(const std::string &prefix, 
 inline std::string dealpath(const fs::path &p)
 {
     return '"' + replace(p.string()) + '"';
+}
+
+inline std::unordered_map<std::string, std::string> gen_feat_replacement(const std::vector<std::string> &name)
+{
+    static const std::vector<std::string> suffix = {
+        "_INCLUDE_DIRS",
+        "_LIB_DIRS",
+        "_LIBS",
+        "_DEFINES",
+        "_COPTIONS",
+        "_LINKOPTIONS",
+    };
+    std::unordered_map<std::string, std::string> result;
+    for (const auto &s : suffix)
+    {
+        auto key = "FEAT" + s;
+        result[key] = "";
+        for (const auto &n : name)
+            result[key] += "${FEAT_" + n + s + "} ${FEAT_" + n + "_MODE" + s + "}";
+    }
+    return result;
 }

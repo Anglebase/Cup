@@ -120,13 +120,13 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
     auto src = project / "src";
     auto include = project / "include";
     auto config = data::parse_toml_file<data::Binary>(project / "cup.toml");
+    std::vector<std::string> feats;
+    if (is_dependency)
+        feats = get_features(ctx.features, config.features);
+    else if (config.build)
+        feats = get_features(config.build->features, config.features);
     std::vector<std::string> deps;
     {
-        std::vector<std::string> feats;
-        if (is_dependency)
-            feats = get_features(ctx.features, config.features);
-        else if (config.build)
-            feats = get_features(config.build->features, config.features);
         if (config.dependencies)
         {
             for (const auto &[name, info] : *config.dependencies)
@@ -141,6 +141,41 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
                     deps.push_back(name);
             }
         }
+    }
+    std::vector<std::string> for_feats;
+    if (config.feature)
+    {
+        std::vector<std::string> has_unique;
+        for (const auto &[name, cfg] : *config.feature)
+        {
+            if (std::find(feats.begin(), feats.end(), name) == feats.end())
+                continue;
+            has_unique.push_back(name);
+            std::unordered_map<std::string, std::string> replacements = {{"UNIQUE", name}};
+            {
+                auto extend = gen_map("FEAT_", std::optional(cfg));
+                replacements.insert(extend.begin(), extend.end());
+            }
+            {
+                auto extend = gen_map("FEAT_DEBUG_", cfg.debug);
+                replacements.insert(extend.begin(), extend.end());
+            }
+            {
+                auto extend = gen_map("FEAT_RELEASE_", cfg.release);
+                replacements.insert(extend.begin(), extend.end());
+            }
+            FileTemplate temp{
+#include "template/cmake/feat.cmake"
+                ,
+                replacements};
+            for_feats.push_back(temp.getContent());
+        }
+        FileTemplate temp{
+#include "template/cmake/feature.cmake"
+            ,
+            gen_feat_replacement(has_unique)
+        };
+        for_feats.push_back(temp.getContent());
     }
     // Generator specific configuration items
     std::vector<std::string> for_gen;
@@ -219,6 +254,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             {"FOR_GEN", join(for_gen, "\n")},
             {"FOR_MODE", join(for_mode, "\n")},
             {"FOR_TEST", join(for_tests, "\n")},
+            {"FOR_FEAT", join(for_feats, "\n")},
             {"MAIN_FILE", dealpath(this->get_main_file(current_dir))},
             {"BIN_MAIN_FILES", join(this->get_bin_main_files(current_dir), " ", dealpath)},
             {"SOURCES", join(this->get_source_files(current_dir), " ", dealpath)},
