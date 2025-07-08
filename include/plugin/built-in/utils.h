@@ -4,6 +4,31 @@
 #include "utils/utils.h"
 #include <unordered_map>
 
+inline void _cycle_dep_check(const std::string &key, const std::map<std::string, std::vector<std::string>> &table)
+{
+    static std::vector<std::string> cycle_check;
+    auto has_cycle = std::find(cycle_check.begin(), cycle_check.end(), key) != cycle_check.end();
+    cycle_check.push_back(key);
+    if (has_cycle)
+    {
+        std::string cycle_str = join(cycle_check, " -> ");
+        throw std::runtime_error("Features cycle dependency detected: " + cycle_str);
+    }
+    if(!table.contains(key))
+        throw std::runtime_error("Feature '" + key + "' not found in [features]");
+    for (const auto &value : table.at(key))
+        _cycle_dep_check(value, table);
+    cycle_check.pop_back();
+}
+
+inline void cycle_dep_check(const std::optional<std::map<std::string, std::vector<std::string>>> &table)
+{
+    if (!table)
+        return;
+    for (const auto &[key, _] : *table)
+        _cycle_dep_check(key, *table);
+}
+
 inline std::vector<std::string> get_features(
     const std::optional<std::vector<std::string>> &features,
     const std::optional<std::map<std::string, std::vector<std::string>>> &table)
@@ -11,6 +36,7 @@ inline std::vector<std::string> get_features(
     if (!features)
         return std::vector<std::string>();
     auto result = *features;
+    cycle_dep_check(table);
     if (!table)
         return result;
     std::vector<std::string> buffer;

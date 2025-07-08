@@ -199,6 +199,16 @@ void _get_all_dependencies(
     const data::Default &toml_config, std::vector<std::pair<std::string, DependencyInfo>> &dependencies,
     const std::optional<std::vector<std::string>> features, const std::optional<fs::path> &root = std::nullopt)
 {
+    static std::vector<std::string> cycle_check;
+    {
+        auto has_cycle = std::find(cycle_check.begin(), cycle_check.end(), toml_config.project.name) != cycle_check.end();
+        cycle_check.push_back(toml_config.project.name);
+        if (has_cycle)
+        {
+            auto dep_names = join(cycle_check, " -> ");
+            throw std::runtime_error("Package cycle dependency detected: " + dep_names);
+        }
+    }
     for (const auto &[name, info] : toml_config.dependencies.value_or(std::map<std::string, data::Dependency>{}))
     {
         auto [path, version] = get_path(info, true, root);
@@ -244,6 +254,7 @@ void _get_all_dependencies(
             dependencies.push_back({name, dep_info});
         }
     }
+    cycle_check.pop_back();
 }
 
 std::vector<std::pair<std::string, DependencyInfo>> get_all_dependencies(const data::Default &toml_config,
