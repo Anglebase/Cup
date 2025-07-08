@@ -13,6 +13,8 @@ set(EXPORT_INC ${%EXPORT_INC%})
 set(SOURCES ${%SOURCES%})
 set(STDC ${%STDC%})
 set(STDCXX ${%STDCXX%})
+set(LIB_OUT_DIR ${%LIB_OUT_DIR%})
+set(DLL_OUT_DIR ${%DLL_OUT_DIR%})
 
 ${%FOR_GEN%}
 ${%FOR_MODE%}
@@ -35,6 +37,10 @@ target_link_libraries(${EXPORT_NAME} PUBLIC ${LIBS})
 target_compile_definitions(${EXPORT_NAME} PUBLIC ${DEFINES})
 target_compile_options(${EXPORT_NAME} PUBLIC ${COPTIONS})
 target_link_options(${EXPORT_NAME} PUBLIC ${LINKOPTIONS})
+set_target_properties(${EXPORT_NAME} PROPERTIES
+    OUTPUT_NAME ${EXPORT_NAME}
+    ARCHIVE_OUTPUT_DIRECTORY ${LIB_OUT_DIR}
+    LIBRARY_OUTPUT_DIRECTORY ${DLL_OUT_DIR})
 if(${STDC})
 set_target_properties(${EXPORT_NAME} PROPERTIES
     C_STANDARD ${STDC}
