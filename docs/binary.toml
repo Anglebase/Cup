@@ -20,6 +20,8 @@ stdc = 17
 # Specify the C language standard.
 stdcxx = 20
 # Specify the C++ language standard.
+features = ["feat1", "feat2"]
+# Specify the feature to enable when the current project is not a dependency.
 
 defines = ["DEBUG"]
 # Specify the global macro definition.
@@ -58,6 +60,10 @@ link_dirs = ["dir"]
 link_libs = ["lib"]
 compile_options = ["-Wall", "-Wextra"]
 link_options = ["-static"]
+
+[features]
+# Specify the dependency relationships between specified features.
+feat1 = ["feat2", "feat3"]
 
 [dependecies]
 # Specify the dependencies of the project.
