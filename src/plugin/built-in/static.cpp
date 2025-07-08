@@ -154,7 +154,7 @@ inline std::string dealpath(const fs::path &p)
 }
 std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &except)
 {
-    auto [name, _1, current_dir, _, features] = ctx;
+    auto [name, _1, current_dir, root_dir, features] = ctx;
     auto src = current_dir / "src";
     auto config = data::parse_toml_file<data::Static>(current_dir / "cup.toml");
 
@@ -265,9 +265,9 @@ std::string StaticPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
                                          : ""},
             {"UNIQUE", name + "_" + replace(config.project.version, ".", "_")},
             {"TEST_MAIN_FILES", join(this->get_test_mains(current_dir), " ", dealpath)},
-            {"TEST_OUT_DIR", dealpath(Resource::bin(current_dir) / "tests")},
+            {"TEST_OUT_DIR", dealpath(Resource::bin(root_dir) / "tests")},
             {"EXAMPLE_MAIN_FILES", join(this->get_example_mains(current_dir), " ", dealpath)},
-            {"EXAMPLE_OUT_DIR", dealpath(Resource::bin(current_dir) / "examples")},
+            {"EXAMPLE_OUT_DIR", dealpath(Resource::bin(root_dir) / "examples")},
             {"INC", dealpath(current_dir / "include")},
             {"EXPORT_INC", dealpath(current_dir / "export")},
             {"SOURCES", join(this->get_source_files(current_dir), " ", dealpath)},
