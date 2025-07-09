@@ -1,5 +1,7 @@
 #include "cmd/git.h"
 #include "utils/utils.h"
+#include "res.h"
+#include <iostream>
 
 bool has_git()
 {
@@ -23,7 +25,10 @@ std::vector<std::string> cmd::Git::get_tags(const std::string &url)
     cmd.args("ls-remote", "--tags", url);
     auto result = cmd.exec();
     if (result.exit_code() != 0)
+    {
+        std::cout << read_file(Resource::cache() / "err.cache") << std::endl;
         throw std::runtime_error("Failed to get tags from repository.");
+    }
     std::vector<std::string> tags;
     for (auto line : split(result.out(), "\n"))
     {

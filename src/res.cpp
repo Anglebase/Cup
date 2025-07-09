@@ -116,6 +116,7 @@ std::pair<fs::path, std::string> Resource::repo_dir(const std::string &url,
         tag = "v" + *version;
     else
     {
+        LOG_INFO("Getting latest tag of repository ", repo_url);
         auto tags = git.get_tags(repo_url);
         if (tags.empty())
             throw std::runtime_error("Failed to get tags of repository: " + repo_url);
