@@ -273,9 +273,10 @@ void _get_all_dependencies(
                                            std::to_string(std::get<2>(iter->second.version)),
                                        },
                                        ".");
-            LOG_WARN("Merge dependencies:", path.lexically_normal().string(),
-                     "with version ", exist_version, " and version ", dep_version, " -> ",
-                     result_version);
+            LOG_WARN("Merge dependencies: \n    ",
+                     exist_info.path.lexically_normal().string(), " with version ", exist_version, "\nand\n    ",
+                     dep_info.path.lexically_normal().string(), " with version ", dep_version, "\n->\n    ",
+                     iter->second.path.lexically_normal().string(), " with version ", result_version);
         }
         else
         {
