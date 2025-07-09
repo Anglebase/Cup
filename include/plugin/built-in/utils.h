@@ -3,6 +3,7 @@
 #include "plugin/interface.h"
 #include "utils/utils.h"
 #include <unordered_map>
+#include <algorithm>
 
 inline void _cycle_dep_check(const std::string &key, const std::map<std::string, std::vector<std::string>> &table)
 {
