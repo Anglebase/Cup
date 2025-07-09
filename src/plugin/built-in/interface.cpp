@@ -269,17 +269,19 @@ fs::path InterfacePlugin::run_project(const RunProjectData &data, std::optional<
         result = result.parent_path() / (is_debug ? "Debug" : "Release") / result.filename();
     if (!fs::exists(result))
         except = "Cannot find target: " + result.filename().string();
+
     auto mode = result.parent_path().filename().string();
-    if (mode == "Debug" || mode == "Release")
-    {
-        auto dll = Resource::dll(root) / mode;
-        fs::copy(dll, result.parent_path(), fs::copy_options::overwrite_existing);
-    }
-    else
-    {
-        auto dll = Resource::dll(root);
-        fs::copy(dll, result.parent_path(), fs::copy_options::overwrite_existing);
-    }
+    auto dll = mode == "Debug" || mode == "Release" ? Resource::dll(root) / mode : Resource::dll(root);
+    if (fs::exists(dll))
+        for (const auto &entry : fs::directory_iterator(dll))
+        {
+            auto dll_file = entry.path();
+            auto link = result.parent_path() / dll_file.filename();
+            if (fs::exists(link))
+                fs::remove(link);
+            fs::create_hard_link(dll_file, link);
+        }
+
     return result;
 }
 
