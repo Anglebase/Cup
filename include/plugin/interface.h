@@ -28,7 +28,7 @@ struct CMakeContext
     std::string name;
     // The required version of CMake for the project.
     // Modify this value through member function `set_cmake_version`.
-    mutable std::pair<int, int> cmake_version;
+    std::pair<int, int>& cmake_version;
     // The path where the project is located.
     fs::path current_dir;
     // The path where the constructed project is located.
@@ -39,6 +39,7 @@ struct CMakeContext
     // Feature macros from the dependency table in the configuration file.
     // Plugins can decide how to interpret them themselves.
     std::vector<std::string> features;
+    std::set<std::string> dependencies;
 
     void set_cmake_version(int major, int minor) const
     {

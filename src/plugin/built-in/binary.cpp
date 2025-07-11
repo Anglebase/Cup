@@ -115,7 +115,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
 {
     if (is_dependency)
         throw std::runtime_error("'binary' project cannot be a dependency.");
-    auto [name, _1, current_dir, root_dir, _2] = ctx;
+    auto [name, _1, current_dir, root_dir, _2, dependencies] = ctx;
     auto project = current_dir;
     auto src = project / "src";
     auto include = project / "include";
@@ -127,20 +127,8 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
         feats = get_features(config.build->features, config.features);
     std::vector<std::string> deps;
     {
-        if (config.dependencies)
-        {
-            for (const auto &[name, info] : *config.dependencies)
-            {
-                if (!info.optional ||
-                    std::find_if(
-                        info.optional->begin(), info.optional->end(),
-                        [&](const std::string &f)
-                        {
-                            return std::find(feats.begin(), feats.end(), f) != feats.end();
-                        }) != info.optional->end())
-                    deps.push_back(name);
-            }
-        }
+        for (const auto &dep : dependencies)
+            deps.push_back(dep);
     }
     std::vector<std::string> for_feats;
     if (config.feature)

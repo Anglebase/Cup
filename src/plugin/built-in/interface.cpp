@@ -76,7 +76,7 @@ int InterfacePlugin::run_new(const NewData &data, std::optional<std::string> &ex
 
 std::string InterfacePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &except)
 {
-    auto [name, _1, current_dir, root_dir, features] = ctx;
+    auto [name, _1, current_dir, root_dir, features, dependencies] = ctx;
     auto config = data::parse_toml_file<data::Interface>(current_dir / "cup.toml");
     std::vector<std::string> feats;
     if (is_dependency)
@@ -85,20 +85,8 @@ std::string InterfacePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependen
         feats = get_features(config.build->features, config.features);
     std::vector<std::string> deps;
     {
-        if (config.dependencies)
-        {
-            for (const auto &[name, info] : *config.dependencies)
-            {
-                if (!info.optional ||
-                    std::find_if(
-                        info.optional->begin(), info.optional->end(),
-                        [&](const std::string &f)
-                        {
-                            return std::find(feats.begin(), feats.end(), f) != feats.end();
-                        }) != info.optional->end())
-                    deps.push_back(name);
-            }
-        }
+        for (const auto &dep : dependencies)
+            deps.push_back(dep);
     }
     std::vector<std::string> for_feats;
     if (config.feature)
