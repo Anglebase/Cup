@@ -6,6 +6,7 @@
 #include <map>
 #include <optional>
 #include <filesystem>
+#include <algorithm>
 #include "utils/dollar.h"
 namespace fs = std::filesystem;
 
@@ -22,16 +23,16 @@ namespace data
         { Deserializer<T>::deserialize(v, "") } -> std::same_as<T>;
     };
 
-#define TOML_DESERIALIZE(T)                                                           \
-    template <>                                                                       \
-    struct Deserializer<T>                                                            \
-    {                                                                                 \
-        static inline T deserialize(const toml::node &v, const std::string &key = "") \
-        {                                                                             \
-            if (!v.is<T>())                                                           \
-                throw std::runtime_error("toml value for " + key + " is not a " #T);  \
-            return *v.value<T>();                                                     \
-        }                                                                             \
+#define TOML_DESERIALIZE(T)                                                              \
+    template <>                                                                          \
+    struct Deserializer<T>                                                               \
+    {                                                                                    \
+        static inline T deserialize(const toml::node &v, const std::string &key = "")    \
+        {                                                                                \
+            if (!v.is<T>())                                                              \
+                throw std::runtime_error("toml value for '" + key + "' is not a " #T); \
+            return *v.value<T>();                                                        \
+        }                                                                                \
     }
 
     using Boolean = bool;
@@ -57,7 +58,7 @@ namespace data
         static inline String deserialize(const toml::node &v, const std::string &key = "")
         {
             if (!v.is_string())
-                throw std::runtime_error("toml value for " + key + " is not a string");
+                throw std::runtime_error("toml value for '" + key + "' is not a string");
             return Dollar::dollar(*v.value<std::string>());
         }
     };
@@ -68,7 +69,7 @@ namespace data
         static inline fs::path deserialize(const toml::node &v, const std::string &key = "")
         {
             if (!v.is_string())
-                throw std::runtime_error("toml value for " + key + " is not a string");
+                throw std::runtime_error("toml value for '" + key + "' is not a string");
             fs::path path = Dollar::dollar(*v.value<std::string>());
             if (path.is_relative())
                 path = Dollar::ROOT / path;
@@ -82,7 +83,7 @@ namespace data
         static inline std::vector<E> deserialize(const toml::node &v, const std::string &key = "")
         {
             if (!v.is_array())
-                throw std::runtime_error("toml value for " + key + " is not an array");
+                throw std::runtime_error("toml value for '" + key + "' is not an array");
             auto array = *v.as_array();
             std::vector<E> result;
             for (size_t i = 0; i < array.size(); ++i)
@@ -91,16 +92,25 @@ namespace data
         }
     };
 
+    inline std::string _to_key(const std::string &s)
+    {
+        if (s.end() == std::find_if(s.begin(), s.end(), [](char c)
+                                    { return !std::isalnum(c) && c != '_'; }))
+            return s;
+        else
+            return '"' + s + '"';
+    }
+    
     template <Deserializable V>
     struct Deserializer<std::map<std::string, V>>
     {
         static inline std::map<std::string, V> deserialize(const toml::node &v, const std::string &key = "")
         {
             if (!v.is_table())
-                throw std::runtime_error("toml value for " + key + " is not a table");
+                throw std::runtime_error("toml value for '" + key + "' is not a table");
             std::map<std::string, V> result;
             for (const auto &[k, v] : *v.as_table())
-                result[std::string(k.str())] = Deserializer<V>::deserialize(v, key + "." + std::string(k.str()));
+                result[std::string(k.str())] = Deserializer<V>::deserialize(v, key + "." + _to_key(std::string(k.str())));
             return result;
         }
     };
@@ -115,14 +125,16 @@ namespace data
     template <Deserializable T>
     void require(const toml::table &table, const std::string &key, T &value, const std::string &key_desc = "")
     {
-        value = Deserializer<T>::deserialize(table.at(key), key_desc);
+        const auto prefix = key_desc.empty() ? key : key_desc + "." + _to_key(key);
+        value = Deserializer<T>::deserialize(table.at(key), prefix);
     }
 
     template <Deserializable T>
     void options(const toml::table &table, const std::string &key, Optional<T> &value, const std::string &key_desc = "")
     {
+        const auto prefix = key_desc.empty() ? key : key_desc + "." + _to_key(key);
         table.contains(key)
-            ? value = Deserializer<T>::deserialize(table.at(key), key_desc)
+            ? value = Deserializer<T>::deserialize(table.at(key), prefix)
             : value = std::nullopt;
     }
 
