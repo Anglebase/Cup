@@ -1,18 +1,6 @@
 #pragma once
 
-#include "cmd/args.h"
-#include <unordered_map>
-#include <filesystem>
-#include <memory>
-#include "plugin/loader.h"
-namespace fs = std::filesystem;
-
-class SubCommand
-{
-public:
-    SubCommand(const cmd::Args &args) {}
-    virtual int run() = 0;
-};
+#include "build.h"
 
 class New : public SubCommand
 {
@@ -33,19 +21,6 @@ class Help : public SubCommand
 
 public:
     Help(const cmd::Args &args);
-    int run() override;
-};
-
-class Build : public SubCommand
-{
-protected:
-    bool is_release{false};
-    fs::path root;
-    std::optional<std::string> target;
-    std::optional<std::string> command;
-
-public:
-    Build(const cmd::Args &args);
     int run() override;
 };
 

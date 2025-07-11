@@ -1,0 +1,289 @@
+#include "build.h"
+#include "log.h"
+#include "res.h"
+#include "utils/utils.h"
+#include "toml/dependency.h"
+#include "toml/default/default.h"
+#include "plugin/built-in/utils.h"
+#include "cmd/cmake.h"
+
+Build::Build(const cmd::Args &args) : SubCommand(args)
+{
+    if (args.has_config("dir") && args.getConfig().at("dir").size() > 0)
+        this->root = args.getConfig().at("dir")[0];
+    else
+        this->root = ".";
+    if (this->root.is_relative())
+        this->root = fs::current_path() / this->root;
+    this->is_release = args.has_flag("release") || args.has_flag("r");
+    if (args.getPositions().size() >= 2)
+        this->command = args.getPositions()[1];
+
+    if (!fs::exists(this->root))
+        throw std::runtime_error("The directory '" + this->root.lexically_normal().string() + "' not exists.");
+    if (!fs::exists(this->root / "cup.toml"))
+        throw std::runtime_error("The directory '" + this->root.lexically_normal().string() + "' not a cup project.");
+}
+
+using VersionInfo = std::tuple<int, int, int>;
+VersionInfo parse_version(const std::string &version)
+{
+    auto parts = split(version, ".");
+    if (parts.size() != 3)
+        throw std::runtime_error("version '" + version + "' is not a valid version string.");
+    return {std::stoi(parts[0]), std::stoi(parts[1]), std::stoi(parts[2])};
+}
+
+struct DependencyInfo
+{
+    fs::path path;
+    std::string type;
+    VersionInfo version;
+    std::vector<std::string> features;
+};
+
+void _get_all_dependencies(
+    const data::Default &toml_config, std::vector<std::pair<std::string, DependencyInfo>> &dependencies,
+    const std::optional<std::vector<std::string>> features, const std::optional<fs::path> &root = std::nullopt)
+{
+    static std::vector<std::string> cycle_check;
+    {
+        auto has_cycle = std::find(cycle_check.begin(), cycle_check.end(), toml_config.project.name) != cycle_check.end();
+        cycle_check.push_back(toml_config.project.name);
+        if (has_cycle)
+        {
+            auto dep_names = join(cycle_check, " -> ");
+            throw std::runtime_error("Package cycle dependency detected: " + dep_names);
+        }
+    }
+    for (const auto &[name, info] : toml_config.dependencies.value_or(std::map<std::string, data::Dependency>{}))
+    {
+        auto [path, version] = get_path(info, true, root);
+        if (!fs::exists(path))
+            throw std::runtime_error("Dependency '" + name + "' not found.");
+        auto dep_config = data::parse_toml_file<data::Default>(path / "cup.toml");
+        auto dep_info = DependencyInfo{
+            .path = path,
+            .type = dep_config.project.type,
+            .version = parse_version(version),
+            .features = info.features.value_or(std::vector<std::string>{}),
+        };
+        if (!info.optional)
+            _get_all_dependencies(dep_config, dependencies, info.features, path);
+        else
+        {
+            // Expand features
+            auto all_features = get_features(features, dep_config.features);
+            if (std::find_if(
+                    all_features.begin(), all_features.end(), [&](const auto &f)
+                    { return std::find(info.optional->begin(), info.optional->end(), f) != info.optional->end(); }) != all_features.end())
+                _get_all_dependencies(dep_config, dependencies, info.features, path);
+            else
+                continue;
+        }
+        decltype(dependencies.begin()) iter;
+        if ((iter = std::find_if(dependencies.begin(), dependencies.end(), [&](const auto &item)
+                                 { return item.first == name; })) != dependencies.end())
+        {
+            auto &exist_info = iter->second;
+            if (std::get<0>(exist_info.version) < std::get<0>(dep_info.version) ||
+                (std::get<0>(exist_info.version) == std::get<0>(dep_info.version) &&
+                 std::get<1>(exist_info.version) < std::get<1>(dep_info.version)) ||
+                (std::get<0>(exist_info.version) == std::get<0>(dep_info.version) &&
+                 std::get<1>(exist_info.version) == std::get<1>(dep_info.version) &&
+                 std::get<2>(exist_info.version) < std::get<2>(dep_info.version)))
+            {
+                iter->second = dep_info;
+            }
+            auto exist_version = join(std::vector<std::string>{
+                                          std::to_string(std::get<0>(exist_info.version)),
+                                          std::to_string(std::get<1>(exist_info.version)),
+                                          std::to_string(std::get<2>(exist_info.version)),
+                                      },
+                                      ".");
+            auto dep_version = join(std::vector<std::string>{
+                                        std::to_string(std::get<0>(dep_info.version)),
+                                        std::to_string(std::get<1>(dep_info.version)),
+                                        std::to_string(std::get<2>(dep_info.version)),
+                                    },
+                                    ".");
+            auto result_version = join(std::vector<std::string>{
+                                           std::to_string(std::get<0>(iter->second.version)),
+                                           std::to_string(std::get<1>(iter->second.version)),
+                                           std::to_string(std::get<2>(iter->second.version)),
+                                       },
+                                       ".");
+            LOG_WARN("Merge dependencies: \n    ",
+                     exist_info.path.lexically_normal().string(), " with version ", exist_version, "\nand\n    ",
+                     dep_info.path.lexically_normal().string(), " with version ", dep_version, "\n->\n    ",
+                     iter->second.path.lexically_normal().string(), " with version ", result_version);
+        }
+        else
+        {
+            dependencies.push_back({name, dep_info});
+        }
+    }
+    cycle_check.pop_back();
+}
+
+std::vector<std::pair<std::string, DependencyInfo>> get_all_dependencies(const data::Default &toml_config,
+                                                                         const std::optional<fs::path> &root = std::nullopt)
+{
+    std::vector<std::pair<std::string, DependencyInfo>> dependencies;
+    auto features = toml_config.build ? toml_config.build->features : std::nullopt;
+    _get_all_dependencies(toml_config, dependencies, features, root);
+    return dependencies;
+}
+
+int Build::run()
+{
+    // Parse cup.toml file.
+    auto toml_config = data::parse_toml_file<data::Default>(this->root / "cup.toml");
+    // Get all dependencies.
+    CMakeContext context{
+        .name = toml_config.project.name,
+        .cmake_version = {3, 10},
+        .current_dir = this->root,
+        .root_dir = this->root,
+    };
+    // Generate cmake content.
+    auto dependencies = get_all_dependencies(toml_config, this->root);
+    std::vector<std::string> cmake_content;
+    std::vector<std::string> cmake_content_global;
+    std::optional<std::string> except = std::nullopt;
+    for (const auto &[name, info] : dependencies)
+    {
+        LOG_INFO("Generating cmake content for dependency '", name, "' with type '", info.type, "'.");
+        PluginLoader loader(info.type);
+        context.name = name;
+        context.current_dir = info.path;
+        context.features = info.features;
+        except = std::nullopt;
+        cmake_content.push_back(loader->gen_cmake(context, true, except));
+        cmake_content_global.push_back(loader->gen_cmake_global(context, true, except));
+        if (except)
+            throw std::runtime_error(*except);
+    }
+    auto end_name = toml_config.project.name;
+    auto end_type = toml_config.project.type;
+    LOG_INFO("Generating cmake content for '", end_name, "' with type '", end_type, "'.");
+    auto loader = PluginLoader(end_type);
+    context.name = end_name;
+    context.current_dir = this->root;
+    except = std::nullopt;
+    cmake_content.push_back(loader->gen_cmake(context, false, except));
+    cmake_content_global.push_back(loader->gen_cmake_global(context, true, except));
+    if (except)
+        throw std::runtime_error(*except);
+    // Write cmake content to file.
+    {
+        if (!fs::exists(Resource::build(this->root)))
+            fs::create_directories(Resource::build(this->root));
+        auto cmakelists = Resource::build(this->root) / "CMakeLists.txt";
+        std::ofstream ofs(cmakelists);
+        ofs << "# Generated by cup\n";
+        auto [major, minor] = context.cmake_version;
+        ofs << "cmake_minimum_required(VERSION " << major << "." << minor << ")\n";
+        for (const auto &content : cmake_content_global)
+            ofs << content << "\n";
+        ofs << "project(" << context.name << ")\n";
+        if (toml_config.build.has_value() &&
+            toml_config.build->export_data.has_value() &&
+            toml_config.build->export_data->compile_commands.has_value())
+        {
+            ofs << "set(CMAKE_EXPORT_COMPILE_COMMANDS ON)\n";
+        }
+        if (this->is_release)
+        {
+            ofs <<
+#include "template/release.cmake"
+                << std::endl;
+        }
+        else
+        {
+            ofs <<
+#include "template/debug.cmake"
+                << std::endl;
+        }
+        for (const auto &content : cmake_content)
+            ofs << content << "\n";
+    }
+
+    LOG_MSG("Building...");
+    {
+        cmd::CMake cmake;
+        cmake.source(Resource::build(this->root));
+        cmake.build_dir(Resource::build(this->root) / "cmake");
+        if (toml_config.build.has_value() && toml_config.build->generator.has_value())
+            cmake.generator(*toml_config.build->generator);
+        else
+        {
+#ifdef _WIN32
+            cmake.generator("Visual Studio 17 2022");
+            LOG_WARN("Using default generator 'Visual Studio 17 2022'.");
+#else
+            cmake.generator("Unix Makefiles");
+            LOG_WARN("Using default generator 'Unix Makefiles'.");
+#endif
+        }
+        if (std::system(cmake.as_command().c_str()))
+            throw std::runtime_error("Failed to generate build files.");
+    }
+    {
+        cmd::CMake cmake;
+        cmake.build(Resource::cmake(this->root));
+        cmake.config(this->is_release);
+        std::optional<std::string> except = std::nullopt;
+        auto target = loader->get_target(RunProjectData{
+                                             .command = this->command,
+                                             .root = this->root,
+                                             .name = toml_config.project.name,
+                                             .is_debug = !this->is_release,
+                                         },
+                                         except);
+        if (except)
+            throw std::runtime_error(*except);
+        if (target)
+            cmake.target(*target);
+        if (toml_config.build && toml_config.build->jobs)
+            cmake.jobs(
+                std::max(
+                    (data::Integer)1,
+                    *toml_config.build->jobs
+                        ? *toml_config.build->jobs
+                        : std::thread::hardware_concurrency()));
+
+        if (std::system(cmake.as_command().c_str()))
+            throw std::runtime_error("Failed to build project.");
+    }
+    if (toml_config.build.has_value() &&
+        toml_config.build->export_data.has_value() &&
+        toml_config.build->export_data->compile_commands.has_value())
+    {
+        auto compile_commands = toml_config.build->export_data->compile_commands.value();
+        auto from = Resource::cmake(this->root) / "compile_commands.json";
+        if (!fs::exists(from))
+        {
+            auto gen = toml_config.build->generator.value_or(
+#ifdef _WIN32
+                "Visual Studio 17 2022"
+#else
+                "Unix Makefiles"
+#endif
+            );
+            LOG_WARN("Generator \"", gen, "\" does not support compile_commands.json.");
+        }
+        if (!compile_commands.empty() && fs::exists(from))
+        {
+            if (compile_commands.is_relative())
+                compile_commands = this->root / compile_commands;
+            compile_commands = compile_commands.lexically_normal();
+            auto to = compile_commands / "compile_commands.json";
+            if (!fs::exists(compile_commands))
+                throw std::runtime_error("The directory '" + compile_commands.string() + "' does not exist.");
+            fs::copy_file(from, to, fs::copy_options::overwrite_existing);
+        }
+    }
+    LOG_MSG("Build finished.");
+    return 0;
+}
