@@ -140,7 +140,6 @@ void Build::generate_cmake(const fs::path &cup, const std::optional<FromParent> 
         this->generate_cmake(
             path,
             FromParent{
-                .key = dep_name,
                 .features = info.features.value_or(std::vector<std::string>{}),
                 .root_dir = dep_info ? dep_info->root_dir : cup,
             });
@@ -148,7 +147,7 @@ void Build::generate_cmake(const fs::path &cup, const std::optional<FromParent> 
     }
 
     CMakeContext ctx{
-        .name = dep_info ? dep_info->key : config.project.name,
+        .name = config.project.name,
         .cmake_version = this->cmake_version,
         .current_dir = cup,
         .root_dir = dep_info ? dep_info->root_dir : cup,

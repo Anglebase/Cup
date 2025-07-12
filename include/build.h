@@ -49,7 +49,6 @@ public:
 
 struct FromParent
 {
-    std::string key;
     std::vector<std::string> features;
     fs::path root_dir;
 };
