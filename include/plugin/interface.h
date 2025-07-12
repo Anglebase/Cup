@@ -36,9 +36,10 @@ struct CMakeContext
     // For dependencies, it indicates the root project that depends on this package,
     // which is the path where the project being built is located.
     fs::path root_dir;
-    // Feature macros from the dependency table in the configuration file.
-    // Plugins can decide how to interpret them themselves.
+    // All features that have been resolved and expanded.
+    // The plugin can be generated based on the conditions of the CMake.
     std::vector<std::string> features;
+    // The dependency key names that actually take effect after version merging and feature control.
     std::set<std::string> dependencies;
 
     void set_cmake_version(int major, int minor) const
