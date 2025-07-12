@@ -314,7 +314,7 @@ std::pair<fs::path, std::string> get_path(const data::Dependency &dep, bool down
         auto path = *dep.path;
         if (path.is_relative() && root.has_value())
             path = *root / path;
-        path.lexically_normal();
+        path = path.lexically_normal();
         auto toml_config = data::parse_toml_file<data::Default>(path / "cup.toml");
         if (dep.version && toml_config.project.version != dep.version.value())
             LOG_WARN("Dependency version is not consistent with the version in 'cup.toml'.");
