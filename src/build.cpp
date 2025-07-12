@@ -22,30 +22,28 @@ VersionInfo VersionInfo::parse(const std::string &str)
     return {std::stoi(ls[0]), std::stoi(ls[1]), std::stoi(ls[2])};
 }
 
-std::string CMakeOutContent::push(const CMakeOutBlock &block)
+void CMakeOutContent::push(const CMakeOutBlock &block)
 {
     auto iter = std::find_if(content.begin(), content.end(),
                              [&block](const CMakeOutBlock &b)
-                             { return b.unique == block.unique; });
+                             { return b.name == block.name; });
     if (iter == content.end())
         content.push_back(block);
     else if (block.version > iter->version)
     {
-        *iter = block;
         LOG_INFO("Merge dependencies: \n    ",
-                 block.path, "  ", block.version, "\nand\n    ",
-                 iter->path, "  ", iter->version, "\n->\n    ",
-                 block.path, "  ", block.version);
+                 block.path.lexically_normal().string(), "  ", block.version, "\nand\n    ",
+                 iter->path.lexically_normal().string(), "  ", iter->version, "\n->\n    ",
+                 block.path.lexically_normal().string(), "  ", block.version);
+        *iter = block;
     }
     else
     {
         LOG_INFO("Merge dependencies: \n    ",
-                 block.path, "  ", block.version, "\nand\n    ",
-                 iter->path, "  ", iter->version, "\n->\n    ",
-                 iter->path, "  ", iter->version);
-        return iter->unique;
+                 block.path.lexically_normal().string(), "  ", block.version, "\nand\n    ",
+                 iter->path.lexically_normal().string(), "  ", iter->version, "\n->\n    ",
+                 iter->path.lexically_normal().string(), "  ", iter->version);
     }
-    return block.unique;
 }
 
 void CMakeOutContent::write_to(std::ofstream &ofs)
@@ -75,7 +73,7 @@ bool exists_intersetion(const std::vector<std::string> &a, const std::vector<std
     return false;
 }
 
-std::string Build::generate_cmake(const fs::path &cup, const std::optional<FromParent> &dep_info)
+void Build::generate_cmake(const fs::path &cup, const std::optional<FromParent> &dep_info)
 {
     auto config = data::parse_toml_file<data::Default>(cup / "cup.toml");
     auto has_cycle = std::find_if(cycle_check.begin(), cycle_check.end(),
@@ -139,15 +137,14 @@ std::string Build::generate_cmake(const fs::path &cup, const std::optional<FromP
             auto dep_config = data::parse_toml_file<data::Default>(path / "cup.toml");
             dep_name = dep_config.project.name;
         }
-        auto vaild_dep_name = this->generate_cmake(
+        this->generate_cmake(
             path,
             FromParent{
-                .key = name,
+                .key = dep_name,
                 .features = info.features.value_or(std::vector<std::string>{}),
                 .root_dir = dep_info ? dep_info->root_dir : cup,
             });
-        if (vaild_dep_name == dep_name)
-            vaild_dependencies.insert(name);
+        vaild_dependencies.insert(name);
     }
 
     CMakeContext ctx{
@@ -166,14 +163,14 @@ std::string Build::generate_cmake(const fs::path &cup, const std::optional<FromP
     if (except)
         throw std::runtime_error(*except);
     CMakeOutBlock block{
-        .unique = config.project.name,
+        .name = config.project.name,
         .content = out_content,
         .content_global = out_g_content,
         .version = VersionInfo::parse(config.project.version),
         .path = cup,
     };
     this->cycle_check.pop_back();
-    return this->output.push(block);
+    this->output.push(block);
 }
 
 Build::Build(const cmd::Args &args) : SubCommand(args)

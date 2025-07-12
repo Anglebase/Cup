@@ -30,7 +30,7 @@ struct VersionInfo
 
 struct CMakeOutBlock
 {
-    std::string unique;
+    std::string name;
     std::string content;
     std::string content_global;
     VersionInfo version;
@@ -42,7 +42,7 @@ class CMakeOutContent
     std::vector<CMakeOutBlock> content;
 
 public:
-    std::string push(const CMakeOutBlock &block);
+    void push(const CMakeOutBlock &block);
     void write_to(std::ofstream &os);
     void write_global_to(std::ofstream &os);
 };
@@ -63,7 +63,7 @@ class Build : public SubCommand
     CMakeOutContent output;
     std::vector<std::string> cycle_check;
 
-    std::string generate_cmake(const fs::path &cup, const std::optional<FromParent> &info = std::nullopt);
+    void generate_cmake(const fs::path &cup, const std::optional<FromParent> &info = std::nullopt);
 protected:
     bool is_release{false};
     fs::path root;
