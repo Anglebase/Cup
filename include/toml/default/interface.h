@@ -1,6 +1,6 @@
 #pragma once
 
-#include "toml/trait.h"
+#include "toml_serde/trait.h"
 #include "toml/project.h"
 #include "toml/build.h"
 #include "toml/dependency.h"

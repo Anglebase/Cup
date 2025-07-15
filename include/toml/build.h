@@ -1,6 +1,6 @@
 #pragma once
 
-#include "toml/trait.h"
+#include "toml_serde/trait.h"
 #include "toml/default/part.h"
 #include "toml/export.h"
 

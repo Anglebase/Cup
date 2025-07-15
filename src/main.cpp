@@ -5,7 +5,6 @@
 #include <functional>
 #include "log.h"
 #include <string>
-#include "utils/dollar.h"
 using namespace std;
 
 int main(int argc, char **argv)

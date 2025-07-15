@@ -9,7 +9,7 @@ stdcxx = 20
 defines = ["_VER_X=2", "_VER_Y=0", "_VER_Z=0"]
 
 [dependencies]
-tomlpp = { url = "@Anglebase/tomlpp", version = "3.4.0" }
+toml_serde = { url = "@Anglebase/toml_serde", version = "0.1.0" }
 
 [generator."Visual Studio 17 2022"]
 compile_options = ["/utf-8"]
