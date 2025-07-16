@@ -129,7 +129,6 @@ std::pair<fs::path, std::string> Resource::repo_dir(const std::string &url,
         LOG_INFO("Cloning repository ", repo_url);
         git.clone(repo_url, repo_dir, tag);
         LOG_INFO("Cloned repository ", repo_url, " to ", repo_dir);
-        fs::permissions(repo_dir, fs::perms::owner_read | fs::perms::group_read | fs::perms::others_read);
     }
     return {Resource::packages() / (author + "-" + repo_name + "-" + tag), tag.substr(1)};
 }
