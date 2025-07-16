@@ -9,7 +9,7 @@ namespace data
         std::optional<fs::path> compile_commands;
     };
 
-    TOML_DESERIALIZE(Export, {
+    TOML_DESERIALIZE_W(Export, {
         TOML_OPTIONS(compile_commands);
     });
 }

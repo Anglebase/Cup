@@ -22,7 +22,7 @@ namespace data
         std::optional<Table<Feature>> feature;
     };
 
-    TOML_DESERIALIZE(Shared, {
+    TOML_DESERIALIZE_W(Shared, {
         TOML_REQUIRE(project);
         TOML_OPTIONS(build);
         TOML_OPTIONS(dependencies);

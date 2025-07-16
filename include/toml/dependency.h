@@ -13,7 +13,7 @@ namespace data
         std::optional<std::vector<std::string>> optional;
     };
 
-    TOML_DESERIALIZE(Dependency, {
+    TOML_DESERIALIZE_W(Dependency, {
         TOML_OPTIONS(version);
         TOML_OPTIONS(path);
         TOML_OPTIONS(url);

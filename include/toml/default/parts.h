@@ -16,7 +16,7 @@ namespace data
         std::optional<Part> release;
     };
 
-    TOML_DESERIALIZE(Parts, {
+    TOML_DESERIALIZE_W(Parts, {
         TOML_OPTIONS(includes);
         TOML_OPTIONS(defines);
         TOML_OPTIONS(link_dirs);

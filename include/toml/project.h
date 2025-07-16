@@ -12,7 +12,7 @@ namespace data
         std::optional<std::string> license;
     };
 
-    TOML_DESERIALIZE(Project, {
+    TOML_DESERIALIZE_W(Project, {
         TOML_REQUIRE(name);
         TOML_REQUIRE(version);
         TOML_REQUIRE(type);

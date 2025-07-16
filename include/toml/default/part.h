@@ -13,7 +13,7 @@ namespace data
         std::optional<std::vector<std::string>> link_options;
     };
 
-    TOML_DESERIALIZE(Part, {
+    TOML_DESERIALIZE_W(Part, {
         TOML_OPTIONS(includes);
         TOML_OPTIONS(defines);
         TOML_OPTIONS(link_dirs);
