@@ -11,6 +11,7 @@ cmd::Args::Args(int argc, char **argv)
         {
             auto config_ = arg.substr(2);
             config = std::optional<std::string>(config_);
+            this->config_args[config.value()] = std::vector<std::string>();
         }
         else if (arg.starts_with("-"))
         {
@@ -43,12 +44,12 @@ const std::map<std::string, std::vector<std::string>> &cmd::Args::getConfig() co
 
 bool cmd::Args::has_flag(const std::string &flag) const
 {
-    return this->flag_args.find(flag) != this->flag_args.end();
+    return this->flag_args.contains(flag);
 }
 
 bool cmd::Args::has_config(const std::string &config) const
 {
-    return this->config_args.find(config) != this->config_args.end();
+    return this->config_args.contains(config);
 }
 
 std::ostream &cmd::operator<<(std::ostream &os, const Args &args)
