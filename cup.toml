@@ -13,4 +13,3 @@ toml_serde = { url = "@Anglebase/toml_serde", version = "0.2.2" }
 
 [generator."Visual Studio 17 2022"]
 compile_options = ["/utf-8"]
-link_dir = [""]
