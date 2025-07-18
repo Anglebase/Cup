@@ -291,8 +291,8 @@ fs::path BinaryPlugin::run_project(const RunProjectData &data, std::optional<std
 std::optional<std::string> BinaryPlugin::get_target(const RunProjectData &data, std::optional<std::string> &except) const
 {
     auto config = data::parse_toml_file<data::Binary>(data.root / "cup.toml");
-    const auto unique_suffix = replace(config.project.version, ".", "_");
     const auto target_name = data.name;
+    const auto unique_suffix = target_name + '_' + replace(config.project.version, ".", "_");
     auto [command, root, name, is_debug] = data;
     if (!command)
         return std::optional<std::string>();
@@ -303,15 +303,15 @@ std::optional<std::string> BinaryPlugin::get_target(const RunProjectData &data, 
     }
     else if (target.starts_with("tests/"))
     {
-        auto str = target.substr(5);
+        auto str = target.substr(6);
         auto filename = split(str, ".")[0];
-        return "test_" + target_name + "_" + filename + "_" + unique_suffix;
+        return "test_" + filename + "_" + target_name + "_" + unique_suffix;
     }
     else if (target.starts_with("bin/"))
     {
         auto str = target.substr(4);
         auto filename = split(str, ".")[0];
-        return "bin_" + target_name + "_" + filename + "_" + unique_suffix;
+        return "bin_" + filename + "_" + target_name + "_" + unique_suffix;
     }
     else
     {
