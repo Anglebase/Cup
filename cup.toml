@@ -1,16 +1,16 @@
 [project]
 name = "cup"
 type = "binary"
-version = "2.2.0"
+version = "2.3.1"
 
 [build]
 jobs = 0
 stdcxx = 20
-defines = ["_VER_X=2", "_VER_Y=2", "_VER_Z=0"]
+defines = ["_VER_X=2", "_VER_Y=3", "_VER_Z=1"]
 
 [dependencies]
 toml_serde = { url = "@Anglebase/toml_serde", version = "0.2.2" }
-cup_plugin = { url = "@Anglebase/CupPlugin", version = "2.3.0" }
+cup_plugin = { url = "@Anglebase/CupPlugin", version = "2.3.1" }
 
 [generator."Visual Studio 17 2022"]
 compile_options = ["/utf-8"]
