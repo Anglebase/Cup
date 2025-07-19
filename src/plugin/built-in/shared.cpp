@@ -60,12 +60,13 @@ std::vector<fs::path> SharedPlugin::get_example_mains(const fs::path &root) cons
     return example_mains;
 }
 
-std::string SharedPlugin::getName(std::optional<std::string> &except) const
+Result<std::string, std::string> SharedPlugin::getName() const
 {
-    return "shared";
+    using namespace std::string_literals;
+    return Ok<std::string>("shared"s);
 }
 
-int SharedPlugin::run_new(const NewData &data, std::optional<std::string> &except)
+Result<int, std::string> SharedPlugin::run_new(const NewData &data)
 {
     auto [name, type, root] = data;
     auto project = root / name;
@@ -108,10 +109,10 @@ int SharedPlugin::run_new(const NewData &data, std::optional<std::string> &excep
         std::ofstream ofs(gitignore);
         ofs << "/target" << std::endl;
     }
-    return 0;
+    return Ok<std::string>(0);
 }
 
-std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &except)
+Result<std::string, std::string> SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
 {
     auto [name, _1, current_dir, root_dir, features, dependencies] = ctx;
     auto src = current_dir / "src";
@@ -253,7 +254,7 @@ std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             replacements};
         for_examples.push_back(temp.getContent());
     }
-    return FileTemplate{
+    return Ok<std::string>(FileTemplate{
 #include "template/shared/shared.cmake"
         ,
         {
@@ -279,16 +280,16 @@ std::string SharedPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             {"DLL_OUT_DIR", dealpath(Resource::dll(root_dir))},
         },
     }
-        .getContent();
+        .getContent());
 }
 
-fs::path SharedPlugin::run_project(const RunProjectData &data, std::optional<std::string> &except)
+Result<fs::path, std::string> SharedPlugin::run_project(const RunProjectData &data)
 {
     auto [command, root, name, is_debug] = data;
     if (!command)
     {
-        except = "No command specified";
-        return fs::path();
+        using namespace std::string_literals;
+        return Err<fs::path>("No command specified"s);
     }
     auto result = Resource::bin(root) / *command;
 #ifdef _WIN32
@@ -299,7 +300,7 @@ fs::path SharedPlugin::run_project(const RunProjectData &data, std::optional<std
     if (!fs::exists(result))
         result = result.parent_path() / (is_debug ? "Debug" : "Release") / result.filename();
     if (!fs::exists(result))
-        except = "Cannot find executable file" + result.filename().string() + ".";
+        return Err<fs::path>("Cannot find executable file" + result.filename().string() + ".");
 
     auto mode = result.parent_path().filename().string();
     auto dll = mode == "Debug" || mode == "Release" ? Resource::dll(root) / mode : Resource::dll(root);
@@ -313,40 +314,40 @@ fs::path SharedPlugin::run_project(const RunProjectData &data, std::optional<std
             fs::create_hard_link(dll_file, link);
         }
 
-    return result;
+    return Ok<std::string>(result);
 }
 
-std::optional<std::string> SharedPlugin::get_target(const RunProjectData &data, std::optional<std::string> &except) const
+Result<std::optional<std::string>, std::string> SharedPlugin::get_target(const RunProjectData &data) const
 {
     auto [command, root, name, is_debug] = data;
     auto config = data::parse_toml_file<data::Shared>(root / "cup.toml");
     auto unique_suffix = name + "_" + replace(config.project.version, ".", "_");
     if (!command)
-        return std::optional<std::string>();
+        return Ok<std::string>(std::optional<std::string>());
     auto target = *command;
     if (target.starts_with("tests/"))
     {
         auto str = target.substr(6);
         auto filename = split(str, ".")[0];
-        return "test_" + filename + '_' + unique_suffix;
+        return Ok<std::string, std::optional<std::string>>("test_" + filename + '_' + unique_suffix);
     }
     else if (target.starts_with("examples/"))
     {
         auto str = target.substr(9);
         auto filename = split(str, ".")[0];
-        return "example_" + filename + '_' + unique_suffix;
+        return Ok<std::string, std::optional<std::string>>("example_" + filename + '_' + unique_suffix);
     }
     else
     {
-        except = "Invalid target: " + target;
+        return Err<std::optional<std::string>>("Invalid target: " + target);
     }
-    return std::nullopt;
+    return Ok<std::string, std::optional<std::string>>(std::nullopt);
 }
 
-int SharedPlugin::show_help(const cmd::Args &command, std::optional<std::string> &except) const
+Result<int, std::string> SharedPlugin::show_help(const cmd::Args &command) const
 {
     std::cout <<
 #include "template/help/built-in/shared.txt"
         ;
-    return 0;
+    return Ok<std::string>(0);
 }

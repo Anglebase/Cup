@@ -15,7 +15,7 @@ using DLLPtr = void *;
 #define DLL_GET_FUNC(dll, func) (func = (decltype(func))dlsym(dll, #func))
 #endif
 #include <string>
-#include "plugin/interface.h"
+#include "cup_plugin/interface.h"
 
 class PluginLoader
 {

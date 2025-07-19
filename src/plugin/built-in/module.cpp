@@ -47,12 +47,13 @@ std::vector<fs::path> ModulePlugin::get_test_main_files(const fs::path &root)
     return files;
 }
 
-std::string ModulePlugin::getName(std::optional<std::string> &except) const
+Result<std::string, std::string> ModulePlugin::getName() const
 {
-    return "module";
+    using namespace std::string_literals;
+    return Ok<std::string>("module"s);
 }
 
-int ModulePlugin::run_new(const NewData &data, std::optional<std::string> &except)
+Result<int, std::string> ModulePlugin::run_new(const NewData &data)
 {
     auto [name, type, root] = data;
     auto project = root / name;
@@ -82,10 +83,10 @@ int ModulePlugin::run_new(const NewData &data, std::optional<std::string> &excep
         std::ofstream ofs(gitignore);
         ofs << "/target" << std::endl;
     }
-    return 0;
+    return Ok<std::string>(0);
 }
 
-std::string ModulePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &except)
+Result<std::string, std::string> ModulePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
 {
     if (is_dependency)
         throw std::runtime_error("Module project cannot be used as a dependency.");
@@ -208,7 +209,7 @@ std::string ModulePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             replacements};
         for_tests.push_back(temp.getContent());
     }
-    return FileTemplate{
+    return Ok<std::string>(FileTemplate{
 #include "template/module/module.cmake"
         ,
         {
@@ -228,16 +229,16 @@ std::string ModulePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             {"STDCXX", config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : ""},
         },
     }
-        .getContent();
+                               .getContent());
 }
 
-fs::path ModulePlugin::run_project(const RunProjectData &data, std::optional<std::string> &except)
+Result<fs::path, std::string> ModulePlugin::run_project(const RunProjectData &data)
 {
     auto [command, root, name, is_debug] = data;
     if (!command)
     {
-        except = "No target specified.";
-        return fs::path();
+        using namespace std::string_literals;
+        return Err<fs::path>("No target specified."s);
     }
     auto result = Resource::bin(root) / *command;
 #ifdef _WIN32
@@ -248,7 +249,7 @@ fs::path ModulePlugin::run_project(const RunProjectData &data, std::optional<std
     if (!fs::exists(result))
         result = result.parent_path() / (is_debug ? "Debug" : "Release") / result.filename();
     if (!fs::exists(result))
-        except = "Cannot find target: " + result.filename().string();
+        return Err<fs::path>("Cannot find target: " + result.filename().string());
 
     auto mode = result.parent_path().filename().string();
     auto dll = mode == "Debug" || mode == "Release" ? Resource::dll(root) / mode : Resource::dll(root);
@@ -262,24 +263,24 @@ fs::path ModulePlugin::run_project(const RunProjectData &data, std::optional<std
             fs::create_hard_link(dll_file, link);
         }
 
-    return result;
+    return Ok<std::string>(result);
 }
 
-std::optional<std::string> ModulePlugin::get_target(const RunProjectData &data, std::optional<std::string> &except) const
+Result<std::optional<std::string>, std::string> ModulePlugin::get_target(const RunProjectData &data) const
 {
     auto [command, root, name, is_debug] = data;
     if (!command)
-        return std::optional<std::string>();
+        return Ok<std::string>(std::optional<std::string>());
     auto config = data::parse_toml_file<data::Module>(root / "cup.toml");
     auto unique_suffix = name + "_" + replace(config.project.version, ".", "_");
     auto filename = split(fs::path(*command).filename().string(), ".")[0];
-    return "test_" + filename + "_" + unique_suffix;
+    return Ok<std::string>(std::optional("test_" + filename + "_" + unique_suffix));
 }
 
-int ModulePlugin::show_help(const cmd::Args &command, std::optional<std::string> &except) const
+Result<int, std::string> ModulePlugin::show_help(const cmd::Args &command) const
 {
     std::cout <<
 #include "template/help/built-in/module.txt"
         ;
-    return 0;
+    return Ok<std::string>(0);
 }

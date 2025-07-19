@@ -1,6 +1,6 @@
 #pragma once
 
-#include "plugin/interface.h"
+#include "cup_plugin/interface.h"
 #include "utils/utils.h"
 #include <unordered_map>
 #include <algorithm>

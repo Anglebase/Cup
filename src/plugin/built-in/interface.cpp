@@ -36,12 +36,13 @@ std::vector<fs::path> InterfacePlugin::get_examples_main_files(const fs::path &r
     return result;
 }
 
-std::string InterfacePlugin::getName(std::optional<std::string> &except) const
+Result<std::string, std::string> InterfacePlugin::getName() const
 {
-    return "interface";
+    using namespace std::string_literals;
+    return Ok<std::string>("interface"s);
 }
 
-int InterfacePlugin::run_new(const NewData &data, std::optional<std::string> &except)
+Result<int, std::string> InterfacePlugin::run_new(const NewData &data)
 {
     auto [name, type, root] = data;
     auto project = root / name;
@@ -71,10 +72,10 @@ int InterfacePlugin::run_new(const NewData &data, std::optional<std::string> &ex
                   {"TYPE", type},
               }}.getContent();
     }
-    return 0;
+    return Ok<std::string>(0);
 }
 
-std::string InterfacePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &except)
+Result<std::string, std::string> InterfacePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
 {
     auto [name, _1, current_dir, root_dir, features, dependencies] = ctx;
     auto config = data::parse_toml_file<data::Interface>(current_dir / "cup.toml");
@@ -214,7 +215,7 @@ std::string InterfacePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependen
             replacements};
         for_examples.push_back(temp.getContent());
     }
-    return FileTemplate{
+    return Ok<std::string>(FileTemplate{
 #include "template/interface/interface.cmake"
         ,
         {
@@ -236,16 +237,16 @@ std::string InterfacePlugin::gen_cmake(const CMakeContext &ctx, bool is_dependen
             {"STDCXX", config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : ""},
         },
     }
-        .getContent();
+                               .getContent());
 }
 
-fs::path InterfacePlugin::run_project(const RunProjectData &data, std::optional<std::string> &except)
+Result<fs::path, std::string> InterfacePlugin::run_project(const RunProjectData &data)
 {
     auto [command, root, name, is_debug] = data;
     if (!command)
     {
-        except = "No target specified";
-        return fs::path();
+        using namespace std::string_literals;
+        return Err<fs::path>("No target specified"s);
     }
     auto result = Resource::bin(root) / *command;
 #ifdef _WIN32
@@ -256,7 +257,7 @@ fs::path InterfacePlugin::run_project(const RunProjectData &data, std::optional<
     if (!fs::exists(result))
         result = result.parent_path() / (is_debug ? "Debug" : "Release") / result.filename();
     if (!fs::exists(result))
-        except = "Cannot find target: " + result.filename().string();
+        return Err<fs::path>("Cannot find target: " + result.filename().string());
 
     auto mode = result.parent_path().filename().string();
     auto dll = mode == "Debug" || mode == "Release" ? Resource::dll(root) / mode : Resource::dll(root);
@@ -270,39 +271,38 @@ fs::path InterfacePlugin::run_project(const RunProjectData &data, std::optional<
             fs::create_hard_link(dll_file, link);
         }
 
-    return result;
+    return Ok<std::string>(result);
 }
 
-std::optional<std::string> InterfacePlugin::get_target(const RunProjectData &data, std::optional<std::string> &except) const
+Result<std::optional<std::string>, std::string> InterfacePlugin::get_target(const RunProjectData &data) const
 {
     auto [command, root, name, is_debug] = data;
     if (!command)
-        return std::optional<std::string>();
+        return Ok<std::string>(std::optional<std::string>());
     auto config = data::parse_toml_file<data::Interface>(root / "cup.toml");
     auto unique_suffix = name + '_' + replace(config.project.version, ".", "_");
     if (command->starts_with("tests/"))
     {
         auto str = command->substr(6);
         auto filename = split(fs::path(str).filename().string(), ".")[0];
-        return "test_" + filename + "_" + unique_suffix;
+        return Ok<std::string, std::optional<std::string>>("test_" + filename + "_" + unique_suffix);
     }
     else if (command->starts_with("examples/"))
     {
         auto str = command->substr(9);
         auto filename = split(fs::path(str).filename().string(), ".")[0];
-        return "example_" + filename + "_" + unique_suffix;
+        return Ok<std::string, std::optional<std::string>>("example_" + filename + "_" + unique_suffix);
     }
     else
     {
-        except = "Invalid target: " + *command;
-        return std::optional<std::string>();
+        return Err<std::optional<std::string>>("Invalid target: " + *command);
     }
 }
 
-int InterfacePlugin::show_help(const cmd::Args &command, std::optional<std::string> &except) const
+Result<int, std::string> InterfacePlugin::show_help(const cmd::Args &command) const
 {
     std::cout <<
 #include "template/help/built-in/interface.txt"
         ;
-    return 0;
+    return Ok<std::string>(0);
 }

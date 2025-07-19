@@ -154,17 +154,16 @@ void Build::generate_cmake(const fs::path &cup, const std::optional<FromParent> 
         .features = this_features,
         .dependencies = vaild_dependencies,
     };
-    std::optional<std::string> except;
-    auto out_content = plugin->gen_cmake(ctx, dep_info.has_value(), except);
-    if (except)
-        throw std::runtime_error(*except);
-    auto out_g_content = plugin->gen_cmake_global(ctx, dep_info.has_value(), except);
-    if (except)
-        throw std::runtime_error(*except);
+    auto out_content = plugin->gen_cmake(ctx, dep_info.has_value());
+    if (out_content.is_error())
+        throw std::runtime_error(out_content.error());
+    auto out_g_content = plugin->gen_cmake_global(ctx, dep_info.has_value());
+    if (out_g_content.is_error())
+        throw std::runtime_error(out_g_content.error());
     CMakeOutBlock block{
         .name = config.project.name,
-        .content = out_content,
-        .content_global = out_g_content,
+        .content = out_content.ok(),
+        .content_global = out_g_content.ok(),
         .version = VersionInfo::parse(config.project.version),
         .path = cup,
     };

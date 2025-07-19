@@ -43,30 +43,27 @@ int New::run()
     LOG_MSG("Creating...");
     auto plugin = PluginLoader(this->type);
     LOG_INFO("Creating new project '", this->name, "' with type '", this->type, "'.");
-    std::optional<std::string> except = std::nullopt;
-    auto plugin_name = plugin->getName(except);
-    if (except)
-        throw std::runtime_error(*except);
-    LOG_INFO("Execute by ", plugin_name);
+    auto plugin_name = plugin->getName();
+    if (plugin_name.is_error())
+        throw std::runtime_error(plugin_name.error());
+    LOG_INFO("Execute by ", plugin_name.ok());
     const auto project_dir = this->root / this->name;
     LOG_DEBUG(project_dir);
     if (fs::exists(project_dir))
         throw std::runtime_error("The directory '" + this->name + "' already exists.");
 
-    except = std::nullopt;
     auto result = plugin->run_new({
                                       .name = this->name,
                                       .type = this->type,
                                       .root = this->root,
-                                  },
-                                  except);
-    if (except)
+                                  });
+    if (result.is_error())
     {
         fs::remove_all(this->root / this->name);
-        throw std::runtime_error(*except);
+        throw std::runtime_error(result.error());
     }
     LOG_MSG("Finished.");
-    return result;
+    return result.ok();
 }
 const std::unordered_map<std::string, std::string> Help::help_info = {
     {
@@ -123,10 +120,10 @@ int Help::run()
     {
         auto plugin_name = this->key.substr(1);
         auto plugin = PluginLoader(plugin_name);
-        std::optional<std::string> except = std::nullopt;
-        plugin->show_help(this->args, except);
-        if (except)
-            throw std::runtime_error(*except);
+        auto result = plugin->show_help(this->args);
+        if (result.is_error())
+            throw std::runtime_error(result.error());
+        return result.ok();
     }
     else
         throw std::runtime_error("No help information for '" + this->key + "'.");
@@ -281,17 +278,17 @@ int Run::run()
         .is_debug = !this->is_release,
     };
     auto loader = PluginLoader(toml_config.project.type);
-    std::optional<std::string> except = std::nullopt;
-    this->target = loader->get_target(data, except);
-    if (except)
-        throw std::runtime_error(*except);
+    auto result = loader->get_target(data);
+    if (result.is_error())
+        throw std::runtime_error(result.error());
+    this->target = result.ok();
     auto ret = Build::run();
     if (ret)
         return ret;
-    except = std::nullopt;
-    auto path = loader->run_project(data, except);
-    if (except)
-        throw std::runtime_error(*except);
+    auto result_ = loader->run_project(data);
+    if (result_.is_error())
+        throw std::runtime_error(result_.error());
+    auto path = result_.ok();
     if (path.is_relative())
         path = this->root / path;
     path = path.lexically_normal();
