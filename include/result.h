@@ -13,20 +13,6 @@ class Result
     std::variant<T, E> value_;
 
 public:
-    Result(const T &value) : value_(std::in_place_index<0>, value) {}
-    Result(const E &error) : value_(std::in_place_index<1>, error) {}
-
-    template <typename U>
-        requires std::convertible_to<U, T>
-    Result(const U &other) : value_(std::in_place_index<0>, other)
-    {
-    }
-    template <typename U>
-        requires std::convertible_to<U, E>
-    Result(const U &other) : value_(std::in_place_index<1>, other)
-    {
-    }
-
     bool is_ok() const { return this->value_.index() == 0; }
     bool is_error() const { return this->value_.index() == 1; }
 
@@ -36,8 +22,17 @@ public:
     operator bool() const { return this->is_ok(); }
     bool operator!() const { return !this->is_ok(); }
 
-    static Result<T, E> Ok(const T &value) { return Result<T, E>(std::in_place_index<0>, value); }
-    static Result<T, E> Err(const E &error) { return Result<T, E>(std::in_place_index<1>, error); }
+    static Result<T, E> Ok(const T &value)
+    {
+        Result<T, E> result;
+        result.value_ = std::variant<T, E>(std::in_place_index<0>, value);
+        return result;
+    }
+    static Result<T, E> Err(const E &error) {
+        Result<T, E> result;
+        result.value_ = std::variant<T, E>(std::in_place_index<1>, error);
+        return result;
+    }
 };
 
 template <typename E, typename T>

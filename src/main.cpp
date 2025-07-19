@@ -115,11 +115,10 @@ int main(int argc, char **argv)
         {
             auto plugin_name = args.getPositions()[0].substr(1);
             auto plugin = PluginLoader(plugin_name);
-            std::optional<std::string> error;
-            auto ret = plugin->execute(args, error);
-            if (error)
-                throw std::runtime_error(*error);
-            return ret;
+            auto ret = plugin->execute(args);
+            if (ret.is_error())
+                throw std::runtime_error(ret.error());
+            return ret.ok();
         }
         catch (const exception &e)
         {

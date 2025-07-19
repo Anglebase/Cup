@@ -76,9 +76,9 @@ std::vector<fs::path> BinaryPlugin::get_tests_main_files(const fs::path &root)
     return tests_main_files;
 }
 
-std::string BinaryPlugin::getName(std::optional<std::string> &) const { return "binary"; }
+Result<std::string, std::string> BinaryPlugin::getName() const { return Ok<std::string, std::string>("binary"); }
 
-int BinaryPlugin::run_new(const NewData &data, std::optional<std::string> &)
+Result<int, std::string> BinaryPlugin::run_new(const NewData &data)
 {
     auto [name, type, root] = data;
     auto project = root / name;
@@ -108,10 +108,10 @@ int BinaryPlugin::run_new(const NewData &data, std::optional<std::string> &)
                 {"TYPE", type},
             }}.getContent();
     }
-    return 0;
+    return Ok<std::string>(0);
 }
 
-std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency, std::optional<std::string> &except)
+Result<std::string, std::string> BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency)
 {
     if (is_dependency)
         throw std::runtime_error("'binary' project cannot be a dependency.");
@@ -234,7 +234,7 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             replacements};
         for_tests.push_back(temp.getContent());
     }
-    return FileTemplate{
+    return Ok<std::string>(FileTemplate{
 #include "template/binary/binary.cmake"
         ,
         {
@@ -256,10 +256,10 @@ std::string BinaryPlugin::gen_cmake(const CMakeContext &ctx, bool is_dependency,
             {"STDCXX", config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : ""},
         },
     }
-        .getContent();
+        .getContent());
 }
 
-fs::path BinaryPlugin::run_project(const RunProjectData &data, std::optional<std::string> &except)
+Result<fs::path,std::string> BinaryPlugin::run_project(const RunProjectData &data)
 {
     auto [command, root, name, is_debug] = data;
     fs::path result = Resource::bin(root) / (command && command != "main" ? *command : name);
@@ -271,7 +271,7 @@ fs::path BinaryPlugin::run_project(const RunProjectData &data, std::optional<std
     if (!fs::exists(result))
         result = result.parent_path() / (is_debug ? "Debug" : "Release") / result.filename();
     if (!fs::exists(result))
-        except = "Cannot find executable file" + result.filename().string() + ".";
+        return Err<fs::path>("Cannot find executable file" + result.filename().string() + ".");
 
     auto mode = result.parent_path().filename().string();
     auto dll = mode == "Debug" || mode == "Release" ? Resource::dll(root) / mode : Resource::dll(root);
@@ -285,45 +285,45 @@ fs::path BinaryPlugin::run_project(const RunProjectData &data, std::optional<std
             fs::create_hard_link(dll_file, link);
         }
 
-    return result;
+    return Ok<std::string>(result);
 }
 
-std::optional<std::string> BinaryPlugin::get_target(const RunProjectData &data, std::optional<std::string> &except) const
+Result<std::optional<std::string>, std::string> BinaryPlugin::get_target(const RunProjectData &data) const
 {
     auto config = data::parse_toml_file<data::Binary>(data.root / "cup.toml");
     const auto target_name = data.name;
     const auto unique_suffix = target_name + '_' + replace(config.project.version, ".", "_");
     auto [command, root, name, is_debug] = data;
     if (!command)
-        return std::optional<std::string>();
+        return Ok<std::string>(std::optional<std::string>());
     auto target = *command;
     if (target == "main")
     {
-        return target_name + "_" + unique_suffix;
+        return Ok<std::string, std::optional<std::string>>(target_name + "_" + unique_suffix);
     }
     else if (target.starts_with("tests/"))
     {
         auto str = target.substr(6);
         auto filename = split(str, ".")[0];
-        return "test_" + filename + "_" + target_name + "_" + unique_suffix;
+        return Ok<std::string, std::optional<std::string>>("test_" + filename + "_" + target_name + "_" + unique_suffix);
     }
     else if (target.starts_with("bin/"))
     {
         auto str = target.substr(4);
         auto filename = split(str, ".")[0];
-        return "bin_" + filename + "_" + target_name + "_" + unique_suffix;
+        return Ok<std::string, std::optional<std::string>>("bin_" + filename + "_" + target_name + "_" + unique_suffix);
     }
     else
     {
-        except = "Invalid target: " + target;
+        return Err<std::optional<std::string>>("Invalid target: " + target);
     }
-    return std::nullopt;
+    return Ok<std::string, std::optional<std::string>>(std::optional<std::string>(std::nullopt));
 }
 
-int BinaryPlugin::show_help(const cmd::Args &command, std::optional<std::string> &) const
+Result<int, std::string> BinaryPlugin::show_help(const cmd::Args &command) const
 {
     std::cout <<
 #include "template/help/built-in/binary.txt"
         ;
-    return 0;
+    return Ok<std::string>(0);
 }
