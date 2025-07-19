@@ -1,4 +1,4 @@
-#include "plugin/interface.h"
+#include "cup_plugin/interface.h"
 
 class InterfacePlugin : public IPlugin
 {

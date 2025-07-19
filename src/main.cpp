@@ -1,4 +1,4 @@
-#include "cmd/args.h"
+#include "cup_plugin/args.h"
 #include "subcmd.h"
 #include <iostream>
 #include <unordered_map>

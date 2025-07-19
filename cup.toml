@@ -10,6 +10,7 @@ defines = ["_VER_X=2", "_VER_Y=2", "_VER_Z=0"]
 
 [dependencies]
 toml_serde = { url = "@Anglebase/toml_serde", version = "0.2.2" }
+cup_plugin = { path = '..\cup_plugin' }
 
 [generator."Visual Studio 17 2022"]
 compile_options = ["/utf-8"]
