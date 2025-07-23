@@ -25,5 +25,5 @@ The `examples` directory contains the example files of the static library.
 
 For `examples` and `tests` directory, it does not recursively search for the main files within it.
 
-See https://github.com/Anglebase/Cup/blob/master/docs/static.toml for information about configuration files.
+See https://github.com/Anglebase/Cup/blob/master/docs/built-in.toml for information about configuration files.
 )"

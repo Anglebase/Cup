@@ -35,5 +35,5 @@ The parameters accepted by the `run` command will be interpreted as the executab
   files in tests/.
 - Otherwise, it will be considered an error.
 
-See https://github.com/Anglebase/Cup/blob/master/docs/binary.toml for information about configuration files.
+See https://github.com/Anglebase/Cup/blob/master/docs/built-in.toml for information about configuration files.
 )"
