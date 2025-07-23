@@ -20,6 +20,7 @@ namespace data
         std::optional<Table<Generator>> generator;
         std::optional<Table<Array<std::string>>> features;
         std::optional<Table<Feature>> feature;
+        std::optional<Table<Target>> target;
     };
 
     TOML_DESERIALIZE_W(Static, {
@@ -31,5 +32,6 @@ namespace data
         TOML_OPTIONS(generator);
         TOML_OPTIONS(features);
         TOML_OPTIONS(feature);
+        TOML_OPTIONS(target);
     });
 }

@@ -190,6 +190,32 @@ Result<std::string, std::string> BinaryPlugin::gen_cmake(const CMakeContext &ctx
             for_gen.push_back(temp.getContent());
         }
     }
+    // Target specific configuration items
+    std::vector<std::string> for_target;
+    if (config.target)
+    {
+        for (const auto &[target, cfg] : *config.target)
+        {
+            std::unordered_map<std::string, std::string> replacements = {{"TARGET", '"' + target + '"'}};
+            {
+                auto extend = gen_map("TARGET_", std::optional(cfg));
+                replacements.insert(extend.begin(), extend.end());
+            }
+            {
+                auto extend = gen_map("TARGET_DEBUG_", cfg.debug);
+                replacements.insert(extend.begin(), extend.end());
+            }
+            {
+                auto extend = gen_map("TARGET_RELEASE_", cfg.release);
+                replacements.insert(extend.begin(), extend.end());
+            }
+            FileTemplate temp{
+#include "template/cmake/target.cmake"
+                ,
+                replacements};
+            for_target.push_back(temp.getContent());
+        }
+    }
     // Mode specific configuration items
     std::vector<std::string> for_mode;
     {
@@ -242,6 +268,7 @@ Result<std::string, std::string> BinaryPlugin::gen_cmake(const CMakeContext &ctx
             {"FOR_MODE", join(for_mode, "\n")},
             {"FOR_TEST", join(for_tests, "\n")},
             {"FOR_FEAT", join(for_feats, "\n")},
+            {"FOR_TARGET", join(for_target, "\n")},
             {"MAIN_FILE", dealpath(this->get_main_file(current_dir))},
             {"BIN_MAIN_FILES", join(this->get_bin_main_files(current_dir), " ", dealpath)},
             {"SOURCES", join(this->get_source_files(current_dir), " ", dealpath)},
@@ -256,10 +283,10 @@ Result<std::string, std::string> BinaryPlugin::gen_cmake(const CMakeContext &ctx
             {"STDCXX", config.build && config.build->stdcxx ? std::to_string(*config.build->stdcxx) : ""},
         },
     }
-        .getContent());
+                               .getContent());
 }
 
-Result<fs::path,std::string> BinaryPlugin::run_project(const RunProjectData &data)
+Result<fs::path, std::string> BinaryPlugin::run_project(const RunProjectData &data)
 {
     auto [command, root, name, is_debug] = data;
     fs::path result = Resource::bin(root) / (command && command != "main" ? *command : name);

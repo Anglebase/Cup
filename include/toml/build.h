@@ -17,11 +17,12 @@ namespace data
         std::optional<std::vector<std::string>> link_options;
         std::optional<Part> debug;
         std::optional<Part> release;
+
         std::optional<Integer> stdc;
         std::optional<Integer> stdcxx;
-        std::optional<Export> export_data;
         std::optional<Integer> jobs;
         std::optional<Array<std::string>> features;
+        std::optional<Export> export_data;
     };
 
     TOML_DESERIALIZE(Build, {

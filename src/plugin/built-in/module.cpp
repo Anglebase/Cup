@@ -165,6 +165,32 @@ Result<std::string, std::string> ModulePlugin::gen_cmake(const CMakeContext &ctx
             for_gen.push_back(temp.getContent());
         }
     }
+    // Target specific configuration items
+    std::vector<std::string> for_target;
+    if (config.target)
+    {
+        for (const auto &[target, cfg] : *config.target)
+        {
+            std::unordered_map<std::string, std::string> replacements = {{"TARGET", '"' + target + '"'}};
+            {
+                auto extend = gen_map("TARGET_", std::optional(cfg));
+                replacements.insert(extend.begin(), extend.end());
+            }
+            {
+                auto extend = gen_map("TARGET_DEBUG_", cfg.debug);
+                replacements.insert(extend.begin(), extend.end());
+            }
+            {
+                auto extend = gen_map("TARGET_RELEASE_", cfg.release);
+                replacements.insert(extend.begin(), extend.end());
+            }
+            FileTemplate temp{
+#include "template/cmake/target.cmake"
+                ,
+                replacements};
+            for_target.push_back(temp.getContent());
+        }
+    }
     // Mode specific configuration items
     std::vector<std::string> for_mode;
     {
@@ -217,6 +243,7 @@ Result<std::string, std::string> ModulePlugin::gen_cmake(const CMakeContext &ctx
             {"FOR_MODE", join(for_mode, "\n")},
             {"FOR_TEST", join(for_tests, "\n")},
             {"FOR_FEAT", join(for_feats, "\n")},
+            {"FOR_TARGET", join(for_target, "\n")},
             {"SOURCES", join(this->get_all_source_files(current_dir), " ", dealpath)},
             {"OUT_NAME", name},
             {"OUT_DIR", dealpath(Resource::mod(root_dir))},

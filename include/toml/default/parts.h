@@ -31,4 +31,5 @@ namespace data
     using Test = Parts;
     using Example = Parts;
     using Feature = Parts;
+    using Target = Parts;
 }
