@@ -89,9 +89,10 @@ See [default](https://github.com/Anglebase/Cup/blob/master/docs/default.toml)
 
 ## Plugins
 
-Cup determines which plugin to call based on the `project. type` field in the project configuration file. The plugin mechanism of Cup allows users to customize builder plugins, and Cup retrieves the `$HOME/.cup/plugins` directory and loads them when used. Cup has five built-in plugins: `binary`, `static`, `shared`, `module` and `interface`, which are used to generate executable programs, static libraries, dynamic libraries, module libraries(plugins) and interface libraries(without source files) respectively.
+Cup determines which plugin to call based on the `project.type` field in the project configuration file. The plugin mechanism of Cup allows users to customize builder plugins, and Cup retrieves the `$HOME/.cup/plugins` directory and loads them when used. Cup has five built-in plugins: `binary`, `static`, `shared`, `module` and `interface`, which are used to generate executable programs, static libraries, dynamic libraries, module libraries(plugins) and interface libraries(without source files) respectively.
+
 ### API
 
 The plugin must implement the following interfaces:
 
-See [Interface](https://github.com/Anglebase/Cup/blob/master/include/plugin/interface.h)
+See [Interface](https://github.com/Anglebase/CupPlugin)
