@@ -208,7 +208,7 @@ Result<std::string, std::string> SharedPlugin::gen_cmake(const CMakeContext &ctx
                 replacements.insert(extend.begin(), extend.end());
             }
             FileTemplate temp{
-#include "template/cmake/gen.cmake"
+#include "template/cmake/target.cmake"
                 ,
                 replacements};
             for_target.push_back(temp.getContent());
