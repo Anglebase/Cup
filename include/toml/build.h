@@ -15,6 +15,8 @@ namespace data
         std::optional<std::vector<std::string>> link_libs;
         std::optional<std::vector<std::string>> compile_options;
         std::optional<std::vector<std::string>> link_options;
+        std::optional<std::vector<fs::path>> sources;
+        std::optional<std::vector<std::string>> compiler_features;
         std::optional<Part> debug;
         std::optional<Part> release;
 
@@ -33,6 +35,8 @@ namespace data
         TOML_OPTIONS(link_libs);
         TOML_OPTIONS(compile_options);
         TOML_OPTIONS(link_options);
+        TOML_OPTIONS(sources);
+        TOML_OPTIONS(compiler_features);
         TOML_OPTIONS(stdc);
         TOML_OPTIONS(stdcxx);
         TOML_OPTIONS(jobs);

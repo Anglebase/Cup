@@ -15,7 +15,7 @@ inline void _cycle_dep_check(const std::string &key, const std::map<std::string,
         std::string cycle_str = join(cycle_check, " -> ");
         throw std::runtime_error("Features cycle dependency detected: " + cycle_str);
     }
-    if(!table.contains(key))
+    if (!table.contains(key))
         throw std::runtime_error("Feature '" + key + "' not found in [features]");
     for (const auto &value : table.at(key))
         _cycle_dep_check(value, table);
@@ -97,6 +97,17 @@ std::unordered_map<std::string, std::string> gen_map(const std::string &prefix, 
         {
             prefix + "LINKOPTIONS",
             config && config->link_options ? join(*config->link_options, " ") : "",
+        },
+        {
+            prefix + "SOURCES",
+            config && config->sources
+                ? join(*config->sources, " ", [](const fs::path &p)
+                       { return '"' + replace(p.string()) + '"'; })
+                : "",
+        },
+        {
+            prefix + "COMPILER_FEAT",
+            config && config->compiler_features ? join(*config->compiler_features, " ") : "",
         },
     };
 }
