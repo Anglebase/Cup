@@ -126,6 +126,8 @@ inline std::unordered_map<std::string, std::string> gen_feat_replacement(const s
         "_DEFINES",
         "_COPTIONS",
         "_LINKOPTIONS",
+        "_SOURCES",
+        "_COMPILER_FEAT",
     };
     std::unordered_map<std::string, std::string> result;
     for (const auto &s : suffix)
