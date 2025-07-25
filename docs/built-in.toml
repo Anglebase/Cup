@@ -50,7 +50,7 @@ compile_commands = ""
 # If this configuration item exists, then during the build process,
 # CMake will generate a compile_commands.json file.
 # This configuration item specifies the location of the generated file.
-# If it is "", it will be generated in the default location.
+# This option is only valid for generators of the Makefile and Nijia categories.
 
 [features]
 # Specify the dependency relationships between specified features.
@@ -78,6 +78,6 @@ name = { url = "", path = "", version = "" }
 [target."<platform>".release]
 
 # Only for type 'static','shared' and 'interface' projects.
-[example]
-[example.debug]
-[example.release]
+[examples]
+[examples.debug]
+[examples.release]

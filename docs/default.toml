@@ -25,10 +25,10 @@ features = ["feat1", "feat2"]
 
 [build.export]
 compile_commands = "compile_commands.json"
-# Specify the path to generate the compile_commands.json file
-# If empty, it will be located at the default build location (<project-dir>/target/build/cake)
-# If this option is not specified, the file will not be generated
-# This option is only valid for some CMake generators, please refer to the CMake documentation for details
+# If this configuration item exists, then during the build process,
+# CMake will generate a compile_commands.json file.
+# This configuration item specifies the location of the generated file.
+# This option is only valid for generators of the Makefile and Nijia categories.
 
 [features]
 # Specify the dependency relationships between features.
