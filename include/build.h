@@ -69,6 +69,7 @@ protected:
     std::optional<std::string> target;
     std::optional<std::string> command;
     std::optional<fs::path> compile_commands;
+    std::vector<std::string> languages;
 
 public:
     Build(const cmd::Args &args);

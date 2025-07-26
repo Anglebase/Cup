@@ -22,6 +22,8 @@ stdcxx = 20
 # Specify the C++ language standard.
 features = ["feat1", "feat2"]
 # Specify the feature to enable when the current project is not a dependency.
+languages = ["C", "CXX"]
+# Specify the programming language to be enabled.
 
 # For the sake of simplicity, tables with the following fields are referred to as 'Target Table'.
 # The '[build]' here is a Target Table.

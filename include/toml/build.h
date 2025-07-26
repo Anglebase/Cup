@@ -25,6 +25,7 @@ namespace data
         std::optional<Integer> jobs;
         std::optional<Array<std::string>> features;
         std::optional<Export> export_data;
+        std::optional<Array<std::string>> languages;
     };
 
     TOML_DESERIALIZE(Build, {
@@ -44,5 +45,6 @@ namespace data
         TOML_OPTIONS(release);
         TOML_OPTIONS(features);
         _TOML_OPTIONS(export_data, "export");
+        TOML_OPTIONS(languages);
     });
 }

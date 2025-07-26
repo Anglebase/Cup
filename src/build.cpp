@@ -112,6 +112,8 @@ void Build::generate_cmake(const fs::path &cup, const std::optional<FromParent> 
         }
         if (config.build && config.build->export_data)
             this->compile_commands = config.build->export_data->compile_commands;
+        if (config.build && config.build->languages)
+            this->languages = *config.build->languages;
     }
     else
     {
@@ -209,6 +211,8 @@ int Build::run()
             ofs << "set(CMAKE_EXPORT_COMPILE_COMMANDS ON)\n\n";
         this->output.write_global_to(ofs);
         ofs << "project(" << this->name << ")\n\n";
+        if (!this->languages.empty())
+            ofs << "enable_language(" << join(this->languages, " ") << ")\n\n";
         this->output.write_to(ofs);
     }
 
