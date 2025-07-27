@@ -13,7 +13,14 @@ While C++ boasts a mature ecosystem, project setup and dependency management oft
 2.  **Minimal Configuration**: Define projects (name/type/dependencies) in simple config files – no CMake expertise needed
 3.  **Extensible Plugins**: Adapt to specialized build scenarios (e.g., Qt apps) via lightweight plugins
 
-For most projects, built-in plugins suffice, while the extension system handles advanced use cases.
+**Design Philosophy**:  
+Cup was born from the need for Cargo-like simplicity in C++ development. Traditional CMake workflows require manual source file management where `file(GLOB)` breaks incremental builds. Cup automates this by:
+- Generating CMake scripts from TOML configurations
+- Using one TOML file per build target for clarity
+- Providing plugins for complex scenarios where pure configuration falls short
+- Offering VSCode integration for seamless development
+
+We believe build operations should be templated, not scripted. Unlike Rust's build.rs (which becomes unreadable), Cup strikes the perfect balance between configuration simplicity and CMake's power through its plugin system.
 
 ## Quick Start
 
@@ -53,6 +60,9 @@ For most projects, built-in plugins suffice, while the extension system handles 
 
 📚 [**Full Documentation**](https://github.com/Anglebase/Cup/tree/master/docs/cup.md)  
 Advanced features and customization guides
+
+🧩 **[VSCode Extension](https://github.com/Anglebase/cppcup)**:  
+Get IntelliSense autocompletion for `cup.toml` and one-click project execution
 
 **Contribute**:  
 Submit issues, suggestions, or code via [GitHub Repository](https://github.com/Anglebase/Cup)
