@@ -18,7 +18,7 @@ void ModulePlugin::_get_all_source_files(const fs::path &root, std::vector<fs::p
         {
             this->_get_all_source_files(entry.path(), src_files);
         }
-        else if (entry.is_regular_file())
+        else if (entry.is_regular_file() && is_source_file(entry.path()))
         {
             src_files.push_back(entry.path());
         }
@@ -41,7 +41,7 @@ std::vector<fs::path> ModulePlugin::get_test_main_files(const fs::path &root)
     std::vector<fs::path> files;
     for (const auto &entry : fs::directory_iterator(root / "tests"))
     {
-        if (entry.is_regular_file())
+        if (entry.is_regular_file() && is_source_file(entry.path()))
             files.push_back(entry.path());
     }
     return files;

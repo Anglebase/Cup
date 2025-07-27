@@ -17,7 +17,7 @@ void StaticPlugin::_get_source_files(const fs::path &dir, std::vector<fs::path> 
         {
             _get_source_files(entry.path(), src_files);
         }
-        else if (entry.is_regular_file())
+        else if (entry.is_regular_file() && is_source_file(entry.path()))
         {
             src_files.push_back(entry.path());
         }
@@ -40,7 +40,7 @@ std::vector<fs::path> StaticPlugin::get_test_mains(const fs::path &root) const
     std::vector<fs::path> test_mains;
     for (const auto &entry : fs::directory_iterator(root / "tests"))
     {
-        if (entry.is_regular_file())
+        if (entry.is_regular_file() && is_source_file(entry.path()))
             test_mains.push_back(entry.path());
     }
     return test_mains;
@@ -53,7 +53,7 @@ std::vector<fs::path> StaticPlugin::get_example_mains(const fs::path &root) cons
     std::vector<fs::path> example_mains;
     for (const auto &entry : fs::directory_iterator(root / "examples"))
     {
-        if (entry.is_regular_file())
+        if (entry.is_regular_file() && is_source_file(entry.path()))
             example_mains.push_back(entry.path());
     }
     return example_mains;

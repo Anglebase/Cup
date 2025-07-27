@@ -17,7 +17,7 @@ void BinaryPlugin::_get_source_files(const fs::path &dir, std::vector<fs::path> 
     {
         if (entry.is_directory() && entry.path().stem() != "bin")
             this->_get_source_files(entry.path(), files);
-        else if (entry.is_regular_file() && entry.path().stem() != "main")
+        else if (entry.is_regular_file() && entry.path().stem() != "main" && is_source_file(entry.path()))
             files.push_back(entry.path());
     }
 }
@@ -39,7 +39,7 @@ fs::path BinaryPlugin::get_main_file(const fs::path &root)
     std::optional<fs::path> main_file;
     for (const auto &entry : fs::directory_iterator(src))
     {
-        if (entry.is_regular_file() && entry.path().stem() == "main")
+        if (entry.is_regular_file() && entry.path().stem() == "main" && is_source_file(entry.path()))
         {
             main_file = entry.path();
             break;
@@ -57,7 +57,7 @@ std::vector<fs::path> BinaryPlugin::get_bin_main_files(const fs::path &root)
     std::vector<fs::path> bin_main_files;
     for (const auto &entry : fs::directory_iterator(root / "src" / "bin"))
     {
-        if (entry.is_regular_file())
+        if (entry.is_regular_file() && is_source_file(entry.path()))
             bin_main_files.push_back(entry.path());
     }
     return bin_main_files;
@@ -70,7 +70,7 @@ std::vector<fs::path> BinaryPlugin::get_tests_main_files(const fs::path &root)
     std::vector<fs::path> tests_main_files;
     for (const auto &entry : fs::directory_iterator(root / "tests"))
     {
-        if (entry.is_regular_file())
+        if (entry.is_regular_file() && is_source_file(entry.path()))
             tests_main_files.push_back(entry.path());
     }
     return tests_main_files;

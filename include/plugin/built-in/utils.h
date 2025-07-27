@@ -3,6 +3,7 @@
 #include "cup_plugin/interface.h"
 #include "utils/utils.h"
 #include <unordered_map>
+#include <unordered_set>
 #include <algorithm>
 
 inline void _cycle_dep_check(const std::string &key, const std::map<std::string, std::vector<std::string>> &table)
@@ -138,4 +139,44 @@ inline std::unordered_map<std::string, std::string> gen_feat_replacement(const s
             result[key] += "${FEAT_" + n + s + "} ${FEAT_" + n + "_MODE" + s + "}";
     }
     return result;
+}
+
+inline bool is_source_file(const fs::path &p)
+{
+    static const std::unordered_set<std::string> suffix = {
+        ".c",
+        ".C",
+        ".c++",
+        ".cc",
+        ".cpp",
+        ".cxx",
+        ".cu",
+        ".mpp",
+        ".m",
+        ".M",
+        ".mm",
+        ".ixx",
+        ".cppm",
+        ".ccm",
+        ".cxxm",
+        ".c++m",
+        ".h",
+        ".hh",
+        ".h++",
+        ".hm",
+        ".hpp",
+        ".hxx",
+        ".in",
+        ".txx",
+        ".f",
+        ".F",
+        ".for",
+        ".f77",
+        ".f90",
+        ".f95",
+        ".f03",
+        ".hip",
+        ".ispc",
+    };
+    return suffix.contains(p.extension().string());
 }
