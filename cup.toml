@@ -1,12 +1,12 @@
 [project]
 name = "cup"
 type = "binary"
-version = "2.5.0"
+version = "2.5.1"
 
 [build]
 jobs = 0
 stdcxx = 20
-defines = ["_VER_X=2", "_VER_Y=5", "_VER_Z=0"]
+defines = ["_VER_X=2", "_VER_Y=5", "_VER_Z=1"]
 
 [dependencies]
 toml_serde = { url = "@Anglebase/toml_serde", version = "0.2.2" }
