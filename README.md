@@ -42,18 +42,18 @@ We believe build operations should be templated, not scripted. Unlike Rust's bui
 | `cup build`                          | Build current project                           |
 | `cup clean`                          | Clean build artifacts                           |
 | `cup run`                            | Build & execute the project (if applicable)     |
-| `cup install [pkg@url]`              | Install dependency locally                      |
-| `cup uninstall [pkg@url]`            | Uninstall local dependency                      |
+| `cup install <@user/repo>`           | Install dependency locally                      |
+| `cup uninstall <@user/repo>`         | Uninstall local dependency                      |
 | `cup list`                           | Show information (e.g., installed packages)     |
 
 ### Built-in Project Types (Plugins)
 
-| Type          | Output                          |
-| :------------ | :------------------------------ |
-| **`binary`**  | Executable (default)            |
-| **`static`**  | Static library (.a/.lib)        |
-| **`shared`**  | Shared library (.so/.dll)       |
-| **`module`**  | Module library (plugins)        |
+| Type            | Output                          |
+| :-------------- | :------------------------------ |
+| **`binary`**    | Executable (default)            |
+| **`static`**    | Static library (.a/.lib)        |
+| **`shared`**    | Shared library (.so/.dll)       |
+| **`module`**    | Module library (plugins)        |
 | **`interface`** | Header-only library             |
 
 ## Explore Further
