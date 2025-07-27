@@ -33,13 +33,13 @@ set(COMPILER_FEAT ${TARGET_COMPILER_FEAT} ${TARGET_MODE_COMPILER_FEAT} ${M_COMPI
 
 add_library(${EXPORT_NAME} STATIC ${SOURCES})
 target_sources(${EXPORT_NAME} PRIVATE ${EXT_SOURCES})
-target_compile_features(${EXPORT_NAME} PRIVATE ${COMPILER_FEAT})
+target_compile_features(${EXPORT_NAME} PUBLIC ${COMPILER_FEAT})
 target_include_directories(${EXPORT_NAME} PUBLIC ${INCLUDE_DIRS})
 target_include_directories(${EXPORT_NAME} PRIVATE ${INC})
 target_link_directories(${EXPORT_NAME} PUBLIC ${LIB_DIRS})
 target_link_libraries(${EXPORT_NAME} PUBLIC ${LIBS})
 target_compile_definitions(${EXPORT_NAME} PRIVATE ${DEFINES})
-target_compile_options(${EXPORT_NAME} PRIVATE ${COPTIONS})
+target_compile_options(${EXPORT_NAME} PUBLIC ${COPTIONS})
 target_link_options(${EXPORT_NAME} PUBLIC ${LINKOPTIONS})
 set_target_properties(${EXPORT_NAME} PROPERTIES
     OUTPUT_NAME ${EXPORT_NAME}
