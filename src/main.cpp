@@ -13,13 +13,14 @@ int main(int argc, char **argv)
 #ifdef _DEBUG
     cout << args << endl;
 #endif
-    if (args.has_flag("version") || args.has_flag("v") || args.has_config("version") || args.has_config("v"))
-    {
-        auto version = Version(args);
-        return version.run();
-    }
     if (args.getPositions().empty())
     {
+        if (args.has_flag("version") || args.has_flag("v") ||
+            args.has_config("version") || args.has_config("v"))
+        {
+            auto version = Version(args);
+            return version.run();
+        }
         auto help = Help(args);
         return help.run();
     }
