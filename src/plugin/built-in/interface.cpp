@@ -17,7 +17,7 @@ std::vector<fs::path> InterfacePlugin::get_all_tests_main_files(const fs::path &
     std::vector<fs::path> result;
     for (const auto &entry : fs::directory_iterator(root / "tests"))
     {
-        if (entry.is_regular_file())
+        if (entry.is_regular_file() && is_source_file(entry.path()))
             result.push_back(entry.path());
     }
     return result;
@@ -30,7 +30,7 @@ std::vector<fs::path> InterfacePlugin::get_examples_main_files(const fs::path &r
     std::vector<fs::path> result;
     for (const auto &entry : fs::directory_iterator(root / "examples"))
     {
-        if (entry.is_regular_file())
+        if (entry.is_regular_file() && is_source_file(entry.path()))
             result.push_back(entry.path());
     }
     return result;
