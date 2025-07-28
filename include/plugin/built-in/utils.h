@@ -37,25 +37,25 @@ inline std::vector<std::string> get_features(
 {
     if (!features)
         return std::vector<std::string>();
-    auto result = *features;
+    auto buffer = *features;
     cycle_dep_check(table);
     if (!table)
-        return result;
-    std::vector<std::string> buffer;
+        return buffer;
+    std::vector<std::string> result;
     bool contains = false;
     do
     {
         contains = false;
         for (const auto &[key, value] : *table)
         {
-            auto iter = std::find(result.begin(), result.end(), key);
-            if (iter != result.end())
+            auto iter = std::find(buffer.begin(), buffer.end(), key);
+            if (iter != buffer.end())
             {
                 contains = true;
-                if (std::find(buffer.begin(), buffer.end(), *iter) == buffer.end())
-                    buffer.push_back(*iter);
-                result.erase(iter);
-                result.insert(result.end(), value.begin(), value.end());
+                if (std::find(result.begin(), result.end(), *iter) == result.end())
+                    result.push_back(*iter);
+                buffer.erase(iter);
+                buffer.insert(buffer.end(), value.begin(), value.end());
             }
         }
     } while (contains);
