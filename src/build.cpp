@@ -197,6 +197,10 @@ int Build::run()
     {
         std::ofstream ofs(build_dir / "CMakeLists.txt");
         ofs << "cmake_minimum_required(VERSION " << this->cmake_version.first << "." << this->cmake_version.second << ")\n";
+        if (this->compile_commands)
+            ofs << "set(CMAKE_EXPORT_COMPILE_COMMANDS ON)\n\n";
+        this->output.write_global_to(ofs);
+        ofs << "project(" << this->name << ")\n\n";
         if (this->is_release)
             ofs <<
 #include "template/release.cmake"
@@ -207,10 +211,6 @@ int Build::run()
 #include "template/debug.cmake"
                 << std::endl
                 << std::endl;
-        if (this->compile_commands)
-            ofs << "set(CMAKE_EXPORT_COMPILE_COMMANDS ON)\n\n";
-        this->output.write_global_to(ofs);
-        ofs << "project(" << this->name << ")\n\n";
         if (!this->languages.empty())
             ofs << "enable_language(" << join(this->languages, " ") << ")\n\n";
         this->output.write_to(ofs);
