@@ -15,5 +15,6 @@ name = "cup"
 anyhow = "1.0.99"
 clap = { version = "4.5.47", features = ["derive"] }
 colored = "3.0.0"
+constcat = "0.6.1"
 fs-err = "3.1.2"
 path-clean = "1.0.1"
