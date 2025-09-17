@@ -1,10 +1,6 @@
-use clap::Parser;
-use cup_cli::{cli::Cli, logo};
+use cup_cli::cli::Cli;
 
-fn main() {
-    let cli = Cli::parse();
-    match cli {
-        Cli::Logo => logo(),
-        _ => todo!(),
-    };
+fn main() -> anyhow::Result<()> {
+    let cli = Cli::new();
+    cli.dispatch()
 }
