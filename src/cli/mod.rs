@@ -26,7 +26,14 @@ pub enum Cli {
         path: PathBuf,
     },
     /// Initialize an existing directory with a project template
-    Init,
+    Init {
+        /// The type of the project
+        #[arg(short, long, default_value = "exe")]
+        template: TemplateType,
+        /// Location for creating the project
+        #[arg(short, long, default_value = ".")]
+        path: PathBuf,
+    },
     /// Build the project
     Build,
     /// Run the project with specified parameters
@@ -57,11 +64,19 @@ impl Cli {
 
         // 重整化路径，使其成为绝对路径
         let base_path = std::env::current_dir().unwrap();
-        if let Self::New { ref mut path, .. } = cli {
-            if path.is_relative() {
-                *path = base_path.join(&path).clean();
-            }
+        // 路径重整化宏
+        macro_rules! to_abs_path {
+            ($($t: tt)*) => {
+                if let $($t)* { ref mut path, .. } = cli {
+                    if path.is_relative() {
+                        *path = base_path.join(&path).clean();
+                    }
+                }
+            };
         }
+        // 重整化路径
+        to_abs_path!(Self::New);
+        to_abs_path!(Self::Init);
 
         cli
     }
@@ -78,15 +93,40 @@ impl Cli {
                 path,
             } => {
                 let plugin = create_instance(template);
+
                 let project_path = path.join(&name);
                 if project_path.exists() {
                     return Err(anyhow!(
-                        "Directory or file {:?} already exists!",
-                        project_path.clean()
+                        "Directory or file {} already exists!",
+                        project_path.clean().display()
                     ));
                 }
+
                 fs_err::create_dir_all(&project_path)?;
                 plugin.create_project(&name, &project_path)?;
+            }
+            // 初始化项目
+            Cli::Init { template, path } => {
+                let plugin = create_instance(template);
+
+                if !path.exists() {
+                    return Err(anyhow!(
+                        "Directory {} does not exist!",
+                        path.clean().display()
+                    ));
+                }
+                if !path.is_dir() {
+                    return Err(anyhow!("{} is not a directory!", path.clean().display()));
+                }
+                if fs_err::read_dir(&path)?.next().is_some() {
+                    return Err(anyhow!(
+                        "Directory {} is not empty!",
+                        path.clean().display()
+                    ));
+                }
+
+                let name = path.file_name().unwrap().to_str().unwrap();
+                plugin.create_project(name, &path)?;
             }
             _ => todo!(),
         };
