@@ -1,11 +1,10 @@
 use clap::Parser;
-use cup_cli::logo;
-
-#[derive(Debug, Clone, clap::Parser)]
-#[clap(author, version, about, long_about = None)]
-pub struct Cli {}
+use cup_cli::{cli::Cli, logo};
 
 fn main() {
-    let _ = Cli::parse();
-    logo();
+    let cli = Cli::parse();
+    match cli {
+        Cli::Logo => logo(),
+        _ => todo!(),
+    };
 }
