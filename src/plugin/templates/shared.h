@@ -1,5 +1,11 @@
 #pragma once
 
+#ifdef _MSC_VER
+#   define DLLEXPORT __declspec(dllexport)
+#else
+#   define DLLEXPORT
+#endif
+
 /*
 This is a package domain, and all code should be included
 in the package domain except for macro instructions.
@@ -9,6 +15,5 @@ in the package domain except for macro instructions.
 conflicts between packages.
 */
 namespace $pkg {
-    int add(int a, int b);
+    DLLEXPORT int add(int a, int b);
 }
-
