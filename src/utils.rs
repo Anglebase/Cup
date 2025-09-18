@@ -14,7 +14,7 @@ macro_rules! write_template {
     ($f:expr, $p:expr) => {
         $f.write_fmt(format_args!("{}", include_str!($p)))
     };
-    ($f:expr, $p: expr => [$($k: ident = $e: expr);+]) => {
+    ($f:expr, $p: expr => [$($k: ident = $e: expr);+ $(;)?]) => {
         $f.write_fmt(format_args!("{}", $crate::utils::template_f(include_str!($p), [$((constcat::concat!("{{", stringify!($k), "}}"), $e),)*])))
     }
 }

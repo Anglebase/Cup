@@ -21,7 +21,7 @@ impl CreateProject for Executable {
             let mut file = fs_err::File::create(&path)?;
             write_template!(file, "templates/Cup.toml" => [
                 NAME = name.to_string();
-                TYPE = "executable".to_string()
+                TYPE = "executable".to_string();
             ])?;
         }
 
@@ -37,7 +37,7 @@ impl CreateProject for Executable {
         {
             let path = path.join("src/main.cpp");
             let mut file = fs_err::File::create(&path)?;
-            write_template!(file, "templates/exe/main.cpp")?;
+            write_template!(file, "templates/main.cpp")?;
         }
 
         Ok(())

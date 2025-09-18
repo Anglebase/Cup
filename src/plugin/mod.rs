@@ -1,6 +1,8 @@
 mod exe;
+mod lib;
 
 pub use exe::Executable;
+pub use lib::Static;
 
 use crate::cli::{CreateProject, TemplateType};
 
@@ -8,6 +10,7 @@ use crate::cli::{CreateProject, TemplateType};
 pub fn create_instance(ty: TemplateType) -> Box<dyn CreateProject> {
     match ty {
         TemplateType::Executable => Box::new(Executable::default()),
+        TemplateType::Static => Box::new(Static::default()),
         _ => todo!(),
     }
 }
