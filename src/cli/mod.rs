@@ -103,7 +103,12 @@ impl Cli {
                 }
 
                 fs_err::create_dir_all(&project_path)?;
-                plugin.create_project(&name, &project_path)?;
+                let result = plugin.create_project(&name, &project_path);
+                // 状态回退
+                if let Err(e) = result {
+                    fs_err::remove_dir_all(&project_path)?;
+                    return Err(e);
+                }
             }
             // 初始化项目
             Cli::Init { template, path } => {
@@ -126,7 +131,13 @@ impl Cli {
                 }
 
                 let name = path.file_name().unwrap().to_str().unwrap();
-                plugin.create_project(name, &path)?;
+                let result = plugin.create_project(name, &path);
+                // 状态回退
+                if let Err(e) = result {
+                    fs_err::remove_dir_all(&path)?;
+                    fs_err::create_dir(path)?;
+                    return Err(e);
+                }
             }
             _ => todo!(),
         };
