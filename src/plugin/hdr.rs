@@ -14,7 +14,7 @@ impl CreateProject for HeaderOnly {
             let mut file = fs_err::File::create(path)?;
             write_template!(file, "templates/Cup.toml" => [
                 NAME = name.to_string();
-                TYPE = "module".to_string();
+                TYPE = "header-only".to_string();
             ])?;
         }
 
