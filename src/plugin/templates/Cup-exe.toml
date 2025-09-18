@@ -1,0 +1,8 @@
+[package]
+name = "{{NAME}}"
+type = "{{TYPE}}"
+version = "0.1.0"
+
+[[executable]]
+name = "{{NAME}}"
+src = "src/main.cpp"

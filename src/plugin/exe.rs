@@ -19,7 +19,7 @@ impl CreateProject for Executable {
         {
             let path = path.join("Cup.toml");
             let mut file = fs_err::File::create(&path)?;
-            write_template!(file, "templates/Cup.toml" => [
+            write_template!(file, "templates/Cup-exe.toml" => [
                 NAME = name.to_string();
                 TYPE = "executable".to_string();
             ])?;
