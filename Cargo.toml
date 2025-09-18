@@ -19,3 +19,5 @@ colored = "3.0.0"
 constcat = "0.6.1"
 fs-err = "3.1.2"
 path-clean = "1.0.1"
+serde = { version = "1.0.225", features = ["derive"] }
+toml = "0.9.6"
