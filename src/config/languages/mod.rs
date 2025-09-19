@@ -5,6 +5,8 @@ mod hip;
 mod objc;
 mod objcxx;
 
+use std::path::PathBuf;
+
 pub use c::CStandard;
 pub use cuda::CUDAStandard;
 pub use cxx::CXXStandard;
@@ -34,7 +36,7 @@ pub struct LanguageConfig {
 }
 
 impl Shelling<Language> for LanguageConfig {
-    fn shelling(self) -> Language {
+    fn shelling(self, _base: &PathBuf) -> Language {
         Language {
             c: self.c.unwrap_or_default(),
             cxx: self.cxx.unwrap_or_default(),

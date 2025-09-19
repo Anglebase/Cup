@@ -1,8 +1,9 @@
 use std::path::PathBuf;
 
 use anyhow::anyhow;
+use path_clean::PathClean;
 
-use crate::config::Shelling;
+use crate::{config::Shelling, utils::CupData};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DependencyConfig {
@@ -15,9 +16,15 @@ pub struct DependencyConfig {
 }
 
 impl Shelling<anyhow::Result<Dependency>> for DependencyConfig {
-    fn shelling(self) -> anyhow::Result<Dependency> {
+    fn shelling(self, base: &PathBuf) -> anyhow::Result<Dependency> {
         let src = if let Some(path) = self.path {
-            DependencySource::Local(PathBuf::from(path))
+            let path = PathBuf::from(path);
+            let path = if path.is_absolute() {
+                path
+            } else {
+                base.join(path)
+            };
+            DependencySource::Local(path.clean())
         } else if let Some(git) = self.git {
             let mut parts = git.split('/').into_iter().collect::<Vec<_>>();
             if parts.len() != 3 {
@@ -55,6 +62,16 @@ pub enum DependencySource {
         repo: String,
         tag: String,
     },
+}
+
+impl DependencySource {
+    /// 获取依赖项所对应的本地路径
+    pub fn local_path(&self) -> PathBuf {
+        match self {
+            Self::Local(path) => path.clone(),
+            Self::Git { owner, repo, tag } => CupData::git(owner, repo, tag),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]

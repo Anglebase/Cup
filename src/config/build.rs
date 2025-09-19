@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::config::{Language, LanguageConfig, Shelling};
 
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
@@ -7,7 +9,7 @@ pub struct BuildConfig {
 }
 
 impl Shelling<Build> for BuildConfig {
-    fn shelling(self) -> Build {
+    fn shelling(self, base: &PathBuf) -> Build {
         Build {
             jobs: self
                 .jobs
@@ -20,7 +22,7 @@ impl Shelling<Build> for BuildConfig {
                     }
                 })
                 .unwrap_or(1),
-            languages: self.languages.unwrap_or_default().shelling(),
+            languages: self.languages.unwrap_or_default().shelling(base),
         }
     }
 }

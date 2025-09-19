@@ -134,6 +134,7 @@ dependencies = [
  "colored",
  "constcat",
  "fs-err",
+ "glob",
  "path-clean",
  "serde",
  "toml",
@@ -153,6 +154,12 @@ checksum = "44f150ffc8782f35521cec2b23727707cb4045706ba3c854e86bef66b3a8cdbd"
 dependencies = [
  "autocfg",
 ]
+
+[[package]]
+name = "glob"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0cc23270f6e1808e30a928bdc84dea0b9b4136a8bc82338574f23baf47bbd280"
 
 [[package]]
 name = "hashbrown"

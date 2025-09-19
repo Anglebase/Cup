@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::{cli::TemplateType, config::Shelling};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -9,7 +11,7 @@ pub struct PackageConfig {
 }
 
 impl Shelling<Package> for PackageConfig {
-    fn shelling(self) -> Package {
+    fn shelling(self, _base: &PathBuf) -> Package {
         Package {
             name: self.name,
             version: self.version,

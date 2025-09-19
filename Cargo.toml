@@ -18,6 +18,7 @@ clap = { version = "4.5.47", features = ["derive"] }
 colored = "3.0.0"
 constcat = "0.6.1"
 fs-err = "3.1.2"
+glob = "0.3.3"
 path-clean = "1.0.1"
 serde = { version = "1.0.225", features = ["derive"] }
 toml = "0.9.6"
