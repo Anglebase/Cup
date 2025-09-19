@@ -4,6 +4,7 @@ mod dependency;
 pub mod languages;
 mod package;
 mod program;
+pub mod utils;
 
 use std::{
     collections::HashMap,
