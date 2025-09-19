@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use crate::config::{Expand, Shelling};
 
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
-pub struct ConfigTable {
+pub struct TableConfig {
     pub defines: Option<Vec<String>>,
     pub includes: Option<Vec<String>>,
     pub sources: Option<Vec<String>>,
@@ -14,9 +14,9 @@ pub struct ConfigTable {
     pub compile_features: Option<Vec<String>>,
 }
 
-impl Shelling<anyhow::Result<Config>> for ConfigTable {
-    fn shelling(self, base: &PathBuf) -> anyhow::Result<Config> {
-        Ok(Config {
+impl Shelling<anyhow::Result<Table>> for TableConfig {
+    fn shelling(self, base: &PathBuf) -> anyhow::Result<Table> {
+        Ok(Table {
             defines: self.defines.unwrap_or_default(),
             includes: self.includes.unwrap_or_default().expand(base)?,
             sources: self.sources.unwrap_or_default().expand(base)?,
@@ -30,7 +30,7 @@ impl Shelling<anyhow::Result<Config>> for ConfigTable {
 }
 
 #[derive(Debug, Clone)]
-pub struct Config {
+pub struct Table {
     pub defines: Vec<String>,
     pub includes: Vec<PathBuf>,
     pub sources: Vec<PathBuf>,
@@ -39,4 +39,25 @@ pub struct Config {
     pub link_options: Vec<String>,
     pub compile_options: Vec<String>,
     pub compile_features: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+pub struct ModeTableConfig {
+    pub debug: Option<TableConfig>,
+    pub release: Option<TableConfig>,
+}
+
+impl Shelling<anyhow::Result<ModeTable>> for ModeTableConfig {
+    fn shelling(self, base: &PathBuf) -> anyhow::Result<ModeTable> {
+        Ok(ModeTable {
+            debug: self.debug.unwrap_or_default().shelling(base)?,
+            release: self.release.unwrap_or_default().shelling(base)?,
+        })
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ModeTable {
+    pub debug: Table,
+    pub release: Table,
 }

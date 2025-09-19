@@ -1,4 +1,4 @@
-use std::{collections::HashMap, env::home_dir, path::PathBuf};
+use std::{collections::HashMap, env::home_dir, fmt::Debug, path::PathBuf};
 
 pub fn template_f<'a, T: Into<HashMap<&'a str, String>>>(template: &str, replace: T) -> String {
     let mut result = template.to_string();
@@ -34,5 +34,18 @@ impl CupData {
         CupData::base()
             .join("gits")
             .join(format!("{}-{}-{}", owner, repo, tag))
+    }
+}
+
+/// 此 trait 用于处理返回 Result 类型的迭代器，只有当所有元素都成功时才返回 Ok，否则返回 Err。
+pub trait TryAll<T, U, E: Debug> {
+    fn try_all(self, f: impl Fn(T) -> Result<U, E>) -> Result<impl Iterator<Item = U>, E>;
+}
+
+impl<T, U, E: Debug, I: Iterator<Item = T>> TryAll<T, U, E> for I {
+    fn try_all(self, f: impl Fn(T) -> Result<U, E>) -> Result<impl Iterator<Item = U>, E> {
+        let mut iter = self.map(f);
+        iter.try_for_each(|i| i.map(|_| ()))?;
+        Ok(iter.map(Result::unwrap))
     }
 }
