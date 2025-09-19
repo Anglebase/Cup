@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::config::Shelling;
 
@@ -8,12 +8,12 @@ pub struct ProgramConfig {
     pub src: PathBuf,
 }
 
-impl Shelling<Program> for ProgramConfig {
-    fn shelling(self, base: &PathBuf) -> Program {
+impl<P: AsRef<Path>> Shelling<Program, P> for ProgramConfig {
+    fn shelling(self, base: P) -> Program {
         Program {
             name: self.name,
             src: if self.src.is_relative() {
-                base.join(self.src)
+                base.as_ref().join(self.src)
             } else {
                 self.src
             },

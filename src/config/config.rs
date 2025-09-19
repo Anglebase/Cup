@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::config::{Expand, Shelling};
 
@@ -14,13 +14,13 @@ pub struct TableConfig {
     pub compile_features: Option<Vec<String>>,
 }
 
-impl Shelling<anyhow::Result<Table>> for TableConfig {
-    fn shelling(self, base: &PathBuf) -> anyhow::Result<Table> {
+impl<P: AsRef<Path>> Shelling<anyhow::Result<Table>, P> for TableConfig {
+    fn shelling(self, base: P) -> anyhow::Result<Table> {
         Ok(Table {
             defines: self.defines.unwrap_or_default(),
-            includes: self.includes.unwrap_or_default().expand(base)?,
-            sources: self.sources.unwrap_or_default().expand(base)?,
-            link_paths: self.link_paths.unwrap_or_default().expand(base)?,
+            includes: self.includes.unwrap_or_default().expand(&base)?,
+            sources: self.sources.unwrap_or_default().expand(&base)?,
+            link_paths: self.link_paths.unwrap_or_default().expand(&base)?,
             link_libraires: self.link_libraires.unwrap_or_default(),
             link_options: self.link_options.unwrap_or_default(),
             compile_options: self.compile_options.unwrap_or_default(),
@@ -47,11 +47,11 @@ pub struct ModeTableConfig {
     pub release: Option<TableConfig>,
 }
 
-impl Shelling<anyhow::Result<ModeTable>> for ModeTableConfig {
-    fn shelling(self, base: &PathBuf) -> anyhow::Result<ModeTable> {
+impl<P: AsRef<Path>> Shelling<anyhow::Result<ModeTable>, P> for ModeTableConfig {
+    fn shelling(self, base: P) -> anyhow::Result<ModeTable> {
         Ok(ModeTable {
-            debug: self.debug.unwrap_or_default().shelling(base)?,
-            release: self.release.unwrap_or_default().shelling(base)?,
+            debug: self.debug.unwrap_or_default().shelling(&base)?,
+            release: self.release.unwrap_or_default().shelling(&base)?,
         })
     }
 }

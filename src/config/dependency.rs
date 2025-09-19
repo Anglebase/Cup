@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use anyhow::anyhow;
 use path_clean::PathClean;
@@ -15,14 +15,14 @@ pub struct DependencyConfig {
     pub optional: Option<bool>,
 }
 
-impl Shelling<anyhow::Result<Dependency>> for DependencyConfig {
-    fn shelling(self, base: &PathBuf) -> anyhow::Result<Dependency> {
+impl<P: AsRef<Path>> Shelling<anyhow::Result<Dependency>, P> for DependencyConfig {
+    fn shelling(self, base: P) -> anyhow::Result<Dependency> {
         let src = if let Some(path) = self.path {
             let path = PathBuf::from(path);
             let path = if path.is_absolute() {
                 path
             } else {
-                base.join(path)
+                base.as_ref().join(path)
             };
             DependencySource::Local(path.clean())
         } else if let Some(git) = self.git {

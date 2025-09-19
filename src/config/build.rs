@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::Path;
 
 use crate::config::{Language, LanguageConfig, Shelling, Table, TableConfig};
 
@@ -10,8 +10,8 @@ pub struct BuildConfig {
     pub release: Option<TableConfig>,
 }
 
-impl Shelling<anyhow::Result<Build>> for BuildConfig {
-    fn shelling(self, base: &PathBuf) -> anyhow::Result<Build> {
+impl<P: AsRef<Path>> Shelling<anyhow::Result<Build>, P> for BuildConfig {
+    fn shelling(self, base: P) -> anyhow::Result<Build> {
         Ok(Build {
             jobs: self
                 .jobs
@@ -24,9 +24,9 @@ impl Shelling<anyhow::Result<Build>> for BuildConfig {
                     }
                 })
                 .unwrap_or(1),
-            languages: self.languages.unwrap_or_default().shelling(base),
-            debug: self.debug.unwrap_or_default().shelling(base)?,
-            release: self.release.unwrap_or_default().shelling(base)?,
+            languages: self.languages.unwrap_or_default().shelling(&base),
+            debug: self.debug.unwrap_or_default().shelling(&base)?,
+            release: self.release.unwrap_or_default().shelling(&base)?,
         })
     }
 }

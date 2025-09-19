@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::Path;
 
 use crate::{cli::TemplateType, config::Shelling};
 
@@ -10,8 +10,8 @@ pub struct PackageConfig {
     pub ty: TemplateType,
 }
 
-impl Shelling<Package> for PackageConfig {
-    fn shelling(self, _base: &PathBuf) -> Package {
+impl<P: AsRef<Path>> Shelling<Package, P> for PackageConfig {
+    fn shelling(self, _base: P) -> Package {
         Package {
             name: self.name,
             version: self.version,
