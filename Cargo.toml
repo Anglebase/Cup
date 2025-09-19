@@ -1,6 +1,6 @@
 [package]
 name = "cup-cli"
-version = "0.1.5"
+version = "0.1.6"
 edition = "2024"
 authors = ["Anglebase"]
 description = "A Cargo-like tool for C++ Project Building and Package Management"
