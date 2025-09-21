@@ -1,6 +1,7 @@
 mod create_project;
 mod enums;
 mod install;
+mod login;
 
 use std::path::PathBuf;
 
@@ -56,6 +57,8 @@ pub enum Cli {
     List,
     /// Show the cup logo.
     Logo,
+    /// Use Github to access token login.
+    Login,
 }
 
 impl Cli {
@@ -145,6 +148,9 @@ impl Cli {
             }
             Cli::Install { name } => {
                 install::install(&name).await?;
+            }
+            Cli::Login => {
+                login::login()?;
             }
             _ => todo!(),
         };

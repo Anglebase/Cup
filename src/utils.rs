@@ -44,6 +44,10 @@ impl CupData {
     pub fn cache() -> PathBuf {
         CupData::base().join("cache")
     }
+
+    pub fn token() -> PathBuf {
+        CupData::base().join("token")
+    }
 }
 
 /// 此 trait 用于处理返回 Result 类型的迭代器，只有当所有元素都成功时才返回 Ok，否则返回 Err。

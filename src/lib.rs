@@ -4,11 +4,11 @@ mod logo;
 pub mod plugin;
 pub mod utils;
 
-use std::env::home_dir;
-
 use colored::Colorize;
 pub use logo::logo;
 use octocrab::Octocrab;
+
+use crate::utils::CupData;
 
 #[macro_export]
 macro_rules! debug {
@@ -26,7 +26,7 @@ lazy_static::lazy_static! {
         if let Ok(tk) = std::env::var("GITHUB_TOKEN") {
             token = Some(tk);
         }
-        if let Ok(tk) = fs_err::read_to_string(home_dir().unwrap().join(".config/cup/token")) {
+        if let Ok(tk) = fs_err::read_to_string(CupData::token()) {
             token = Some(tk.trim().to_string());
         }
         // 创建客户端实例
