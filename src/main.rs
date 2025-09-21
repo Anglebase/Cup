@@ -1,6 +1,7 @@
 use cup_cli::cli::Cli;
 
-fn main() -> anyhow::Result<()> {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     let cli = Cli::new();
-    cli.dispatch()
+    cli.dispatch().await
 }

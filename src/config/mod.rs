@@ -154,4 +154,25 @@ impl Config {
         let raw_config: RawConfig = toml::from_str(&content)?;
         Ok(raw_config.shelling(project)?)
     }
+
+    /// 此函数缺少路径展开分析，仅作为远程依赖项解析使用
+    pub unsafe fn from_str(content: &str) -> anyhow::Result<Config> {
+        let raw_config: RawConfig = toml::from_str(content)?;
+        Ok(raw_config.shelling(PathBuf::from("."))?)
+    }
+
+    pub fn get_all_remote_dependencies(&self) -> Vec<&Dependency> {
+        let mut result = vec![];
+        for dep in self.dependencies.values() {
+            if let DependencySource::Git { .. } = dep.src {
+                result.push(dep);
+            }
+        }
+        for dep in self.dev_dependencies.values() {
+            if let DependencySource::Git { .. } = dep.src {
+                result.push(dep);
+            }
+        }
+        result
+    }
 }

@@ -3,7 +3,10 @@ use std::path::{Path, PathBuf};
 use anyhow::anyhow;
 use path_clean::PathClean;
 
-use crate::{config::Shelling, utils::CupData};
+use crate::{
+    config::Shelling,
+    utils::{CupData, GitUnique},
+};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct DependencyConfig {
@@ -26,15 +29,7 @@ impl<P: AsRef<Path>> Shelling<anyhow::Result<Dependency>, P> for DependencyConfi
             };
             DependencySource::Local(path.clean())
         } else if let Some(git) = self.git {
-            let mut parts = git.split('/').into_iter().collect::<Vec<_>>();
-            if parts.len() != 3 {
-                return Err(anyhow!(
-                    "Invalid git mark format, should be owner/repo/tag."
-                ));
-            }
-            let owner = parts.remove(0);
-            let repo = parts.remove(0);
-            let tag = parts.remove(0);
+            let GitUnique { owner, repo, tag } = GitUnique::from(&git)?;
             DependencySource::Git {
                 owner: owner.to_string(),
                 repo: repo.to_string(),

@@ -1,5 +1,6 @@
 mod create_project;
 mod enums;
+mod install;
 
 use std::path::PathBuf;
 
@@ -41,7 +42,10 @@ pub enum Cli {
     /// Clean the project's build directory
     Clean,
     /// Install dependencies
-    Install,
+    Install {
+        /// The name of the dependency to install
+        name: String,
+    },
     /// Uninstall dependencies
     Uninstall,
     /// Package the project
@@ -82,7 +86,7 @@ impl Cli {
     }
 
     /// 分派不同子命令的任务
-    pub fn dispatch(self) -> anyhow::Result<()> {
+    pub async fn dispatch(self) -> anyhow::Result<()> {
         match self {
             // 显示 LOGO
             Cli::Logo => logo(),
@@ -138,6 +142,9 @@ impl Cli {
                     fs_err::create_dir(path)?;
                     return Err(e);
                 }
+            }
+            Cli::Install { name } => {
+                install::install(&name).await?;
             }
             _ => todo!(),
         };
