@@ -1,3 +1,4 @@
+mod clean;
 mod create_project;
 mod enums;
 mod install;
@@ -42,7 +43,14 @@ pub enum Cli {
     /// Run the project with specified parameters
     Run,
     /// Clean the project's build directory
-    Clean,
+    Clean {
+        /// If set, clean all the project's build directories(including build output)
+        #[arg(long, default_value_t = false)]
+        all: bool,
+        /// Clean the project's build directory
+        #[arg(short, long, default_value = ".")]
+        path: PathBuf,
+    },
     /// Install dependencies
     Install {
         /// The name of the dependency to install
@@ -158,6 +166,9 @@ impl Cli {
             }
             Cli::Login => {
                 login::login()?;
+            }
+            Cli::Clean { all, path } => {
+                clean::clean(path, all)?;
             }
             _ => todo!(),
         };

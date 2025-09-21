@@ -8,7 +8,7 @@ pub struct PackageConfig {
     pub version: String,
     #[serde(rename = "type")]
     pub ty: TemplateType,
-    pub workspace: Option<PathBuf>,
+    pub build: Option<PathBuf>,
     pub publish: Option<bool>,
 }
 
@@ -18,7 +18,9 @@ impl<P: AsRef<Path>> Shelling<Package, P> for PackageConfig {
             name: self.name,
             version: self.version,
             ty: self.ty,
-            workspace: self.workspace.unwrap_or(PathBuf::from(base.as_ref())),
+            build: self
+                .build
+                .unwrap_or(PathBuf::from(base.as_ref().join("build"))),
             publish: self.publish.unwrap_or(true),
         }
     }
@@ -29,6 +31,6 @@ pub struct Package {
     pub name: String,
     pub version: String,
     pub ty: TemplateType,
-    pub workspace: PathBuf,
+    pub build: PathBuf,
     pub publish: bool,
 }
