@@ -2,6 +2,7 @@ mod create_project;
 mod enums;
 mod install;
 mod login;
+mod uninstall;
 
 use std::path::PathBuf;
 
@@ -48,7 +49,10 @@ pub enum Cli {
         name: String,
     },
     /// Uninstall dependencies
-    Uninstall,
+    Uninstall {
+        /// The name of the dependency to uninstall
+        name: String,
+    },
     /// Package the project
     Pack,
     /// Publish the project to the internet
@@ -148,6 +152,9 @@ impl Cli {
             }
             Cli::Install { name } => {
                 install::install(&name).await?;
+            }
+            Cli::Uninstall { name } => {
+                uninstall::uninstall(&name)?;
             }
             Cli::Login => {
                 login::login()?;
